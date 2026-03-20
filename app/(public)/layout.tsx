@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { getFlag } from "@/lib/flags";
+
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/events", label: "Events" },
@@ -14,6 +16,16 @@ export default function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isPublicSiteEnabled = getFlag("PUBLIC_SITE");
+
+  if (!isPublicSiteEnabled) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b bg-white">
