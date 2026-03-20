@@ -1,11 +1,15 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
-
-import { GET } from '@/app/api/events/route';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const hasDb = !!process.env.DATABASE_URL;
 
 describe.skipIf(!hasDb)('GET /api/events', () => {
+  let GET: () => Promise<Response>;
+
+  beforeAll(async () => {
+    ({ GET } = await import('@/app/api/events/route'));
+  });
+
   it('returns 200', async () => {
     const response = await GET();
     expect(response.status).toBe(200);

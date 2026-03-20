@@ -1,11 +1,15 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
-
-import { GET } from '@/app/api/newsletters/route';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const hasDb = !!process.env.DATABASE_URL;
 
 describe.skipIf(!hasDb)('GET /api/newsletters', () => {
+  let GET: (req: Request) => Promise<Response>;
+
+  beforeAll(async () => {
+    ({ GET } = await import('@/app/api/newsletters/route'));
+  });
+
   it('returns 200 with data and meta', async () => {
     const req = new Request('http://localhost/api/newsletters');
     const response = await GET(req);
