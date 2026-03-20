@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PTO Website — Site Architecture</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+  h1 { color: #1B6DC2; font-size: 1.4rem; margin-bottom: 4px; }
+  h2 { color: #333; font-size: 1.1rem; font-weight: 500; margin-bottom: 20px; }
+  .diagram-container { background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .mermaid { display: flex; justify-content: center; }
+</style>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#E8F4FD', primaryBorderColor: '#1B6DC2', primaryTextColor: '#000',
+    lineColor: '#666', fontSize: '14px'
+  }});
+</script>
+</head>
+<body>
+
+<h1>PTO Website — Public Site Flow</h1>
+<h2>How pages connect for parents, volunteers, and visitors</h2>
+
+<div class="diagram-container">
+<pre class="mermaid">
+graph TD
+    subgraph Public["Public Site — No Auth Required"]
+        HP["🏠 Homepage"]
+        EL["📅 Events List"]
+        ED["📋 Event Detail"]
+        VS["✋ Volunteer Signup Form"]
+        NL["📰 Newsletter Archive"]
+        NV["📄 Newsletter Viewer"]
+        MM["📝 Meeting Minutes"]
+        MV["📄 Minutes Viewer"]
+        SP["🤝 Sponsors Page"]
+        DN["💛 Donate Page"]
+        NS["✉️ Newsletter Signup<br/>MailerLite Embed"]
+    end
+
+    subgraph External["External Services"]
+        ML["MailerLite"]
+        VM["Venmo"]
+        SO["Social Media"]
+    end
+
+    subgraph Admin["Admin — Separate Panel"]
+        LG["🔒 Admin Login"]
+    end
+
+    HP -->|Nav| EL
+    HP -->|Nav| NL
+    HP -->|Nav| MM
+    HP -->|Nav| SP
+    HP -->|Nav| DN
+    HP -->|Embedded or nav link| NS
+    HP -->|Social icons| SO
+    HP -.->|Footer link| LG
+
+    EL -->|Click event| ED
+    ED -->|Signup button| VS
+    VS -->|Confirmation| ED
+
+    NL -->|Click newsletter| NV
+    NS -->|Submit| ML
+
+    MM -->|Click document| MV
+
+    DN -->|Venmo link| VM
+</pre>
+</div>
+
+<h1>PTO Website — Admin Panel Flow</h1>
+<h2>Separate authenticated area for PTO administrators</h2>
+
+<div class="diagram-container">
+<pre class="mermaid">
+graph TD
+    subgraph Auth["Authentication"]
+        LG["🔒 Login Page<br/>Clerk Auth + MFA"]
+    end
+
+    subgraph Dash["Dashboard"]
+        AD["📊 Admin Dashboard<br/>Quick stats · Recent activity"]
+    end
+
+    subgraph Content["Content Management"]
+        EM["📅 Events Manager<br/>List all events"]
+        EC["✏️ Create / Edit Event<br/>Title, date, description"]
+        EV["👥 Volunteer Slots<br/>Configure roles + capacities"]
+        EVL["📋 View Signups<br/>Per-event volunteer list"]
+        NM["📰 Newsletter Manager<br/>List uploaded PDFs"]
+        NU["⬆️ Upload Newsletter PDF"]
+        MN["📝 Minutes Manager<br/>List uploaded files"]
+        MU["⬆️ Upload Minutes File"]
+        SM["🤝 Sponsors Manager<br/>Logo grid management"]
+        SU["⬆️ Upload / Delete Logos"]
+        HM["🏠 Homepage Editor<br/>Mission, photos, links"]
+    end
+
+    subgraph Settings["Settings & Help"]
+        ST["⚙️ Site Settings<br/>Venmo link · Social links"]
+        HC["❓ Help Center<br/>How-to guides per feature"]
+    end
+
+    LG -->|Authenticated| AD
+
+    AD --> EM
+    AD --> NM
+    AD --> MN
+    AD --> SM
+    AD --> HM
+    AD --> ST
+    AD --> HC
+
+    EM -->|New / Edit| EC
+    EC -->|Configure volunteers| EV
+    EM -->|View signups| EVL
+
+    NM -->|Upload| NU
+    MN -->|Upload| MU
+    SM -->|Upload / Delete| SU
+</pre>
+</div>
+
+<div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+<h3 style="margin-top:0; color: #1B6DC2;">Key Architecture Decisions</h3>
+<ul style="color: #333; line-height: 1.8;">
+<li><strong>Separate admin panel</strong> — Admins access /admin routes behind Clerk auth. Public site has zero admin UI.</li>
+<li><strong>Newsletter subscribers managed externally</strong> — MailerLite handles signup forms, subscriber lists, and campaigns. Admin panel does not duplicate this.</li>
+<li><strong>File viewing</strong> — Newsletter PDFs and meeting minutes open in-browser (no download required for viewing).</li>
+<li><strong>Admin login access</strong> — Small footer link on public site. Not prominent — admins know where to find it.</li>
+<li><strong>Help Center</strong> — Built into the admin panel so admins get guidance in-context where they work.</li>
+</ul>
+</div>
+
+</body>
+</html>

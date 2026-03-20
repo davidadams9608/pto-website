@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Admin Events</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+    .view-toggles { display: flex; gap: 0.4rem; }
+    .view-btn {
+      background: #334155; color: #94A3B8; border: none; cursor: pointer;
+      padding: 0.35rem 0.85rem; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all .15s;
+    }
+    .view-btn.active { background: #1B6DC2; color: white; }
+
+    .preview-wrapper { margin-top: 48px; }
+
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+      --green:    #16A34A;
+      --green-lt: #F0FDF4;
+      --green-mid:#BBF7D0;
+      --amber:    #D97706;
+      --amber-lt: #FFFBEB;
+      --amber-mid:#FDE68A;
+      --red:      #DC2626;
+      --red-lt:   #FEF2F2;
+      --red-mid:  #FECACA;
+    }
+
+    /* ── ADMIN SHELL ── */
+    .admin-shell { display: flex; min-height: calc(100vh - 48px); }
+
+    /* ── SIDEBAR (shared) ── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--white); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 48px; height: calc(100vh - 48px);
+      overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sidebar-brand img { width: 32px; height: 32px; object-fit: contain; }
+    .sidebar-brand-text { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+    .sidebar-brand-badge {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--blue); background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+    }
+    .sidebar-nav { flex: 1; padding: 0.75rem; }
+    .sidebar-section-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); padding: 0.75rem 0.75rem 0.4rem; margin-top: 0.5rem;
+    }
+    .sidebar-section-label:first-child { margin-top: 0; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 0.75rem; border-radius: 7px;
+      text-decoration: none; color: var(--muted);
+      font-size: 0.825rem; font-weight: 500; transition: all .12s;
+    }
+    .sidebar-link:hover { background: var(--bg); color: var(--text); }
+    .sidebar-link.active { background: var(--blue-lt); color: var(--blue); font-weight: 700; }
+    .sidebar-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: 1rem 1.25rem; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .sidebar-footer-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 600; color: var(--muted);
+      text-decoration: none;
+    }
+    .sidebar-footer-link:hover { color: var(--text); }
+    .sidebar-footer-link svg { width: 15px; height: 15px; }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem;
+    }
+    .sidebar-user-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 700; color: var(--blue);
+    }
+
+    /* ── MAIN ── */
+    .admin-main { flex: 1; background: var(--bg); padding: 2rem 2.5rem; min-width: 0; }
+    .admin-page-header { margin-bottom: 2rem; }
+    .admin-page-header h1 {
+      font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 0.25rem;
+    }
+    .admin-page-header p { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+    .admin-page-header-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+
+    /* ── SHARED COMPONENTS ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1.1rem; border-radius: 7px;
+      background: var(--blue); color: var(--white);
+      border: none; font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: background .12s;
+    }
+    .btn-primary:hover { background: var(--blue-dk); }
+    .btn-primary svg { width: 15px; height: 15px; }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1.1rem; border-radius: 7px;
+      background: var(--white); color: var(--text); border: 1px solid var(--border);
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all .12s;
+    }
+    .btn-secondary:hover { border-color: var(--blue-mid); box-shadow: 0 2px 8px rgba(27,109,194,0.06); }
+    .btn-secondary svg { width: 15px; height: 15px; }
+
+    .btn-danger {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1.1rem; border-radius: 7px;
+      background: var(--white); color: var(--red); border: 1px solid var(--red-mid);
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all .12s;
+    }
+    .btn-danger:hover { background: var(--red-lt); }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.8rem; font-weight: 600; color: var(--blue);
+      text-decoration: none; margin-bottom: 1rem;
+    }
+    .back-link:hover { opacity: 0.7; }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── VIEW PANELS ── */
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    /* ══════════════════════════════════════════
+       VIEW 1: EVENTS MANAGER (List)
+       ══════════════════════════════════════════ */
+
+    /* Tabs */
+    .tab-bar { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+    .tab-btn {
+      padding: 0.6rem 1.25rem; font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      color: var(--muted); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .12s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 700; }
+
+    /* Event table */
+    .event-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden;
+    }
+    .event-table thead th {
+      text-align: left; padding: 0.75rem 1rem;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .event-table tbody td {
+      padding: 0.85rem 1rem; font-size: 0.825rem;
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .event-table tbody tr:last-child td { border-bottom: none; }
+    .event-table tbody tr:hover { background: var(--blue-lt); }
+
+    .event-table-name { font-weight: 700; color: var(--text); }
+    .event-table-meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+
+    .badge {
+      display: inline-flex; align-items: center;
+      font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.55rem;
+      border-radius: 50px; white-space: nowrap;
+    }
+    .badge-green { color: var(--green); background: var(--green-lt); border: 1px solid var(--green-mid); }
+    .badge-amber { color: var(--amber); background: var(--amber-lt); border: 1px solid var(--amber-mid); }
+    .badge-muted { color: var(--muted); background: var(--bg); border: 1px solid var(--border); }
+    .badge-red { color: var(--red); background: var(--red-lt); border: 1px solid var(--red-mid); }
+
+    .table-actions { display: flex; gap: 0.5rem; }
+    .table-action-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--white);
+      cursor: pointer; transition: all .12s; color: var(--muted);
+    }
+    .table-action-btn:hover { border-color: var(--blue-mid); color: var(--blue); }
+    .table-action-btn svg { width: 14px; height: 14px; }
+    /* Colored action icons */
+    .table-action-btn.act-edit { color: var(--blue); border-color: var(--blue-mid); }
+    .table-action-btn.act-edit:hover { background: var(--blue-lt); }
+    .table-action-btn.act-signups { color: var(--green); border-color: var(--green-mid); }
+    .table-action-btn.act-signups:hover { background: var(--green-lt); }
+    .table-action-btn.act-email { color: #7C3AED; border-color: #DDD6FE; }
+    .table-action-btn.act-email:hover { background: #F5F3FF; }
+    .table-action-btn.act-duplicate { color: var(--muted); }
+    .table-action-btn.act-duplicate:hover { color: var(--text); border-color: var(--blue-mid); }
+    .table-action-btn.danger { color: var(--red); border-color: var(--red-mid); }
+    .table-action-btn.danger:hover { background: var(--red-lt); }
+
+    /* ── CONTACT VOLUNTEERS MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9998;
+      background: rgba(0,0,0,0.4); align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 16px; width: 560px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+    }
+    .modal-header {
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-size: 1rem; font-weight: 800; color: var(--text); }
+    .modal-close {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      background: none; cursor: pointer; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+    .modal-close:hover { background: var(--bg); }
+    .modal-close svg { width: 16px; height: 16px; }
+    .modal-body { padding: 1.5rem; }
+    .modal-body .form-group { margin-bottom: 1rem; }
+    .modal-body .form-group:last-of-type { margin-bottom: 0; }
+    .modal-body .form-textarea { min-height: 140px; }
+
+    .modal-recipient-info {
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem;
+      font-size: 0.8rem; color: var(--text);
+    }
+    .modal-recipient-info strong { font-weight: 700; }
+
+    .recipient-picker { margin-bottom: 1rem; }
+    .recipient-picker-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .recipient-picker-header .form-label { margin-bottom: 0; }
+    .recipient-select-toggle {
+      font-size: 0.7rem; font-weight: 700; color: var(--blue);
+      cursor: pointer; background: none; border: none;
+      font-family: inherit; padding: 0;
+    }
+    .recipient-select-toggle:hover { text-decoration: underline; }
+    .recipient-list {
+      max-height: 180px; overflow-y: auto;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg);
+    }
+    .recipient-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text);
+    }
+    .recipient-row:last-child { border-bottom: none; }
+    .recipient-row:hover { background: var(--blue-lt); }
+    .recipient-name { font-weight: 600; min-width: 120px; }
+    .recipient-email { color: var(--muted); font-size: 0.75rem; }
+
+    .modal-toggle-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-top: 1rem; padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .modal-toggle-label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .checkbox-input {
+      width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+      display: flex; gap: 0.75rem; justify-content: flex-end;
+    }
+
+    /* ══════════════════════════════════════════
+       VIEW 2: EVENT EDITOR
+       ══════════════════════════════════════════ */
+    .editor-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem;
+    }
+    .editor-card-title {
+      font-size: 0.95rem; font-weight: 800; color: var(--text);
+      margin-bottom: 1.25rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-grid .full-width { grid-column: 1 / -1; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-label {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 0.65rem 0.85rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.85rem;
+      color: var(--text); transition: border-color .15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(27,109,194,0.1);
+    }
+    .form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+    .form-hint { font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* Toggle switch */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0; border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label-text { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .toggle-label-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .toggle-switch {
+      width: 40px; height: 22px; border-radius: 11px;
+      background: var(--border); position: relative;
+      cursor: pointer; transition: background .15s;
+      border: none;
+    }
+    .toggle-switch.on { background: var(--blue); }
+    .toggle-switch::after {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--white); top: 2px; left: 2px;
+      transition: transform .15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle-switch.on::after { transform: translateX(18px); }
+
+    /* Volunteer slots config */
+    .slots-config {
+      margin-top: 1rem; padding: 1rem; border-radius: 8px;
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+    }
+    .slots-row {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .slots-label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .slots-input {
+      width: 80px; padding: 0.5rem 0.65rem; text-align: center;
+      background: var(--white); border: 1px solid var(--blue-mid);
+      border-radius: 6px; font-family: inherit; font-size: 0.85rem;
+      font-weight: 700; color: var(--text);
+    }
+
+    .editor-actions {
+      display: flex; gap: 0.75rem; justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+
+    /* ══════════════════════════════════════════
+       VIEW 3: VIEW SIGNUPS
+       ══════════════════════════════════════════ */
+    .signup-summary {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .signup-summary-card {
+      flex: 1; background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem 1.25rem;
+    }
+    .signup-summary-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem;
+    }
+    .signup-summary-value { font-size: 1.25rem; font-weight: 800; color: var(--text); }
+
+    .signup-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden;
+    }
+    .signup-table thead th {
+      text-align: left; padding: 0.75rem 1rem;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .signup-table tbody td {
+      padding: 0.75rem 1rem; font-size: 0.825rem;
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .signup-table tbody tr:last-child td { border-bottom: none; }
+
+    .export-note {
+      margin-top: 1rem; font-size: 0.7rem; color: var(--muted);
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .export-note svg { width: 13px; height: 13px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Admin Events</span></span>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="showView('list', this)">Events List</button>
+    <button class="view-btn" onclick="showView('editor', this)">Event Editor</button>
+    <button class="view-btn" onclick="showView('signups', this)">View Signups</button>
+  </div>
+  <span class="toolbar-note">Route: /admin/events · Desktop only</span>
+</div>
+
+<div class="preview-wrapper">
+<div class="admin-shell">
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="./westmont-logo.jpg" alt="Westmont" />
+      <span class="sidebar-brand-text">Westmont PTO</span>
+      <span class="sidebar-brand-badge">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Overview</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <div class="sidebar-section-label">Content</div>
+      <a href="#" class="sidebar-link active">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="1.5" width="13" height="15" rx="2"/><path d="M6 5.5h6"/><path d="M6 8.5h6"/><path d="M6 11.5h3"/></svg>
+        Events
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h13"/><path d="M4.5 1.5v5"/><path d="M13.5 1.5v5"/><rect x="2.5" y="4" width="13" height="12.5" rx="2"/><path d="M2.5 8h13"/></svg>
+        Newsletters
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1.5H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6.5L10 1.5z"/><path d="M10 1.5v5h5"/></svg>
+        Minutes
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5l2.3 4.7 5.2.8-3.75 3.65.9 5.15L9 13.4l-4.65 2.4.9-5.15L1.5 7l5.2-.8L9 1.5z"/></svg>
+        Sponsors
+      </a>
+      <div class="sidebar-section-label">Site</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5L9 2l6 4.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 14.5v-8z"/><path d="M7 16V10h4v6"/></svg>
+        Homepage
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M14.5 9a5.5 5.5 0 0 0-.3-1.8l2-1.2-1.5-2.5-2 1.2a5.5 5.5 0 0 0-1.6-1V1.5h-3v2.2a5.5 5.5 0 0 0-1.6 1l-2-1.2L3 6l2 1.2A5.5 5.5 0 0 0 4.7 9H2.5v3h2.2c.1.6.3 1.2.6 1.8l-2 1.2 1.5 2.5 2-1.2c.5.4 1 .7 1.6 1v2.2h3v-2.2c.6-.2 1.1-.6 1.6-1l2 1.2 1.5-2.5-2-1.2c.3-.6.5-1.2.6-1.8h2.2V9h-2.2z"/></svg>
+        Settings
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7.5"/><path d="M9 12.5v-.25a2 2 0 0 1 1.1-1.8A2.25 2.25 0 1 0 6.75 8"/><circle cx="9" cy="14.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+        Help Center
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#" class="sidebar-footer-link">
+        <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7.5 1.5v6M4 3.5a6 6 0 1 0 7 0"/></svg>
+        View Public Site ↗
+      </a>
+      <div class="sidebar-user">
+        <span class="sidebar-user-avatar">DA</span>
+        david.adams@westmontpto.org
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="admin-main">
+
+    <!-- ════ VIEW 1: EVENTS LIST ════ -->
+    <div class="view-panel active" id="view-list">
+      <div class="admin-page-header">
+        <div class="admin-page-header-row">
+          <div>
+            <h1>Events</h1>
+            <p>Create and manage PTO events and volunteer signups.</p>
+          </div>
+          <button class="btn-primary" onclick="showView('editor', document.querySelectorAll('.view-btn')[1])">
+            <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 5v5"/><path d="M5 7.5h5"/></svg>
+            Create Event
+          </button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active">Upcoming (5)</button>
+        <button class="tab-btn">Past (12)</button>
+        <button class="tab-btn">All (17)</button>
+      </div>
+
+      <table class="event-table">
+        <thead>
+          <tr>
+            <th style="width:32%">Event</th>
+            <th style="width:13%">Date</th>
+            <th style="width:14%">Volunteers</th>
+            <th style="width:13%">Published</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="event-table-name">Family Movie Night</div><div class="event-table-meta">6:30 PM · Gymnasium</div></td>
+            <td>Mar 21, 2026</td>
+            <td><a href="#" class="dash-card-action" onclick="showView('signups', document.querySelectorAll('.view-btn')[2])">12 / 20</a></td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn act-edit" title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/></svg></button>
+                <button class="table-action-btn act-signups" title="View Signups" onclick="showView('signups', document.querySelectorAll('.view-btn')[2])"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg></button>
+                <button class="table-action-btn act-email" title="Contact Volunteers" onclick="openContactModal('Family Movie Night', 12)"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 4.5L7 8l5.5-3.5"/></svg></button>
+                <button class="table-action-btn act-duplicate" title="Duplicate"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/></svg></button>
+                <button class="table-action-btn danger" title="Delete"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="event-table-name">Spring Bake Sale</div><div class="event-table-meta">3:00 PM · Front Entrance</div></td>
+            <td>Mar 28, 2026</td>
+            <td><a href="#" class="dash-card-action">8 / 20</a></td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn act-edit" title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/></svg></button>
+                <button class="table-action-btn act-signups" title="View Signups"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg></button>
+                <button class="table-action-btn act-email" title="Contact Volunteers" onclick="openContactModal('Spring Bake Sale', 8)"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 4.5L7 8l5.5-3.5"/></svg></button>
+                <button class="table-action-btn act-duplicate" title="Duplicate"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/></svg></button>
+                <button class="table-action-btn danger" title="Delete"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="event-table-name">PTO General Meeting</div><div class="event-table-meta">7:00 PM · Library</div></td>
+            <td>Apr 5, 2026</td>
+            <td><span style="color:var(--muted); font-size:0.8rem;">—</span></td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn act-edit" title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/></svg></button>
+                <button class="table-action-btn act-duplicate" title="Duplicate"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/></svg></button>
+                <button class="table-action-btn danger" title="Delete"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="event-table-name">Wildcat Fun Run</div><div class="event-table-meta">9:00 AM · School Field</div></td>
+            <td>Apr 18, 2026</td>
+            <td><a href="#" class="dash-card-action">5 / 20</a></td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn act-edit" title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/></svg></button>
+                <button class="table-action-btn act-signups" title="View Signups"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg></button>
+                <button class="table-action-btn act-email" title="Contact Volunteers" onclick="openContactModal('Wildcat Fun Run', 5)"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 4.5L7 8l5.5-3.5"/></svg></button>
+                <button class="table-action-btn act-duplicate" title="Duplicate"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/></svg></button>
+                <button class="table-action-btn danger" title="Delete"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="event-table-name">End-of-Year Field Day</div><div class="event-table-meta">10:00 AM · School Field</div></td>
+            <td>May 15, 2026</td>
+            <td><a href="#" class="dash-card-action">2 / 30</a></td>
+            <td><span class="badge badge-amber">Draft</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="table-action-btn act-edit" title="Edit"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/></svg></button>
+                <button class="table-action-btn act-signups" title="View Signups"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg></button>
+                <button class="table-action-btn act-email" title="Contact Volunteers" onclick="openContactModal('End-of-Year Field Day', 2)"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="11" height="8" rx="1.5"/><path d="M1.5 4.5L7 8l5.5-3.5"/></svg></button>
+                <button class="table-action-btn act-duplicate" title="Duplicate"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/></svg></button>
+                <button class="table-action-btn danger" title="Delete"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════ VIEW 2: EVENT EDITOR ════ -->
+    <div class="view-panel" id="view-editor">
+      <a href="#" class="back-link" onclick="showView('list', document.querySelectorAll('.view-btn')[0]); return false;">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11L5 7l4-4"/></svg>
+        Back to Events
+      </a>
+
+      <div class="admin-page-header">
+        <h1>Create Event</h1>
+        <p>Fill in the details below. Events can be saved as draft or published immediately.</p>
+      </div>
+
+      <!-- Event Details -->
+      <div class="editor-card">
+        <div class="editor-card-title">Event Details</div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">Event Title</label>
+            <input class="form-input" type="text" placeholder="e.g., Family Movie Night" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-input" type="date" value="2026-03-21" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input class="form-input" type="text" placeholder="e.g., School Gymnasium" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input class="form-input" type="time" value="18:30" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input class="form-input" type="time" value="20:30" />
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" placeholder="Describe the event — what it is, who should attend, what to bring, etc."></textarea>
+            <span class="form-hint">Supports plain text. Displayed on the public event detail page.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Volunteer Signup Settings -->
+      <div class="editor-card">
+        <div class="editor-card-title">Volunteer Signup</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label-text">Enable volunteer signup</div>
+            <div class="toggle-label-hint">When enabled, a signup form will appear on the public event page.</div>
+          </div>
+          <button class="toggle-switch on" onclick="this.classList.toggle('on')"></button>
+        </div>
+
+        <div class="slots-config">
+          <div class="slots-row">
+            <span class="slots-label">Total volunteer spots:</span>
+            <input class="slots-input" type="number" value="20" min="1" />
+            <span class="form-hint" style="margin-top:0">Visitors will see "X spots left" on the public page.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publishing -->
+      <div class="editor-card">
+        <div class="editor-card-title">Publishing</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label-text">Publish immediately</div>
+            <div class="toggle-label-hint">Published events are visible on the public site. Unpublished events are saved as drafts.</div>
+          </div>
+          <button class="toggle-switch on" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn-secondary" onclick="showView('list', document.querySelectorAll('.view-btn')[0])">Cancel</button>
+        <button class="btn-primary">
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7.5l3 3 6-6"/></svg>
+          Save Event
+        </button>
+      </div>
+    </div>
+
+    <!-- ════ VIEW 3: VIEW SIGNUPS ════ -->
+    <div class="view-panel" id="view-signups">
+      <a href="#" class="back-link" onclick="showView('list', document.querySelectorAll('.view-btn')[0]); return false;">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11L5 7l4-4"/></svg>
+        Back to Events
+      </a>
+
+      <div class="admin-page-header">
+        <div class="admin-page-header-row">
+          <div>
+            <h1>Family Movie Night — Signups</h1>
+            <p>Mar 21, 2026 · 6:30 PM · Gymnasium</p>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn-primary" onclick="openContactModal('Family Movie Night', 12)">
+              <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="12" height="9" rx="1.5"/><path d="M1.5 4.5L7.5 8.5l6-4"/></svg>
+              Contact Volunteers
+            </button>
+            <button class="btn-secondary">
+              <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7.5 1.5v9M4 7l3.5 3.5L11 7"/><path d="M2 12.5v1h11v-1"/></svg>
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="signup-summary">
+        <div class="signup-summary-card">
+          <div class="signup-summary-label">Total Spots</div>
+          <div class="signup-summary-value">20</div>
+        </div>
+        <div class="signup-summary-card">
+          <div class="signup-summary-label">Signed Up</div>
+          <div class="signup-summary-value" style="color: var(--green);">12</div>
+        </div>
+        <div class="signup-summary-card">
+          <div class="signup-summary-label">Spots Remaining</div>
+          <div class="signup-summary-value" style="color: var(--amber);">8</div>
+        </div>
+      </div>
+
+      <table class="signup-table">
+        <thead>
+          <tr>
+            <th style="width:5%">#</th>
+            <th style="width:25%">Name</th>
+            <th style="width:30%">Email</th>
+            <th style="width:20%">Phone</th>
+            <th style="width:20%">Signed Up</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Sarah Johnson</td><td>sarah.j@email.com</td><td>(555) 123-4567</td><td>Mar 10, 2026</td></tr>
+          <tr><td>2</td><td>Mike Chen</td><td>mchen@email.com</td><td>(555) 234-5678</td><td>Mar 10, 2026</td></tr>
+          <tr><td>3</td><td>Lisa Martinez</td><td>lisa.m@email.com</td><td>(555) 345-6789</td><td>Mar 11, 2026</td></tr>
+          <tr><td>4</td><td>James Wilson</td><td>jwilson@email.com</td><td>(555) 456-7890</td><td>Mar 11, 2026</td></tr>
+          <tr><td>5</td><td>Emily Davis</td><td>emily.d@email.com</td><td>(555) 567-8901</td><td>Mar 11, 2026</td></tr>
+          <tr><td>6</td><td>Robert Taylor</td><td>rtaylor@email.com</td><td>(555) 678-9012</td><td>Mar 11, 2026</td></tr>
+          <tr><td>7</td><td>Amanda Brown</td><td>amanda.b@email.com</td><td>(555) 789-0123</td><td>Mar 12, 2026</td></tr>
+          <tr><td>8</td><td>Chris Anderson</td><td>c.anderson@email.com</td><td>(555) 890-1234</td><td>Mar 12, 2026</td></tr>
+          <tr><td>9</td><td>Jennifer Thomas</td><td>j.thomas@email.com</td><td>(555) 901-2345</td><td>Mar 12, 2026</td></tr>
+          <tr><td>10</td><td>David Garcia</td><td>d.garcia@email.com</td><td>(555) 012-3456</td><td>Mar 12, 2026</td></tr>
+          <tr><td>11</td><td>Nicole White</td><td>nicole.w@email.com</td><td>(555) 111-2222</td><td>Mar 12, 2026</td></tr>
+          <tr><td>12</td><td>Kevin Harris</td><td>k.harris@email.com</td><td>(555) 333-4444</td><td>Mar 12, 2026</td></tr>
+        </tbody>
+      </table>
+
+      <div class="export-note">
+        <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 4v2.5"/><circle cx="6.5" cy="9" r="0.5" fill="currentColor" stroke="none"/></svg>
+        Volunteer contact info is only visible to admins. Public visitors see "X spots left" only.
+      </div>
+    </div>
+
+  </main>
+
+</div>
+</div>
+
+<!-- CONTACT VOLUNTEERS MODAL -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Contact Volunteers</span>
+      <button class="modal-close" onclick="closeContactModal()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-recipient-info">
+        Sending to <strong id="modal-selected-count">12</strong> of <strong id="modal-recipient-count">12</strong> volunteers for <strong id="modal-event-name">Family Movie Night</strong>. Email sent via Resend.
+      </div>
+
+      <!-- Recipient picker
+           DESIGN NOTE: The recipient list is dynamically sized to its content.
+           For events with 2–5 volunteers, it renders compact with no extra whitespace.
+           Scrolling only activates when the list exceeds max-height (180px, ~6-7 rows).
+           The mockup shows 12 volunteers to demonstrate the scroll state. -->
+      <div class="recipient-picker">
+        <div class="recipient-picker-header">
+          <label class="form-label">Recipients</label>
+          <button class="recipient-select-toggle" onclick="toggleAllRecipients()">Deselect All</button>
+        </div>
+        <div class="recipient-list" id="recipient-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subject Line</label>
+        <input class="form-input" type="text" placeholder="e.g., Volunteer Update — Family Movie Night" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Body</label>
+        <textarea class="form-textarea" placeholder="Write your message to volunteers here. Keep it clear and actionable — include any logistics, time changes, or instructions they need."></textarea>
+        <span class="form-hint" style="font-size:0.65rem; color:var(--muted); margin-top:0.15rem;">Plain text only. Volunteers will receive this from pto@westmontelementary.org via Resend.</span>
+      </div>
+
+      <div class="modal-toggle-row">
+        <input type="checkbox" class="checkbox-input" id="cc-admin" checked />
+        <label class="modal-toggle-label" for="cc-admin">Also send a copy to me (admin)</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeContactModal()">Cancel</button>
+      <button class="btn-primary">
+        <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="12" height="9" rx="1.5"/><path d="M1.5 4.5L7.5 8.5l6-4"/></svg>
+        Send Email
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showView(view, btn) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  // Mock volunteer data per event
+  const volunteerData = {
+    'Family Movie Night': [
+      { name: 'Sarah Johnson', email: 'sarah.j@email.com' },
+      { name: 'Mike Chen', email: 'mchen@email.com' },
+      { name: 'Lisa Martinez', email: 'lisa.m@email.com' },
+      { name: 'James Wilson', email: 'jwilson@email.com' },
+      { name: 'Emily Davis', email: 'emily.d@email.com' },
+      { name: 'Robert Taylor', email: 'rtaylor@email.com' },
+      { name: 'Amanda Brown', email: 'amanda.b@email.com' },
+      { name: 'Chris Anderson', email: 'c.anderson@email.com' },
+      { name: 'Jennifer Thomas', email: 'j.thomas@email.com' },
+      { name: 'David Garcia', email: 'd.garcia@email.com' },
+      { name: 'Nicole White', email: 'nicole.w@email.com' },
+      { name: 'Kevin Harris', email: 'k.harris@email.com' },
+    ],
+    'Spring Bake Sale': [
+      { name: 'Sarah Johnson', email: 'sarah.j@email.com' },
+      { name: 'Lisa Martinez', email: 'lisa.m@email.com' },
+      { name: 'Emily Davis', email: 'emily.d@email.com' },
+      { name: 'Amanda Brown', email: 'amanda.b@email.com' },
+      { name: 'Jennifer Thomas', email: 'j.thomas@email.com' },
+      { name: 'Nicole White', email: 'nicole.w@email.com' },
+      { name: 'Kevin Harris', email: 'k.harris@email.com' },
+      { name: 'Rachel Lee', email: 'r.lee@email.com' },
+    ],
+    'Wildcat Fun Run': [
+      { name: 'Mike Chen', email: 'mchen@email.com' },
+      { name: 'James Wilson', email: 'jwilson@email.com' },
+      { name: 'Robert Taylor', email: 'rtaylor@email.com' },
+      { name: 'Chris Anderson', email: 'c.anderson@email.com' },
+      { name: 'David Garcia', email: 'd.garcia@email.com' },
+    ],
+    'End-of-Year Field Day': [
+      { name: 'Sarah Johnson', email: 'sarah.j@email.com' },
+      { name: 'Emily Davis', email: 'emily.d@email.com' },
+    ],
+  };
+
+  let currentVolunteers = [];
+
+  function openContactModal(eventName, volunteerCount) {
+    document.getElementById('modal-event-name').textContent = eventName;
+    document.getElementById('modal-recipient-count').textContent = volunteerCount;
+
+    // Populate recipient list
+    currentVolunteers = volunteerData[eventName] || [];
+    const list = document.getElementById('recipient-list');
+    list.innerHTML = currentVolunteers.map((v, i) =>
+      '<div class="recipient-row">' +
+        '<input type="checkbox" class="checkbox-input recipient-cb" data-index="' + i + '" checked onchange="updateSelectedCount()" />' +
+        '<span class="recipient-name">' + v.name + '</span>' +
+        '<span class="recipient-email">' + v.email + '</span>' +
+      '</div>'
+    ).join('');
+
+    updateSelectedCount();
+    document.querySelector('.recipient-select-toggle').textContent = 'Deselect All';
+    document.getElementById('contact-modal').classList.add('open');
+  }
+
+  function closeContactModal() {
+    document.getElementById('contact-modal').classList.remove('open');
+  }
+
+  function updateSelectedCount() {
+    const checked = document.querySelectorAll('.recipient-cb:checked').length;
+    document.getElementById('modal-selected-count').textContent = checked;
+  }
+
+  function toggleAllRecipients() {
+    const cbs = document.querySelectorAll('.recipient-cb');
+    const allChecked = Array.from(cbs).every(cb => cb.checked);
+    cbs.forEach(cb => cb.checked = !allChecked);
+    document.querySelector('.recipient-select-toggle').textContent = allChecked ? 'Select All' : 'Deselect All';
+    updateSelectedCount();
+  }
+
+  // Close modal on overlay click
+  document.getElementById('contact-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeContactModal();
+  });
+</script>
+
+</body>
+</html>

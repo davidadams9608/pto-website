@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Event Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .view-toggles { display: flex; gap: 0.4rem; }
+    .view-btn {
+      background: #334155; color: #94A3B8; border: none; cursor: pointer;
+      padding: 0.35rem 0.85rem; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all .15s;
+    }
+    .view-btn.active { background: #1B6DC2; color: white; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; transition: max-width .3s ease; }
+    .preview-wrapper.mobile {
+      max-width: 390px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 0 0 8px #1E293B, 0 0 0 10px #334155, 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px; overflow: hidden;
+    }
+    .preview-wrapper.desktop { max-width: none; }
+
+    /* ── SITE STYLES ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+      --green:    #16A34A;
+      --green-lt: #F0FDF4;
+      --green-mid:#BBF7D0;
+    }
+
+    .site { background: var(--bg); color: var(--text); }
+
+    /* ── NAV ── */
+    .site nav {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 800; font-size: 0.95rem; color: var(--text); text-decoration: none;
+    }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.875rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); font-weight: 700; }
+    .nav-cta {
+      background: var(--text); color: var(--white);
+      padding: 0.45rem 1.1rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.825rem; text-decoration: none;
+    }
+
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 0.4rem; color: var(--text); border-radius: 5px;
+    }
+    .nav-hamburger:hover { background: var(--bg); }
+
+    .nav-drawer {
+      display: none;
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 0.5rem 1.5rem 1.25rem; z-index: 199;
+      flex-direction: column;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      display: block; padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .nav-drawer .drawer-cta {
+      margin-top: 1rem; text-align: center;
+      background: var(--text); color: var(--white);
+      padding: 0.75rem; border-radius: 7px;
+      font-weight: 700; font-size: 0.875rem;
+      border-bottom: none;
+    }
+
+    .is-mobile .nav-links { display: none; }
+    .is-mobile .nav-cta { display: none; }
+    .is-mobile .nav-hamburger { display: block; }
+    .is-mobile .admin-link { display: none; }
+
+    /* Nav wrap */
+    .nav-wrap { position: sticky; top: 48px; z-index: 200; }
+
+    /* ── BACK LINK ── */
+    .back-bar {
+      background: var(--blue-lt); border-left: 4px solid var(--blue);
+      padding: 0.75rem 2rem;
+    }
+    .is-mobile .back-bar { padding: 0.65rem 1.25rem; border-left: none; border-bottom: 2px solid var(--blue-mid); background: var(--white); }
+    .back-bar-inner { max-width: 1100px; margin: 0 auto; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.8rem; font-weight: 600; color: var(--blue);
+      text-decoration: none; transition: opacity .15s;
+    }
+    .back-link:hover { opacity: 0.7; }
+    .back-link svg { width: 14px; height: 14px; }
+
+    /* ── EVENT CONTENT ── */
+    .event-content {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2.5rem 2rem 3rem;
+      display: grid; grid-template-columns: 1fr 380px; gap: 3rem;
+      align-items: start;
+    }
+    .is-mobile .event-content {
+      grid-template-columns: 1fr;
+      padding: 1.5rem 1.25rem 2rem;
+      gap: 2rem;
+    }
+
+    /* ── LEFT COLUMN: Event Info ── */
+    .event-main {}
+
+    .event-title {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
+      line-height: 1.2; margin-bottom: 1.25rem;
+    }
+    .is-mobile .event-title { font-size: 1.5rem; }
+
+    .event-meta {
+      display: flex; flex-direction: column; gap: 0.6rem;
+      margin-bottom: 2rem; padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .event-meta-row {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      font-size: 0.9rem; color: var(--text);
+    }
+    .is-mobile .event-meta-row { font-size: 0.85rem; }
+    .event-meta-icon {
+      width: 18px; height: 18px; flex-shrink: 0; color: var(--blue);
+      margin-top: 0.1rem;
+    }
+    .event-meta-label {
+      font-weight: 500;
+    }
+    .event-meta-label strong { font-weight: 700; }
+
+    .event-description {
+      font-size: 0.925rem; color: var(--text); line-height: 1.8;
+    }
+    .is-mobile .event-description { font-size: 0.875rem; line-height: 1.7; }
+    .event-description p { margin-bottom: 1rem; }
+    .event-description p:last-child { margin-bottom: 0; }
+
+    /* ── RIGHT COLUMN: Signup Card ── */
+    .signup-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      position: sticky; top: 130px;
+    }
+    .is-mobile .signup-card {
+      position: static; border-radius: 12px; padding: 1.5rem;
+    }
+
+    .signup-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .signup-card-title {
+      font-size: 1.1rem; font-weight: 800; letter-spacing: -0.01em;
+    }
+    .is-mobile .signup-card-title { font-size: 1rem; }
+    .signup-spots {
+      font-size: 0.7rem; font-weight: 700; color: var(--green);
+      background: var(--green-lt); border: 1px solid var(--green-mid);
+      padding: 0.2rem 0.6rem; border-radius: 50px;
+      white-space: nowrap;
+    }
+
+    .signup-form { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-label {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .form-input {
+      width: 100%; padding: 0.65rem 0.85rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.875rem;
+      color: var(--text); transition: border-color .15s;
+    }
+    .form-input::placeholder { color: #A1A1AA; }
+    .form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(27,109,194,0.1); }
+
+    .signup-submit {
+      width: 100%; padding: 0.75rem;
+      background: var(--blue); color: var(--white);
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: background .15s;
+      margin-top: 0.25rem;
+    }
+    .signup-submit:hover { background: var(--blue-dk); }
+
+    .signup-fine {
+      font-size: 0.7rem; color: var(--muted); line-height: 1.5;
+      margin-top: 0.5rem; text-align: center;
+    }
+
+    /* Signup closed state */
+    .signup-closed {
+      text-align: center; padding: 1.5rem 1rem;
+      color: var(--muted);
+    }
+    .signup-closed-icon { width: 40px; height: 40px; color: var(--border); margin-bottom: 0.75rem; }
+    .signup-closed h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+    .signup-closed p { font-size: 0.8rem; }
+
+    /* No-signup variant: card not shown, just event info */
+    .no-signup .event-content { grid-template-columns: 1fr; max-width: 800px; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--text); color: #71717A; padding: 3rem 2rem 1.5rem; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+      padding-bottom: 2rem; border-bottom: 1px solid #27272A; margin-bottom: 1.5rem;
+    }
+    .is-mobile .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-logo-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .footer-logo-row img { width: 34px; height: 34px; object-fit: contain; }
+    .footer-name { color: var(--white); font-weight: 800; font-size: 0.9rem; letter-spacing: -0.01em; }
+    .footer-desc { font-size: 0.8rem; line-height: 1.7; }
+    footer h4 { color: #52525B; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; }
+    footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    footer a { color: #71717A; text-decoration: none; font-size: 0.825rem; font-weight: 500; }
+    footer a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; font-size: 0.775rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Event Detail</span></span>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="setView('desktop', this)">&#x1F5A5; Desktop</button>
+    <button class="view-btn" onclick="setView('mobile', this)">&#x1F4F1; Mobile</button>
+  </div>
+  <span class="toolbar-note">Route: /events/[id]</span>
+</div>
+
+<div class="preview-wrapper desktop" id="preview-frame">
+<div class="site" id="site">
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="./westmont-logo.jpg" alt="Westmont Wildcats" />
+      Westmont PTO
+    </a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">Events</a></li>
+      <li><a href="#">Newsletter</a></li>
+      <li><a href="#">Minutes</a></li>
+      <li><a href="#">Sponsors</a></li>
+      <li><a href="#">Donate</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Subscribe</a>
+    <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="2" y1="6" x2="20" y2="6"/>
+        <line x1="2" y1="11" x2="20" y2="11"/>
+        <line x1="2" y1="16" x2="20" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#">Events</a>
+    <a href="#">Newsletter</a>
+    <a href="#">Meeting Minutes</a>
+    <a href="#">Sponsors</a>
+    <a href="#">Donate</a>
+    <a href="#" class="drawer-cta">Subscribe to Newsletter</a>
+  </div>
+</div>
+
+<!-- BACK BAR -->
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="#" class="back-link">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 L5 7 L9 3"/></svg>
+      Back to Events
+    </a>
+  </div>
+</div>
+
+<!-- EVENT CONTENT -->
+<div class="event-content">
+
+  <!-- Left: Event Info -->
+  <div class="event-main">
+    <h1 class="event-title">Family Movie Night</h1>
+
+    <div class="event-meta">
+      <div class="event-meta-row">
+        <svg class="event-meta-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="9" cy="9" r="7.5"/>
+          <path d="M9 4.5V9l3 2"/>
+        </svg>
+        <span class="event-meta-label"><strong>Time:</strong> 6:30 – 8:30 PM</span>
+      </div>
+      <div class="event-meta-row">
+        <svg class="event-meta-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M9 2c3 0 5.5 2.5 5.5 5.5S12 13.5 9 16c-3-2.5-5.5-5.5-5.5-8.5S6 2 9 2z"/>
+          <circle cx="9" cy="7.5" r="2"/>
+        </svg>
+        <span class="event-meta-label"><strong>Location:</strong> School Gymnasium</span>
+      </div>
+      <div class="event-meta-row">
+        <svg class="event-meta-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <rect x="2" y="3.5" width="14" height="12" rx="2"/>
+          <path d="M2 7.5h14"/>
+          <path d="M5.5 1.5v4"/>
+          <path d="M12.5 1.5v4"/>
+        </svg>
+        <span class="event-meta-label"><strong>Date:</strong> Friday, March 21, 2026</span>
+      </div>
+    </div>
+
+    <div class="event-description">
+      <p>Join us for a fun evening at the school gym! We'll be screening a family-friendly movie on the big screen with popcorn, snacks, and drinks available for purchase.</p>
+      <p>Bring your own blankets and chairs to get comfortable. Doors open at 6:00 PM and the movie starts at 6:30 PM sharp. All Westmont families are welcome — siblings and extended family encouraged!</p>
+      <p>Snack proceeds go directly toward funding the end-of-year field day for all students. We need volunteers to help with setup, concessions, and cleanup.</p>
+    </div>
+  </div>
+
+  <!-- Right: Volunteer Signup Card -->
+  <div class="signup-card">
+    <div class="signup-card-header">
+      <span class="signup-card-title">Volunteer Signup</span>
+      <span class="signup-spots">8 spots left</span>
+    </div>
+
+    <!-- FORM VALIDATION SPEC:
+         All fields are required. Form cannot be submitted until all validations pass.
+         - Full Name: required, non-empty
+         - Email: required, must be a valid email address (type="email" + pattern)
+         - Phone: required, must be a valid phone number (10-digit US format accepted)
+         Implementation will use both HTML5 validation attributes and JS validation. -->
+    <form class="signup-form" onsubmit="return false;">
+      <div class="form-group">
+        <label class="form-label" for="vol-name">Full Name</label>
+        <input class="form-input" type="text" id="vol-name" placeholder="Jane Smith" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="vol-email">Email</label>
+        <input class="form-input" type="email" id="vol-email" placeholder="jane@example.com" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="vol-phone">Phone</label>
+        <input class="form-input" type="tel" id="vol-phone" placeholder="(555) 123-4567" required pattern="[\d\s\-\(\)\+]+" />
+      </div>
+      <button class="signup-submit" type="submit">Sign Up to Volunteer</button>
+    </form>
+
+    <p class="signup-fine">You'll receive a confirmation email with event details and volunteer instructions.</p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo-row"><img src="./westmont-logo.jpg" alt="Westmont" /><span class="footer-name">Westmont Elementary PTO</span></div>
+      <p class="footer-desc">A volunteer-run parent teacher organization supporting every student, teacher, and family at Westmont Elementary School.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <ul>
+        <li><a href="#">Events</a></li><li><a href="#">Newsletter</a></li>
+        <li><a href="#">Meeting Minutes</a></li><li><a href="#">Sponsors</a></li><li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Facebook</a></li><li><a href="#">Instagram</a></li><li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Westmont Elementary PTO &middot; Built with AI-assisted tools<span class="admin-link"> &middot; <a href="#" style="color:inherit;text-decoration:none;font-size:inherit;font-weight:inherit;">Admin</a></span></span>
+    <span>Go Wildcats! &#x1F43E;</span>
+  </div>
+</footer>
+
+</div></div>
+
+<script>
+  const site = document.getElementById('site');
+  const frame = document.getElementById('preview-frame');
+  const drawer = document.getElementById('nav-drawer');
+
+  function setView(view, btn) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (view === 'mobile') {
+      frame.className = 'preview-wrapper mobile';
+      site.classList.add('is-mobile');
+      document.body.style.background = '#1E293B';
+      document.body.style.padding = '1rem 0 3rem';
+    } else {
+      frame.className = 'preview-wrapper desktop';
+      site.classList.remove('is-mobile');
+      document.body.style.background = '#E8EDF2';
+      document.body.style.padding = '0';
+    }
+
+    drawer.classList.remove('open');
+  }
+
+  function toggleDrawer() {
+    drawer.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

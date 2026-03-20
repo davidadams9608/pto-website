@@ -1,0 +1,80 @@
+---
+title: PTO Website — Admin Panel Flow
+---
+graph TD
+    subgraph Auth["Authentication"]
+        LG[Login Page<br/>Clerk Auth]
+    end
+
+    subgraph Dashboard["Admin Dashboard"]
+        AD[Dashboard Home<br/>Quick stats + recent activity]
+    end
+
+    subgraph Content["Content Management"]
+        EM[Events Manager]
+        EC[Create/Edit Event]
+        EV[Event Volunteer Slots<br/>Configure roles + capacities]
+        EVL[View Signups<br/>Per-event volunteer list]
+
+        NM[Newsletter Manager]
+        NU[Upload Newsletter PDF]
+
+        MN[Minutes Manager]
+        MU[Upload Minutes File]
+
+        SM[Sponsors Manager]
+        SU[Upload/Delete Logos]
+
+        HM[Homepage Editor<br/>Mission text, photos, links]
+    end
+
+    subgraph Settings["Settings & Help"]
+        ST[Site Settings<br/>Venmo link, social links]
+        HC[Help Center<br/>How-to guides per feature]
+    end
+
+    subgraph External["External — Not In Admin Panel"]
+        ML[MailerLite Dashboard<br/>Newsletter subscribers +<br/>campaigns managed there]
+    end
+
+    %% Auth flow
+    LG -->|Authenticated| AD
+
+    %% Dashboard to sections
+    AD -->|Manage| EM
+    AD -->|Manage| NM
+    AD -->|Manage| MN
+    AD -->|Manage| SM
+    AD -->|Edit| HM
+    AD -->|Settings| ST
+    AD -->|Help| HC
+
+    %% Events sub-flow
+    EM -->|New/Edit| EC
+    EC -->|Configure volunteers| EV
+    EM -->|View signups| EVL
+
+    %% Newsletter sub-flow
+    NM -->|Upload| NU
+
+    %% Minutes sub-flow
+    MN -->|Upload| MU
+
+    %% Sponsors sub-flow
+    SM -->|Upload/Delete| SU
+
+    %% Note about MailerLite
+    AD -.->|Newsletter subscribers<br/>managed externally| ML
+
+    %% Styles
+    classDef auth fill:#FFF3E0,stroke:#E65100,color:#000
+    classDef dash fill:#E8F4FD,stroke:#1B6DC2,color:#000
+    classDef content fill:#E8F5E9,stroke:#2E7D32,color:#000
+    classDef settings fill:#FFF9C4,stroke:#F9A825,color:#000
+    classDef external fill:#F3E5F5,stroke:#7B1FA2,color:#000
+
+    class LG auth
+    class AD dash
+    class EM,EC,EV,EVL,NM,NU,MN,MU,SM,SU,HM content
+    class ST,HC settings
+    class ML external

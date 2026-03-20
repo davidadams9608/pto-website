@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Newsletter Archive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .view-toggles { display: flex; gap: 0.4rem; }
+    .view-btn {
+      background: #334155; color: #94A3B8; border: none; cursor: pointer;
+      padding: 0.35rem 0.85rem; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all .15s;
+    }
+    .view-btn.active { background: #1B6DC2; color: white; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; transition: max-width .3s ease; }
+    .preview-wrapper.mobile {
+      max-width: 390px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 0 0 8px #1E293B, 0 0 0 10px #334155, 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px; overflow: hidden;
+    }
+    .preview-wrapper.desktop { max-width: none; }
+
+    /* ── SITE STYLES ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+    }
+
+    .site { background: var(--bg); color: var(--text); }
+
+    /* ── NAV ── */
+    .site nav {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 800; font-size: 0.95rem; color: var(--text); text-decoration: none;
+    }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.875rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); font-weight: 700; }
+    .nav-cta {
+      background: var(--text); color: var(--white);
+      padding: 0.45rem 1.1rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.825rem; text-decoration: none;
+    }
+
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 0.4rem; color: var(--text); border-radius: 5px;
+    }
+    .nav-hamburger:hover { background: var(--bg); }
+
+    .nav-drawer {
+      display: none;
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 0.5rem 1.5rem 1.25rem; z-index: 199;
+      flex-direction: column;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      display: block; padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .nav-drawer .drawer-cta {
+      margin-top: 1rem; text-align: center;
+      background: var(--text); color: var(--white);
+      padding: 0.75rem; border-radius: 7px;
+      font-weight: 700; font-size: 0.875rem;
+      border-bottom: none;
+    }
+
+    .is-mobile .nav-links { display: none; }
+    .is-mobile .nav-cta { display: none; }
+    .is-mobile .nav-hamburger { display: block; }
+    .is-mobile .admin-link { display: none; }
+
+    /* Nav wrap: contains nav + drawer, handles sticky */
+    .nav-wrap { position: sticky; top: 48px; z-index: 200; }
+
+    /* Mobile illustration — hidden, not used */
+    .mobile-illustration { display: none; }
+
+    /* ── PAGE HEADER (with illustration) ── */
+    .page-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem 2.5rem;
+    }
+    .is-mobile .page-header { padding: 2rem 1.25rem 1.75rem; }
+    .page-header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    }
+    .page-header-text { flex: 1; min-width: 0; }
+    .page-header .section-kicker {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 0.5rem;
+    }
+    .page-header h1 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800;
+      letter-spacing: -0.025em; margin-bottom: 0.5rem;
+    }
+    .page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; max-width: 540px; }
+    .is-mobile .page-header p { font-size: 0.85rem; line-height: 1.6; }
+    .page-header-illustration { flex-shrink: 0; }
+    .is-mobile .page-header-illustration { display: none; }
+
+    /* ── CONTENT AREA ── */
+    .content-wrap { padding: 3rem 2rem 4rem; }
+    .is-mobile .content-wrap { padding: 2rem 1.25rem 3rem; }
+    .content-inner { max-width: 1100px; margin: 0 auto; }
+
+    /* Two-column layout: archive list + signup sidebar */
+    .nl-page-grid { display: grid; grid-template-columns: 1fr 380px; gap: 3rem; align-items: start; }
+    .is-mobile .nl-page-grid { grid-template-columns: 1fr; gap: 2rem; }
+
+    /* ── ACCORDION YEAR GROUPS ── */
+    .year-group { margin-bottom: 1.5rem; }
+    .year-group:last-child { margin-bottom: 0; }
+
+    .year-toggle {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); padding: 0.75rem 0; border-bottom: 2px solid var(--border);
+      transition: color .15s;
+    }
+    .year-toggle:hover { color: var(--text); }
+
+    .year-toggle-icon {
+      width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+      transition: transform .25s ease;
+    }
+    .year-group.collapsed .year-toggle-icon { transform: rotate(-90deg); }
+
+    .year-content {
+      overflow: hidden; transition: max-height .35s ease, opacity .25s ease;
+      max-height: 1200px; opacity: 1;
+    }
+    .year-group.collapsed .year-content { max-height: 0; opacity: 0; }
+
+    .year-count {
+      font-size: 0.6rem; font-weight: 600; color: var(--white); background: var(--muted);
+      padding: 0.15rem 0.45rem; border-radius: 10px; margin-left: 0.6rem;
+      letter-spacing: 0; text-transform: none;
+    }
+    .year-group.collapsed .year-count { background: var(--border); color: var(--muted); }
+
+    /* ── ARCHIVE LIST ── */
+    .archive-list { display: flex; flex-direction: column; }
+    .archive-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 0; border-bottom: 1px solid var(--border);
+      text-decoration: none; color: var(--text); transition: opacity .15s;
+      gap: 0.75rem;
+    }
+    .archive-item:hover { opacity: 0.7; }
+    .archive-item-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .archive-name { font-size: 0.875rem; font-weight: 600; }
+    .archive-info { font-size: 0.775rem; color: var(--muted); margin-top: 0.15rem; }
+    .archive-badges { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .pdf-badge { background: var(--blue-lt); color: var(--blue); font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; flex-shrink: 0; }
+
+    /* ── SEASONAL ACCENT BADGES ── */
+    .season-badge {
+      width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; font-size: 0.7rem; line-height: 1;
+    }
+    .season-fall    { background: #FFF7ED; }
+    .season-winter  { background: #EFF6FF; }
+    .season-spring  { background: #F0FDF4; }
+    .season-summer  { background: #FFFBEB; }
+    .season-backtoschool { background: #FDF4FF; }
+
+    /* ── SIGNUP SIDEBAR (reused from homepage) ── */
+    .nl-signup { background: var(--text); color: var(--white); border-radius: 20px; padding: 2.5rem; position: sticky; top: 140px; }
+    .nl-signup h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .nl-signup p { font-size: 0.875rem; color: #A1A1AA; line-height: 1.7; margin-bottom: 1.5rem; }
+    .nl-input {
+      width: 100%; padding: 0.7rem 1rem; background: #18181B;
+      border: 1px solid #3F3F46; border-radius: 8px;
+      color: var(--white); font-family: inherit; font-size: 0.875rem; margin-bottom: 0.75rem;
+    }
+    .nl-input::placeholder { color: #71717A; }
+    .nl-submit {
+      width: 100%; background: var(--blue); color: var(--white);
+      padding: 0.7rem; border: none; border-radius: 8px;
+      font-family: inherit; font-size: 0.875rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; display: block; text-align: center;
+    }
+    .nl-fine { font-size: 0.72rem; color: #71717A; margin-top: 0.6rem; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--text); color: #71717A; padding: 3rem 2rem 1.5rem; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+      padding-bottom: 2rem; border-bottom: 1px solid #27272A; margin-bottom: 1.5rem;
+    }
+    .is-mobile .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-logo-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .footer-logo-row img { width: 34px; height: 34px; object-fit: contain; }
+    .footer-name { color: var(--white); font-weight: 800; font-size: 0.9rem; letter-spacing: -0.01em; }
+    .footer-desc { font-size: 0.8rem; line-height: 1.7; }
+    footer h4 { color: #52525B; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; }
+    footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    footer a { color: #71717A; text-decoration: none; font-size: 0.825rem; font-weight: 500; }
+    footer a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; font-size: 0.775rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Newsletter Archive</span></span>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="setView('desktop', this)">&#x1F5A5; Desktop</button>
+    <button class="view-btn" onclick="setView('mobile', this)">&#x1F4F1; Mobile</button>
+  </div>
+  <span class="toolbar-note">Route: /newsletters</span>
+</div>
+
+<div class="preview-wrapper desktop" id="preview-frame">
+<div class="site" id="site">
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="./westmont-logo.jpg" alt="Westmont Wildcats" />
+      Westmont PTO
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Events</a></li>
+      <li><a href="#" class="active">Newsletter</a></li>
+      <li><a href="#">Minutes</a></li>
+      <li><a href="#">Sponsors</a></li>
+      <li><a href="#">Donate</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Subscribe</a>
+    <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="2" y1="6" x2="20" y2="6"/>
+        <line x1="2" y1="11" x2="20" y2="11"/>
+        <line x1="2" y1="16" x2="20" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#">Events</a>
+    <a href="#">Newsletter</a>
+    <a href="#">Meeting Minutes</a>
+    <a href="#">Sponsors</a>
+    <a href="#">Donate</a>
+    <a href="#" class="drawer-cta">Subscribe to Newsletter</a>
+  </div>
+</div>
+
+<!-- PAGE HEADER WITH ILLUSTRATION -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-header-text">
+      <div class="section-kicker">Newsletter</div>
+      <h1>Newsletter Archive</h1>
+      <p>Browse past newsletters from the Westmont PTO. Each issue covers upcoming events, meeting recaps, volunteer opportunities, and school updates.</p>
+    </div>
+    <div class="page-header-illustration">
+      <svg width="220" height="165" viewBox="0 0 220 165" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Envelope body -->
+        <rect x="30" y="45" width="160" height="105" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+        <!-- Envelope flap -->
+        <path d="M30 55 L110 105 L190 55" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="2" stroke-linejoin="round"/>
+        <!-- Newsletter paper peeking out -->
+        <rect x="55" y="15" width="110" height="70" rx="6" fill="white" stroke="#E4E4E7" stroke-width="1.5"/>
+        <!-- Paper content lines -->
+        <rect x="67" y="28" width="50" height="5" rx="2.5" fill="#1B6DC2" opacity="0.7"/>
+        <rect x="67" y="40" width="85" height="3" rx="1.5" fill="#E4E4E7"/>
+        <rect x="67" y="49" width="78" height="3" rx="1.5" fill="#E4E4E7"/>
+        <rect x="67" y="58" width="60" height="3" rx="1.5" fill="#E4E4E7"/>
+        <rect x="67" y="67" width="72" height="3" rx="1.5" fill="#E4E4E7"/>
+        <!-- Star decorations -->
+        <circle cx="195" cy="30" r="4" fill="#FBBF24" opacity="0.6"/>
+        <circle cx="25" cy="70" r="3" fill="#1B6DC2" opacity="0.3"/>
+        <circle cx="205" cy="75" r="2.5" fill="#1B6DC2" opacity="0.2"/>
+        <circle cx="15" cy="110" r="3.5" fill="#FBBF24" opacity="0.4"/>
+        <!-- Paw print accent -->
+        <g transform="translate(185, 120)" opacity="0.15">
+          <circle cx="0" cy="8" r="6" fill="#1B6DC2"/>
+          <circle cx="-5" cy="-1" r="3" fill="#1B6DC2"/>
+          <circle cx="0" cy="-4" r="3" fill="#1B6DC2"/>
+          <circle cx="5" cy="-1" r="3" fill="#1B6DC2"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+  <div class="content-inner">
+    <div class="nl-page-grid">
+
+      <!-- Archive list with accordion year grouping -->
+      <div>
+        <!-- Current school year — OPEN by default -->
+        <div class="year-group" id="year-2025-2026">
+          <button class="year-toggle" onclick="toggleYear('year-2025-2026')">
+            <span>2025–2026 School Year <span class="year-count">8 issues</span></span>
+            <span class="year-toggle-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 L7 8.5 L10 5.5"/></svg></span>
+          </button>
+          <div class="year-content">
+            <div class="archive-list">
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-spring">&#x1F337;</span><div><div class="archive-name">March 2026 Newsletter</div><div class="archive-info">Published March 3, 2026</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-winter">&#x26C4;</span><div><div class="archive-name">February 2026 Newsletter</div><div class="archive-info">Published February 3, 2026</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-winter">&#x2744;&#xFE0F;</span><div><div class="archive-name">January 2026 Newsletter</div><div class="archive-info">Published January 6, 2026</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-winter">&#x1F9CA;</span><div><div class="archive-name">December 2025 Newsletter</div><div class="archive-info">Published December 1, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-fall">&#x1F341;</span><div><div class="archive-name">November 2025 Newsletter</div><div class="archive-info">Published November 3, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-fall">&#x1F383;</span><div><div class="archive-name">October 2025 Newsletter</div><div class="archive-info">Published October 6, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-fall">&#x1F342;</span><div><div class="archive-name">September 2025 Newsletter</div><div class="archive-info">Published September 2, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-backtoschool">&#x1F392;</span><div><div class="archive-name">August 2025 Newsletter</div><div class="archive-info">Published August 11, 2025 · Back to School Edition</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Previous school year — COLLAPSED by default -->
+        <div class="year-group collapsed" id="year-2024-2025">
+          <button class="year-toggle" onclick="toggleYear('year-2024-2025')">
+            <span>2024–2025 School Year <span class="year-count">5 issues</span></span>
+            <span class="year-toggle-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 L7 8.5 L10 5.5"/></svg></span>
+          </button>
+          <div class="year-content">
+            <div class="archive-list">
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-summer">&#x2600;&#xFE0F;</span><div><div class="archive-name">May 2025 Newsletter</div><div class="archive-info">Published May 5, 2025 · End of Year Edition</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-spring">&#x1F33C;</span><div><div class="archive-name">April 2025 Newsletter</div><div class="archive-info">Published April 7, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-spring">&#x1F331;</span><div><div class="archive-name">March 2025 Newsletter</div><div class="archive-info">Published March 3, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-winter">&#x26C4;</span><div><div class="archive-name">February 2025 Newsletter</div><div class="archive-info">Published February 3, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+              <a href="#" class="archive-item">
+                <div class="archive-item-left"><span class="season-badge season-winter">&#x2744;&#xFE0F;</span><div><div class="archive-name">January 2025 Newsletter</div><div class="archive-info">Published January 6, 2025</div></div></div>
+                <div class="archive-badges"><span class="pdf-badge">PDF</span></div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile-only illustration (between archive and signup) -->
+      <div class="mobile-illustration">
+        <svg width="260" height="195" viewBox="0 0 220 165" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="45" width="160" height="105" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+          <path d="M30 55 L110 105 L190 55" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="55" y="15" width="110" height="70" rx="6" fill="white" stroke="#E4E4E7" stroke-width="1.5"/>
+          <rect x="67" y="28" width="50" height="5" rx="2.5" fill="#1B6DC2" opacity="0.7"/>
+          <rect x="67" y="40" width="85" height="3" rx="1.5" fill="#E4E4E7"/>
+          <rect x="67" y="49" width="78" height="3" rx="1.5" fill="#E4E4E7"/>
+          <rect x="67" y="58" width="60" height="3" rx="1.5" fill="#E4E4E7"/>
+          <rect x="67" y="67" width="72" height="3" rx="1.5" fill="#E4E4E7"/>
+          <circle cx="195" cy="30" r="4" fill="#FBBF24" opacity="0.6"/>
+          <circle cx="25" cy="70" r="3" fill="#1B6DC2" opacity="0.3"/>
+          <circle cx="205" cy="75" r="2.5" fill="#1B6DC2" opacity="0.2"/>
+          <circle cx="15" cy="110" r="3.5" fill="#FBBF24" opacity="0.4"/>
+          <g transform="translate(185, 120)" opacity="0.15">
+            <circle cx="0" cy="8" r="6" fill="#1B6DC2"/>
+            <circle cx="-5" cy="-1" r="3" fill="#1B6DC2"/>
+            <circle cx="0" cy="-4" r="3" fill="#1B6DC2"/>
+            <circle cx="5" cy="-1" r="3" fill="#1B6DC2"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Signup sidebar -->
+      <div class="nl-signup">
+        <h3>Get the newsletter</h3>
+        <p>Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.</p>
+        <input class="nl-input" type="text" placeholder="Your first name" />
+        <input class="nl-input" type="email" placeholder="Email address" />
+        <a href="#" class="nl-submit">Subscribe &#x2192;</a>
+        <p class="nl-fine">We respect your privacy. Unsubscribe anytime.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo-row"><img src="./westmont-logo.jpg" alt="Westmont" /><span class="footer-name">Westmont Elementary PTO</span></div>
+      <p class="footer-desc">A volunteer-run parent teacher organization supporting every student, teacher, and family at Westmont Elementary School.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <ul>
+        <li><a href="#">Events</a></li><li><a href="#">Newsletter</a></li>
+        <li><a href="#">Meeting Minutes</a></li><li><a href="#">Sponsors</a></li><li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Facebook</a></li><li><a href="#">Instagram</a></li><li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Westmont Elementary PTO &middot; Built with AI-assisted tools<span class="admin-link"> &middot; <a href="#" style="color:inherit;text-decoration:none;font-size:inherit;font-weight:inherit;">Admin</a></span></span>
+    <span>Go Wildcats! &#x1F43E;</span>
+  </div>
+</footer>
+
+</div></div>
+
+<script>
+  const site = document.getElementById('site');
+  const frame = document.getElementById('preview-frame');
+  const drawer = document.getElementById('nav-drawer');
+
+  function setView(view, btn) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (view === 'mobile') {
+      frame.className = 'preview-wrapper mobile';
+      site.classList.add('is-mobile');
+      document.body.style.background = '#1E293B';
+      document.body.style.padding = '1rem 0 3rem';
+    } else {
+      frame.className = 'preview-wrapper desktop';
+      site.classList.remove('is-mobile');
+      document.body.style.background = '#E8EDF2';
+      document.body.style.padding = '0';
+    }
+
+    drawer.classList.remove('open');
+
+    // Reset accordion to default: current year open, prior years collapsed
+    document.getElementById('year-2025-2026').classList.remove('collapsed');
+    document.getElementById('year-2024-2025').classList.add('collapsed');
+  }
+
+  function toggleDrawer() {
+    drawer.classList.toggle('open');
+  }
+
+  function toggleYear(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+</script>
+</body>
+</html>

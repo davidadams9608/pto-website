@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; }
+
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+      --green:    #16A34A;
+      --green-lt: #F0FDF4;
+      --green-mid:#BBF7D0;
+      --amber:    #D97706;
+      --amber-lt: #FFFBEB;
+      --amber-mid:#FDE68A;
+      --red:      #DC2626;
+      --red-lt:   #FEF2F2;
+      --sidebar-bg: #FAFAFA;
+      --sidebar-active: var(--blue-lt);
+    }
+
+    /* ── ADMIN SHELL ── */
+    .admin-shell {
+      display: flex;
+      min-height: calc(100vh - 48px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 48px; height: calc(100vh - 48px);
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sidebar-brand img { width: 32px; height: 32px; object-fit: contain; }
+    .sidebar-brand-text { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+    .sidebar-brand-badge {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--blue);
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 0.75rem 0.75rem; }
+    .sidebar-section-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0.75rem 0.75rem 0.4rem; margin-top: 0.5rem;
+    }
+    .sidebar-section-label:first-child { margin-top: 0; }
+
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 0.75rem; border-radius: 7px;
+      text-decoration: none; color: var(--muted);
+      font-size: 0.825rem; font-weight: 500;
+      transition: all .12s;
+    }
+    .sidebar-link:hover { background: var(--bg); color: var(--text); }
+    .sidebar-link.active {
+      background: var(--blue-lt); color: var(--blue);
+      font-weight: 700;
+    }
+    .sidebar-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .sidebar-link.active svg { color: var(--blue); }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .sidebar-footer-link {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 600; color: var(--muted);
+      text-decoration: none; transition: color .12s;
+    }
+    .sidebar-footer-link:hover { color: var(--text); }
+    .sidebar-footer-link svg { width: 15px; height: 15px; }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem;
+    }
+    .sidebar-user-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 700; color: var(--blue);
+    }
+
+    /* ── MAIN CONTENT AREA ── */
+    .admin-main {
+      flex: 1; background: var(--bg);
+      padding: 2rem 2.5rem;
+      min-width: 0;
+    }
+
+    /* ── PAGE HEADER ── */
+    .admin-page-header {
+      margin-bottom: 2rem;
+    }
+    .admin-page-header h1 {
+      font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 0.25rem;
+    }
+    .admin-page-header p {
+      font-size: 0.85rem; color: var(--muted); font-weight: 500;
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.5rem;
+    }
+    .stat-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .stat-label svg { width: 14px; height: 14px; }
+    .stat-value {
+      font-size: 1.75rem; font-weight: 800; color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .stat-change {
+      font-size: 0.7rem; font-weight: 600; margin-top: 0.25rem;
+    }
+    .stat-change.up { color: var(--green); }
+    .stat-change.neutral { color: var(--muted); }
+
+    /* ── CONTENT GRID (two columns) ── */
+    .dashboard-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .dash-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .dash-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-card-title {
+      font-size: 0.85rem; font-weight: 700; color: var(--text);
+    }
+    .dash-card-action {
+      font-size: 0.7rem; font-weight: 600; color: var(--blue);
+      text-decoration: none;
+    }
+    .dash-card-action:hover { text-decoration: underline; }
+
+    .dash-card-body { padding: 1rem 1.25rem; }
+
+    /* ── UPCOMING EVENTS LIST ── */
+    .dash-event {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-event:last-child { border-bottom: none; }
+    .dash-event-date {
+      width: 42px; height: 42px; border-radius: 8px;
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .dash-event-date-month {
+      font-size: 0.5rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--blue); line-height: 1;
+    }
+    .dash-event-date-day {
+      font-size: 1rem; font-weight: 800; color: var(--blue); line-height: 1.1;
+    }
+    .dash-event-info { flex: 1; min-width: 0; }
+    .dash-event-name {
+      font-size: 0.825rem; font-weight: 700; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dash-event-meta {
+      font-size: 0.7rem; color: var(--muted); font-weight: 500;
+    }
+    .dash-event-badge {
+      font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.5rem;
+      border-radius: 50px; white-space: nowrap;
+    }
+    .dash-event-badge.signup-open {
+      color: var(--green); background: var(--green-lt); border: 1px solid var(--green-mid);
+    }
+    .dash-event-badge.no-signup {
+      color: var(--muted); background: var(--bg); border: 1px solid var(--border);
+    }
+
+    /* ── RECENT ACTIVITY ── */
+    .dash-activity {
+      display: flex; gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-activity:last-child { border-bottom: none; }
+    .dash-activity-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 0.35rem;
+    }
+    .dash-activity-dot.blue { background: var(--blue); }
+    .dash-activity-dot.green { background: var(--green); }
+    .dash-activity-dot.amber { background: var(--amber); }
+    .dash-activity-info { flex: 1; }
+    .dash-activity-text {
+      font-size: 0.8rem; color: var(--text); line-height: 1.5;
+    }
+    .dash-activity-text strong { font-weight: 700; }
+    .dash-activity-time {
+      font-size: 0.65rem; color: var(--muted); font-weight: 500;
+      margin-top: 0.1rem;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .quick-action-btn {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.75rem 1rem; border-radius: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      font-size: 0.8rem; font-weight: 600;
+      transition: border-color .12s, box-shadow .12s;
+    }
+    .quick-action-btn:hover {
+      border-color: var(--blue-mid);
+      box-shadow: 0 2px 8px rgba(27,109,194,0.06);
+    }
+    .quick-action-btn svg { width: 16px; height: 16px; color: var(--blue); flex-shrink: 0; }
+
+    /* ── NEWSLETTER STATS ── */
+    .dash-newsletter-stat {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-newsletter-stat:last-child { border-bottom: none; }
+    .dash-newsletter-label { font-size: 0.8rem; color: var(--text); font-weight: 500; }
+    .dash-newsletter-value { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+
+    /* ── DRAG & DROP ── */
+    .dash-card { position: relative; }
+    .drag-handle {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: grab; color: var(--border); border-radius: 4px;
+      transition: color .12s, background .12s;
+      z-index: 2;
+    }
+    .drag-handle:hover { color: var(--muted); background: var(--bg); }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-handle svg { width: 14px; height: 14px; }
+
+    .dash-card.dragging {
+      opacity: 0.5; transform: scale(0.98);
+      outline: 2px dashed var(--blue-mid);
+    }
+    .dash-card.drag-over {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .drag-hint {
+      font-size: 0.65rem; color: var(--muted); text-align: center;
+      margin-top: 0.5rem; font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Admin Dashboard</span></span>
+  <span class="toolbar-note">Route: /admin · Desktop only</span>
+</div>
+
+<div class="preview-wrapper">
+<div class="admin-shell">
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="./westmont-logo.jpg" alt="Westmont" />
+      <span class="sidebar-brand-text">Westmont PTO</span>
+      <span class="sidebar-brand-badge">Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Overview</div>
+      <a href="#" class="sidebar-link active">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </a>
+
+      <div class="sidebar-section-label">Content</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="1.5" width="13" height="15" rx="2"/><path d="M6 5.5h6"/><path d="M6 8.5h6"/><path d="M6 11.5h3"/></svg>
+        Events
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h13"/><path d="M4.5 1.5v5"/><path d="M13.5 1.5v5"/><rect x="2.5" y="4" width="13" height="12.5" rx="2"/><path d="M2.5 8h13"/></svg>
+        Newsletters
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1.5H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6.5L10 1.5z"/><path d="M10 1.5v5h5"/></svg>
+        Minutes
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5l2.3 4.7 5.2.8-3.75 3.65.9 5.15L9 13.4l-4.65 2.4.9-5.15L1.5 7l5.2-.8L9 1.5z"/></svg>
+        Sponsors
+      </a>
+
+      <div class="sidebar-section-label">Site</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5L9 2l6 4.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 14.5v-8z"/><path d="M7 16V10h4v6"/></svg>
+        Homepage
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M14.5 9a5.5 5.5 0 0 0-.3-1.8l2-1.2-1.5-2.5-2 1.2a5.5 5.5 0 0 0-1.6-1V1.5h-3v2.2a5.5 5.5 0 0 0-1.6 1l-2-1.2L3 6l2 1.2A5.5 5.5 0 0 0 4.7 9H2.5v3h2.2c.1.6.3 1.2.6 1.8l-2 1.2 1.5 2.5 2-1.2c.5.4 1 .7 1.6 1v2.2h3v-2.2c.6-.2 1.1-.6 1.6-1l2 1.2 1.5-2.5-2-1.2c.3-.6.5-1.2.6-1.8h2.2V9h-2.2z"/></svg>
+        Settings
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7.5"/><path d="M9 12.5v-.25a2 2 0 0 1 1.1-1.8A2.25 2.25 0 1 0 6.75 8"/><circle cx="9" cy="14.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+        Help Center
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="#" class="sidebar-footer-link">
+        <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7.5 1.5v6M4 3.5a6 6 0 1 0 7 0"/></svg>
+        View Public Site ↗
+      </a>
+      <div class="sidebar-user">
+        <span class="sidebar-user-avatar">DA</span>
+        david.adams@westmontpto.org
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="admin-main">
+
+    <div class="admin-page-header">
+      <h1>Dashboard</h1>
+      <p>Welcome back. Here's what's happening with your PTO site.</p>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="1.5" width="11" height="11" rx="2"/><path d="M1.5 5.5h11"/><path d="M4.5 0v3"/><path d="M9.5 0v3"/></svg>
+          Upcoming Events
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-change neutral">Next 30 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1C4.5 1 2.5 3 2.5 5.5c0 4 4.5 7.5 4.5 7.5s4.5-3.5 4.5-7.5C11.5 3 9.5 1 7 1z"/><circle cx="7" cy="5.5" r="1.5"/></svg>
+          Volunteer Signups
+        </div>
+        <div class="stat-value">23</div>
+        <div class="stat-change up">+8 this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1.5 10.5l3-3 2 2 4-5"/><path d="M8.5 4.5h3v3"/></svg>
+          Newsletter Subscribers
+        </div>
+        <div class="stat-value">142</div>
+        <div class="stat-change up">+12 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 0.5l1.8 3.6 4 .6-2.9 2.8.7 4L7 9.6 3.4 11.5l.7-4-2.9-2.8 4-.6L7 .5z"/></svg>
+          Active Sponsors
+        </div>
+        <div class="stat-value">6</div>
+        <div class="stat-change neutral">No change</div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid" id="dashboard-grid">
+      <!-- QUICK ACTIONS (top-left) -->
+      <div class="dash-card" draggable="true">
+        <span class="drag-handle"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="11" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="11" r="0.75" fill="currentColor" stroke="none"/></svg></span>
+        <div class="dash-card-header">
+          <span class="dash-card-title">Quick Actions</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="quick-actions">
+            <a href="#" class="quick-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v6"/><path d="M5 8h6"/></svg>
+              Create New Event
+            </a>
+            <a href="#" class="quick-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1.5v9M4.5 7l3.5 3.5L11.5 7"/><path d="M2 12.5v1.5h12v-1.5"/></svg>
+              Upload Newsletter
+            </a>
+            <a href="#" class="quick-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1.5v9M4.5 7l3.5 3.5L11.5 7"/><path d="M2 12.5v1.5h12v-1.5"/></svg>
+              Upload Meeting Minutes
+            </a>
+            <a href="#" class="quick-action-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6.5L8 3l5 3.5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/><path d="M6.5 13.5V9h3v4.5"/></svg>
+              Edit Homepage
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT ACTIVITY (top-right) -->
+      <div class="dash-card" draggable="true">
+        <span class="drag-handle"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="11" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="11" r="0.75" fill="currentColor" stroke="none"/></svg></span>
+        <div class="dash-card-header">
+          <span class="dash-card-title">Recent Activity</span>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-activity">
+            <div class="dash-activity-dot green"></div>
+            <div class="dash-activity-info">
+              <div class="dash-activity-text"><strong>Sarah Johnson</strong> signed up to volunteer for Family Movie Night</div>
+              <div class="dash-activity-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="dash-activity">
+            <div class="dash-activity-dot blue"></div>
+            <div class="dash-activity-info">
+              <div class="dash-activity-text">March newsletter <strong>"Spring Updates"</strong> was uploaded</div>
+              <div class="dash-activity-time">Yesterday at 3:15 PM</div>
+            </div>
+          </div>
+          <div class="dash-activity">
+            <div class="dash-activity-dot green"></div>
+            <div class="dash-activity-info">
+              <div class="dash-activity-text"><strong>Mike Chen</strong> signed up to volunteer for Spring Bake Sale</div>
+              <div class="dash-activity-time">Yesterday at 11:00 AM</div>
+            </div>
+          </div>
+          <div class="dash-activity">
+            <div class="dash-activity-dot amber"></div>
+            <div class="dash-activity-info">
+              <div class="dash-activity-text">Meeting minutes for <strong>March 2026</strong> were uploaded</div>
+              <div class="dash-activity-time">2 days ago</div>
+            </div>
+          </div>
+          <div class="dash-activity">
+            <div class="dash-activity-dot blue"></div>
+            <div class="dash-activity-info">
+              <div class="dash-activity-text">New sponsor <strong>Riverside Dance Academy</strong> was added</div>
+              <div class="dash-activity-time">3 days ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPCOMING EVENTS (bottom-left) -->
+      <div class="dash-card" draggable="true">
+        <span class="drag-handle"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="11" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="11" r="0.75" fill="currentColor" stroke="none"/></svg></span>
+        <div class="dash-card-header">
+          <span class="dash-card-title">Upcoming Events</span>
+          <a href="#" class="dash-card-action">Manage Events →</a>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-event">
+            <div class="dash-event-date"><span class="dash-event-date-month">Mar</span><span class="dash-event-date-day">21</span></div>
+            <div class="dash-event-info"><div class="dash-event-name">Family Movie Night</div><div class="dash-event-meta">6:30 PM · Gymnasium</div></div>
+            <span class="dash-event-badge signup-open">8 spots left</span>
+          </div>
+          <div class="dash-event">
+            <div class="dash-event-date"><span class="dash-event-date-month">Mar</span><span class="dash-event-date-day">28</span></div>
+            <div class="dash-event-info"><div class="dash-event-name">Spring Bake Sale</div><div class="dash-event-meta">3:00 PM · Front Entrance</div></div>
+            <span class="dash-event-badge signup-open">12 spots left</span>
+          </div>
+          <div class="dash-event">
+            <div class="dash-event-date"><span class="dash-event-date-month">Apr</span><span class="dash-event-date-day">5</span></div>
+            <div class="dash-event-info"><div class="dash-event-name">PTO General Meeting</div><div class="dash-event-meta">7:00 PM · Library</div></div>
+            <span class="dash-event-badge no-signup">No signup</span>
+          </div>
+          <div class="dash-event">
+            <div class="dash-event-date"><span class="dash-event-date-month">Apr</span><span class="dash-event-date-day">18</span></div>
+            <div class="dash-event-info"><div class="dash-event-name">Wildcat Fun Run</div><div class="dash-event-meta">9:00 AM · School Field</div></div>
+            <span class="dash-event-badge signup-open">15 spots left</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEWSLETTER SNAPSHOT (bottom-right) -->
+      <div class="dash-card" draggable="true">
+        <span class="drag-handle"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="3" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="7" r="0.75" fill="currentColor" stroke="none"/><circle cx="5" cy="11" r="0.75" fill="currentColor" stroke="none"/><circle cx="9" cy="11" r="0.75" fill="currentColor" stroke="none"/></svg></span>
+        <div class="dash-card-header">
+          <span class="dash-card-title">Newsletter Snapshot</span>
+          <a href="#" class="dash-card-action">MailerLite ↗</a>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-newsletter-stat">
+            <span class="dash-newsletter-label">Total subscribers</span>
+            <span class="dash-newsletter-value">142</span>
+          </div>
+          <div class="dash-newsletter-stat">
+            <span class="dash-newsletter-label">Newsletters uploaded</span>
+            <span class="dash-newsletter-value">8</span>
+          </div>
+          <div class="dash-newsletter-stat">
+            <span class="dash-newsletter-label">Meeting minutes uploaded</span>
+            <span class="dash-newsletter-value">6</span>
+          </div>
+          <div class="dash-newsletter-stat">
+            <span class="dash-newsletter-label">Latest upload</span>
+            <span class="dash-newsletter-value">March 10, 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drag-hint">Drag tiles to reorder your dashboard</div>
+
+  </main>
+
+</div>
+</div>
+
+<script>
+  // Dashboard tile drag & drop reordering
+  const grid = document.getElementById('dashboard-grid');
+  let dragCard = null;
+
+  grid.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('.dash-card');
+    if (!card) return;
+    dragCard = card;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  grid.addEventListener('dragend', (e) => {
+    if (dragCard) dragCard.classList.remove('dragging');
+    grid.querySelectorAll('.dash-card').forEach(c => c.classList.remove('drag-over'));
+    dragCard = null;
+  });
+
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const card = e.target.closest('.dash-card');
+    if (card && card !== dragCard) {
+      grid.querySelectorAll('.dash-card').forEach(c => c.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+    }
+  });
+
+  grid.addEventListener('dragleave', (e) => {
+    const card = e.target.closest('.dash-card');
+    if (card) card.classList.remove('drag-over');
+  });
+
+  grid.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('.dash-card');
+    if (!target || !dragCard || target === dragCard) return;
+    const cards = [...grid.querySelectorAll('.dash-card')];
+    const dragIdx = cards.indexOf(dragCard);
+    const targetIdx = cards.indexOf(target);
+    if (dragIdx < targetIdx) {
+      target.after(dragCard);
+    } else {
+      target.before(dragCard);
+    }
+    grid.querySelectorAll('.dash-card').forEach(c => c.classList.remove('drag-over'));
+  });
+</script>
+
+</body>
+</html>
