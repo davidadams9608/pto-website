@@ -7,12 +7,10 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <section>
-      <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
-        Dashboard
-      </h2>
-      <p className="mt-2 text-zinc-600">
-        Admin dashboard coming soon.
-      </p>
+      <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+        Admin Dashboard
+      </h1>
+      <p className="mt-2 text-zinc-600">Welcome to the admin panel.</p>
     </section>
   );
 }
