@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — File Viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .view-toggles { display: flex; gap: 0.4rem; }
+    .view-btn {
+      background: #334155; color: #94A3B8; border: none; cursor: pointer;
+      padding: 0.35rem 0.85rem; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all .15s;
+    }
+    .view-btn.active { background: #1B6DC2; color: white; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; transition: max-width .3s ease; }
+    .preview-wrapper.mobile {
+      max-width: 390px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 0 0 8px #1E293B, 0 0 0 10px #334155, 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px; overflow: hidden;
+    }
+    .preview-wrapper.desktop { max-width: none; }
+
+    /* ── SITE STYLES ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+    }
+
+    .site { background: var(--bg); color: var(--text); }
+
+    /* ── NAV ── */
+    .site nav {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 800; font-size: 0.95rem; color: var(--text); text-decoration: none;
+    }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.875rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); font-weight: 700; }
+    .nav-cta {
+      background: var(--text); color: var(--white);
+      padding: 0.45rem 1.1rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.825rem; text-decoration: none;
+    }
+
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 0.4rem; color: var(--text); border-radius: 5px;
+    }
+    .nav-hamburger:hover { background: var(--bg); }
+
+    .nav-drawer {
+      display: none;
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 0.5rem 1.5rem 1.25rem; z-index: 199;
+      flex-direction: column;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      display: block; padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .nav-drawer .drawer-cta {
+      margin-top: 1rem; text-align: center;
+      background: var(--text); color: var(--white);
+      padding: 0.75rem; border-radius: 7px;
+      font-weight: 700; font-size: 0.875rem;
+      border-bottom: none;
+    }
+
+    .is-mobile .nav-links { display: none; }
+    .is-mobile .nav-cta { display: none; }
+    .is-mobile .nav-hamburger { display: block; }
+    .is-mobile .admin-link { display: none; }
+
+    /* Nav wrap */
+    .nav-wrap { position: sticky; top: 48px; z-index: 200; }
+
+    /* ── DOCUMENT BAR (Breadcrumb Strip) ── */
+    .doc-bar {
+      background: var(--blue-lt);
+      border-left: 4px solid var(--blue);
+      padding: 0.75rem 2rem;
+    }
+    .is-mobile .doc-bar { padding: 0.65rem 1.25rem; border-left: none; border-bottom: 2px solid var(--blue-mid); }
+    .doc-bar-inner {
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    .doc-breadcrumb {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.85rem; line-height: 1.3;
+    }
+    .is-mobile .doc-breadcrumb { font-size: 0.8rem; }
+
+    .doc-breadcrumb-link {
+      color: var(--blue); text-decoration: none; font-weight: 600;
+      display: flex; align-items: center; gap: 0.25rem;
+      transition: color .15s;
+    }
+    .doc-breadcrumb-link:hover { color: var(--blue-dk); }
+    .doc-breadcrumb-link svg { width: 14px; height: 14px; }
+
+    .doc-breadcrumb-sep { color: var(--muted); font-size: 0.75rem; }
+
+    .doc-breadcrumb-current { font-weight: 700; color: var(--text); }
+
+    .doc-meta {
+      font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem;
+    }
+    .is-mobile .doc-meta { font-size: 0.65rem; }
+
+    /* ── PDF VIEWER AREA ── */
+    .viewer-wrap {
+      padding: 2rem;
+      display: flex; justify-content: center;
+    }
+    .is-mobile .viewer-wrap { padding: 0; }
+
+    .pdf-embed {
+      max-width: 900px; width: 100%;
+      background: #52525B;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .is-mobile .pdf-embed { border-radius: 0; }
+
+    /* Simulated PDF pages */
+    .pdf-page {
+      background: var(--white);
+      margin: 1.5rem auto;
+      width: calc(100% - 3rem);
+      aspect-ratio: 8.5 / 11;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem;
+      position: relative;
+    }
+    .is-mobile .pdf-page {
+      margin: 0.75rem auto;
+      width: calc(100% - 1.5rem);
+      padding: 1.5rem;
+    }
+
+    .pdf-page-header {
+      font-size: 1rem; font-weight: 800; color: var(--blue);
+      margin-bottom: 0.25rem;
+    }
+    .is-mobile .pdf-page-header { font-size: 0.8rem; }
+    .pdf-page-sub {
+      font-size: 0.7rem; color: var(--muted); margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem; border-bottom: 2px solid var(--blue-lt);
+    }
+    .is-mobile .pdf-page-sub { font-size: 0.6rem; margin-bottom: 1rem; }
+
+    /* Simulated content lines */
+    .pdf-lines { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+    .pdf-line {
+      height: 4px; border-radius: 2px; background: #F4F4F5;
+    }
+    .pdf-line.heading {
+      height: 6px; background: var(--blue); opacity: 0.15;
+      width: 40%; margin-top: 0.75rem; margin-bottom: 0.25rem;
+    }
+    .pdf-line.heading:first-child { margin-top: 0; }
+
+    .pdf-page-number {
+      position: absolute; bottom: 1rem; right: 1.5rem;
+      font-size: 0.6rem; color: var(--muted);
+    }
+
+    /* Page counter below viewer */
+    .viewer-page-info {
+      text-align: center; padding: 1rem 0 2rem;
+      font-size: 0.75rem; color: var(--muted); font-weight: 600;
+    }
+
+    /* ── FOOTER ── */
+    footer { background: var(--text); color: #71717A; padding: 3rem 2rem 1.5rem; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+      padding-bottom: 2rem; border-bottom: 1px solid #27272A; margin-bottom: 1.5rem;
+    }
+    .is-mobile .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-logo-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .footer-logo-row img { width: 34px; height: 34px; object-fit: contain; }
+    .footer-name { color: var(--white); font-weight: 800; font-size: 0.9rem; letter-spacing: -0.01em; }
+    .footer-desc { font-size: 0.8rem; line-height: 1.7; }
+    footer h4 { color: #52525B; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; }
+    footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    footer a { color: #71717A; text-decoration: none; font-size: 0.825rem; font-weight: 500; }
+    footer a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; font-size: 0.775rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>File Viewer</span></span>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="setView('desktop', this)">&#x1F5A5; Desktop</button>
+    <button class="view-btn" onclick="setView('mobile', this)">&#x1F4F1; Mobile</button>
+  </div>
+  <span class="toolbar-note">Route: /newsletters/[id] or /minutes/[id]</span>
+</div>
+
+<div class="preview-wrapper desktop" id="preview-frame">
+<div class="site" id="site">
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="./westmont-logo.jpg" alt="Westmont Wildcats" />
+      Westmont PTO
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Events</a></li>
+      <li><a href="#" class="active">Newsletter</a></li>
+      <li><a href="#">Minutes</a></li>
+      <li><a href="#">Sponsors</a></li>
+      <li><a href="#">Donate</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Subscribe</a>
+    <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="2" y1="6" x2="20" y2="6"/>
+        <line x1="2" y1="11" x2="20" y2="11"/>
+        <line x1="2" y1="16" x2="20" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#">Events</a>
+    <a href="#">Newsletter</a>
+    <a href="#">Meeting Minutes</a>
+    <a href="#">Sponsors</a>
+    <a href="#">Donate</a>
+    <a href="#" class="drawer-cta">Subscribe to Newsletter</a>
+  </div>
+</div>
+
+<!-- DOCUMENT BAR -->
+<div class="doc-bar">
+  <div class="doc-bar-inner">
+    <div class="doc-breadcrumb">
+      <a href="#" class="doc-breadcrumb-link">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 L5 7 L9 3"/></svg>
+        Newsletters
+      </a>
+      <span class="doc-breadcrumb-sep">/</span>
+      <span class="doc-breadcrumb-current">March 2026 Newsletter</span>
+    </div>
+    <div class="doc-meta">Published March 3, 2026</div>
+  </div>
+</div>
+
+<!-- PDF VIEWER -->
+<div class="viewer-wrap">
+  <div class="pdf-embed">
+
+    <!-- Simulated page 1 -->
+    <div class="pdf-page">
+      <div class="pdf-page-header">Westmont Elementary PTO</div>
+      <div class="pdf-page-sub">March 2026 Newsletter · Volume 3, Issue 7</div>
+      <div class="pdf-lines">
+        <div class="pdf-line heading" style="width:35%"></div>
+        <div class="pdf-line" style="width:100%"></div>
+        <div class="pdf-line" style="width:95%"></div>
+        <div class="pdf-line" style="width:88%"></div>
+        <div class="pdf-line" style="width:92%"></div>
+        <div class="pdf-line" style="width:60%"></div>
+        <div class="pdf-line heading" style="width:42%"></div>
+        <div class="pdf-line" style="width:100%"></div>
+        <div class="pdf-line" style="width:97%"></div>
+        <div class="pdf-line" style="width:85%"></div>
+        <div class="pdf-line" style="width:91%"></div>
+        <div class="pdf-line" style="width:78%"></div>
+        <div class="pdf-line" style="width:94%"></div>
+        <div class="pdf-line" style="width:55%"></div>
+        <div class="pdf-line heading" style="width:38%"></div>
+        <div class="pdf-line" style="width:100%"></div>
+        <div class="pdf-line" style="width:93%"></div>
+        <div class="pdf-line" style="width:87%"></div>
+        <div class="pdf-line" style="width:96%"></div>
+        <div class="pdf-line" style="width:70%"></div>
+      </div>
+      <div class="pdf-page-number">1</div>
+    </div>
+
+    <!-- Simulated page 2 -->
+    <div class="pdf-page">
+      <div class="pdf-lines">
+        <div class="pdf-line heading" style="width:45%"></div>
+        <div class="pdf-line" style="width:100%"></div>
+        <div class="pdf-line" style="width:92%"></div>
+        <div class="pdf-line" style="width:88%"></div>
+        <div class="pdf-line" style="width:95%"></div>
+        <div class="pdf-line" style="width:80%"></div>
+        <div class="pdf-line" style="width:97%"></div>
+        <div class="pdf-line" style="width:62%"></div>
+        <div class="pdf-line heading" style="width:30%"></div>
+        <div class="pdf-line" style="width:100%"></div>
+        <div class="pdf-line" style="width:90%"></div>
+        <div class="pdf-line" style="width:85%"></div>
+        <div class="pdf-line" style="width:93%"></div>
+        <div class="pdf-line" style="width:75%"></div>
+        <div class="pdf-line heading" style="width:50%"></div>
+        <div class="pdf-line" style="width:98%"></div>
+        <div class="pdf-line" style="width:91%"></div>
+        <div class="pdf-line" style="width:86%"></div>
+        <div class="pdf-line" style="width:94%"></div>
+        <div class="pdf-line" style="width:68%"></div>
+      </div>
+      <div class="pdf-page-number">2</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="viewer-page-info">Page 1 of 2</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo-row"><img src="./westmont-logo.jpg" alt="Westmont" /><span class="footer-name">Westmont Elementary PTO</span></div>
+      <p class="footer-desc">A volunteer-run parent teacher organization supporting every student, teacher, and family at Westmont Elementary School.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <ul>
+        <li><a href="#">Events</a></li><li><a href="#">Newsletter</a></li>
+        <li><a href="#">Meeting Minutes</a></li><li><a href="#">Sponsors</a></li><li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Facebook</a></li><li><a href="#">Instagram</a></li><li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Westmont Elementary PTO &middot; Built with AI-assisted tools<span class="admin-link"> &middot; <a href="#" style="color:inherit;text-decoration:none;font-size:inherit;font-weight:inherit;">Admin</a></span></span>
+    <span>Go Wildcats! &#x1F43E;</span>
+  </div>
+</footer>
+
+</div></div>
+
+<script>
+  const site = document.getElementById('site');
+  const frame = document.getElementById('preview-frame');
+  const drawer = document.getElementById('nav-drawer');
+
+  function setView(view, btn) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (view === 'mobile') {
+      frame.className = 'preview-wrapper mobile';
+      site.classList.add('is-mobile');
+      document.body.style.background = '#1E293B';
+      document.body.style.padding = '1rem 0 3rem';
+    } else {
+      frame.className = 'preview-wrapper desktop';
+      site.classList.remove('is-mobile');
+      document.body.style.background = '#E8EDF2';
+      document.body.style.padding = '0';
+    }
+
+    drawer.classList.remove('open');
+  }
+
+  function toggleDrawer() {
+    drawer.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

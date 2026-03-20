@@ -1,79 +1,138 @@
 import Link from "next/link";
 
-import { getFlag } from "@/lib/flags";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/events", label: "Events" },
-  { href: "/newsletters", label: "Newsletters" },
-  { href: "/minutes", label: "Minutes" },
-  { href: "/sponsors", label: "Sponsors" },
-  { href: "/donate", label: "Donate" },
-];
+import { PublicNav } from "@/components/shared/public-nav";
+import { getPublicFlag } from "@/lib/flags";
 
 export default function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isPublicSiteEnabled = getFlag("PUBLIC_SITE");
+  const isPublicSiteEnabled = getPublicFlag("PUBLIC_SITE");
 
   if (!isPublicSiteEnabled) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        {children}
-      </div>
-    );
+    return <div className="flex min-h-screen flex-col">{children}</div>;
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-white">
-        <nav
-          aria-label="Main navigation"
-          className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-4 sm:flex-row sm:justify-between"
-        >
-          <Link href="/" className="text-xl font-bold">
-            Westmont PTO
-          </Link>
-          <ul className="flex flex-wrap gap-1 sm:gap-2">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </header>
+    <div className="flex min-h-screen flex-col bg-[#FAFAFA] text-[#09090B]">
+      <PublicNav />
 
-      {children}
+      <main className="flex-1">{children}</main>
 
-      <footer className="mt-auto border-t bg-zinc-50">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-6 text-sm text-zinc-500 sm:flex-row sm:justify-between">
-          <p>&copy; 2026 Westmont Elementary PTO</p>
-          <ul className="flex gap-4">
-            <li>
-              <Link
-                href="/privacy"
-                className="transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              >
-                Privacy Policy
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/terms"
-                className="transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              >
-                Terms of Service
-              </Link>
-            </li>
-          </ul>
+      {/* ── FOOTER ── */}
+      <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#71717A]">
+        <div className="mx-auto max-w-[1100px]">
+          {/* 4-column grid */}
+          <div className="grid grid-cols-1 gap-6 border-b border-[#27272A] pb-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
+            {/* About */}
+            <div>
+              <p className="mb-2 text-[0.9rem] font-extrabold tracking-tight text-white">
+                Westmont Elementary PTO
+              </p>
+              <p className="text-[0.8rem] leading-7">
+                A volunteer-run parent teacher organization supporting every
+                student, teacher, and family at Westmont Elementary School.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h2 className="mb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#52525B]">
+                Quick Links
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                {[
+                  { href: "/events", label: "Events" },
+                  { href: "/newsletters", label: "Newsletter" },
+                  { href: "/minutes", label: "Meeting Minutes" },
+                  { href: "/sponsors", label: "Sponsors" },
+                  { href: "/donate", label: "Donate" },
+                ].map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Connect */}
+            <div>
+              <h2 className="mb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#52525B]">
+                Connect
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                <li>
+                  <a
+                    href="https://www.facebook.com/westmontpto"
+                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                  >
+                    Facebook
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.instagram.com/westmontpto"
+                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                  >
+                    Instagram
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h2 className="mb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#52525B]">
+                Contact
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                <li>
+                  <a
+                    href="mailto:pto@westmontpto.org"
+                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                  >
+                    pto@westmontpto.org
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="tel:+1-555-000-0000"
+                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
+                  >
+                    (555) 000-0000
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-[0.775rem]">
+            <span>
+              &copy; 2026 Westmont Elementary PTO &middot; This website was
+              developed with AI-assisted tools.
+            </span>
+            <Link
+              href="/admin"
+              className="hidden transition-colors hover:text-white md:inline"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

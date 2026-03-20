@@ -1,0 +1,72 @@
+---
+title: PTO Website — Public Site Flow
+---
+graph TD
+    subgraph Public["Public Site (No Auth Required)"]
+        HP[Homepage]
+        EL[Events List]
+        ED[Event Detail]
+        VS[Volunteer Signup Form]
+        NL[Newsletter Archive]
+        NV[Newsletter Viewer]
+        MM[Meeting Minutes]
+        MV[Minutes Viewer]
+        SP[Sponsors Page]
+        DN[Donate Page]
+        NS[Newsletter Signup<br/>MailerLite Embed]
+    end
+
+    subgraph External["External Services"]
+        ML[MailerLite]
+        VM[Venmo]
+        SO[Social Media Links]
+    end
+
+    subgraph Admin["Admin Panel (Clerk Auth Required)"]
+        LG[Login Page]
+        AD[Admin Dashboard]
+    end
+
+    %% Homepage connections
+    HP -->|Nav| EL
+    HP -->|Nav| NL
+    HP -->|Nav| MM
+    HP -->|Nav| SP
+    HP -->|Nav| DN
+    HP -->|Nav link| NS
+    HP -->|Social icons| SO
+    HP -->|Admin login link| LG
+
+    %% Events flow
+    EL -->|Click event card| ED
+    ED -->|Signup button| VS
+    VS -->|Confirmation| ED
+
+    %% Newsletter flow
+    NL -->|Click newsletter| NV
+    NS -->|Submit| ML
+
+    %% Minutes flow
+    MM -->|Click document| MV
+
+    %% Donate flow
+    DN -->|Venmo link| VM
+
+    %% Admin entry
+    LG -->|Authenticated| AD
+
+    %% Navigation back
+    EL -->|Nav| HP
+    NL -->|Nav| HP
+    MM -->|Nav| HP
+    SP -->|Nav| HP
+    DN -->|Nav| HP
+
+    %% Styles
+    classDef public fill:#E8F4FD,stroke:#1B6DC2,color:#000
+    classDef admin fill:#FFF3E0,stroke:#E65100,color:#000
+    classDef external fill:#F3E5F5,stroke:#7B1FA2,color:#000
+
+    class HP,EL,ED,VS,NL,NV,MM,MV,SP,DN,NS public
+    class LG,AD admin
+    class ML,VM,SO external

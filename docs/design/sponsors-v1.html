@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Sponsors</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .view-toggles { display: flex; gap: 0.4rem; }
+    .view-btn {
+      background: #334155; color: #94A3B8; border: none; cursor: pointer;
+      padding: 0.35rem 0.85rem; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all .15s;
+    }
+    .view-btn.active { background: #1B6DC2; color: white; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; transition: max-width .3s ease; }
+    .preview-wrapper.mobile {
+      max-width: 390px; margin-left: auto; margin-right: auto;
+      box-shadow: 0 0 0 8px #1E293B, 0 0 0 10px #334155, 0 20px 60px rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px; overflow: hidden;
+    }
+    .preview-wrapper.desktop { max-width: none; }
+
+    /* ── SITE STYLES ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+    }
+
+    .site { background: var(--bg); color: var(--text); }
+
+    /* ── NAV ── */
+    .site nav {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 800; font-size: 0.95rem; color: var(--text); text-decoration: none;
+    }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 0.875rem; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); font-weight: 700; }
+    .nav-cta {
+      background: var(--text); color: var(--white);
+      padding: 0.45rem 1.1rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.825rem; text-decoration: none;
+    }
+
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 0.4rem; color: var(--text); border-radius: 5px;
+    }
+    .nav-hamburger:hover { background: var(--bg); }
+
+    .nav-drawer {
+      display: none;
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 0.5rem 1.5rem 1.25rem; z-index: 199;
+      flex-direction: column;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      display: block; padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .nav-drawer .drawer-cta {
+      margin-top: 1rem; text-align: center;
+      background: var(--text); color: var(--white);
+      padding: 0.75rem; border-radius: 7px;
+      font-weight: 700; font-size: 0.875rem;
+      border-bottom: none;
+    }
+
+    .is-mobile .nav-links { display: none; }
+    .is-mobile .nav-cta { display: none; }
+    .is-mobile .nav-hamburger { display: block; }
+    .is-mobile .admin-link { display: none; }
+
+    /* Nav wrap */
+    .nav-wrap { position: sticky; top: 48px; z-index: 200; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem 2.5rem;
+    }
+    .is-mobile .page-header { padding: 2rem 1.25rem 1.75rem; }
+    .page-header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    }
+    .page-header-text { flex: 1; min-width: 0; }
+    .page-header .section-kicker {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 0.5rem;
+    }
+    .page-header h1 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800;
+      letter-spacing: -0.025em; margin-bottom: 0.5rem;
+    }
+    .page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; max-width: 540px; }
+    .is-mobile .page-header p { font-size: 0.85rem; line-height: 1.6; }
+    .page-header-illustration { flex-shrink: 0; }
+    .is-mobile .page-header-illustration { display: none; }
+
+    /* ── CONTENT AREA ── */
+    .content-wrap { padding: 3rem 2rem 4rem; }
+    .is-mobile .content-wrap { padding: 2rem 1.25rem 3rem; }
+    .content-inner { max-width: 1100px; margin: 0 auto; }
+
+    /* ── SPONSOR GRID ── */
+    .sponsor-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    .is-mobile .sponsor-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .sponsor-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 160px;
+      transition: border-color .15s, box-shadow .15s;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .is-mobile .sponsor-card {
+      padding: 1.25rem 1rem;
+      min-height: 130px;
+    }
+    a.sponsor-card:hover {
+      border-color: var(--blue-mid);
+      box-shadow: 0 2px 12px rgba(27, 109, 194, 0.08);
+    }
+    .sponsor-card.static { cursor: default; }
+
+    .sponsor-logo-placeholder {
+      width: 100px; height: 60px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.65rem; font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    .is-mobile .sponsor-logo-placeholder {
+      width: 80px; height: 48px;
+      margin-bottom: 0.5rem;
+    }
+
+    .sponsor-name {
+      font-size: 0.825rem; font-weight: 700; line-height: 1.3;
+    }
+    .is-mobile .sponsor-name { font-size: 0.775rem; }
+    .sponsor-link-hint {
+      font-size: 0.65rem; color: var(--blue); font-weight: 600;
+      margin-top: 0.35rem; opacity: 0;
+      transition: opacity .15s;
+    }
+    a.sponsor-card:hover .sponsor-link-hint { opacity: 1; }
+    /* Mobile: no hover — show link hint always, blue border for linked cards */
+    .is-mobile .sponsor-link-hint { opacity: 1; }
+    .is-mobile a.sponsor-card { border-color: var(--blue-mid); }
+
+    /* ── BECOME A SPONSOR CTA ── */
+    .sponsor-cta-section {
+      margin-top: 3rem;
+      background: var(--text);
+      border-radius: 20px;
+      padding: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .is-mobile .sponsor-cta-section {
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      gap: 1.25rem;
+    }
+    .sponsor-cta-text h2 {
+      color: var(--white);
+      font-size: 1.4rem; font-weight: 800;
+      letter-spacing: -0.02em; margin-bottom: 0.4rem;
+    }
+    .is-mobile .sponsor-cta-text h2 { font-size: 1.2rem; }
+    .sponsor-cta-text p {
+      color: #A1A1AA;
+      font-size: 0.875rem; line-height: 1.7;
+    }
+    .is-mobile .sponsor-cta-text p { font-size: 0.825rem; }
+    .sponsor-cta-btn {
+      display: inline-block;
+      background: var(--blue); color: var(--white);
+      padding: 0.75rem 1.75rem; border-radius: 8px;
+      font-family: inherit; font-size: 0.875rem; font-weight: 700;
+      text-decoration: none; white-space: nowrap;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .sponsor-cta-btn:hover { background: var(--blue-dk); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--text); color: #71717A; padding: 3rem 2rem 1.5rem; }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+      padding-bottom: 2rem; border-bottom: 1px solid #27272A; margin-bottom: 1.5rem;
+    }
+    .is-mobile .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-logo-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .footer-logo-row img { width: 34px; height: 34px; object-fit: contain; }
+    .footer-name { color: var(--white); font-weight: 800; font-size: 0.9rem; letter-spacing: -0.01em; }
+    .footer-desc { font-size: 0.8rem; line-height: 1.7; }
+    footer h4 { color: #52525B; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; }
+    footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    footer a { color: #71717A; text-decoration: none; font-size: 0.825rem; font-weight: 500; }
+    footer a:hover { color: var(--white); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; font-size: 0.775rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Sponsors</span></span>
+  <div class="view-toggles">
+    <button class="view-btn active" onclick="setView('desktop', this)">&#x1F5A5; Desktop</button>
+    <button class="view-btn" onclick="setView('mobile', this)">&#x1F4F1; Mobile</button>
+  </div>
+  <span class="toolbar-note">Route: /sponsors</span>
+</div>
+
+<div class="preview-wrapper desktop" id="preview-frame">
+<div class="site" id="site">
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="./westmont-logo.jpg" alt="Westmont Wildcats" />
+      Westmont PTO
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Events</a></li>
+      <li><a href="#">Newsletter</a></li>
+      <li><a href="#">Minutes</a></li>
+      <li><a href="#" class="active">Sponsors</a></li>
+      <li><a href="#">Donate</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Subscribe</a>
+    <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="2" y1="6" x2="20" y2="6"/>
+        <line x1="2" y1="11" x2="20" y2="11"/>
+        <line x1="2" y1="16" x2="20" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="#">Events</a>
+    <a href="#">Newsletter</a>
+    <a href="#">Meeting Minutes</a>
+    <a href="#">Sponsors</a>
+    <a href="#">Donate</a>
+    <a href="#" class="drawer-cta">Subscribe to Newsletter</a>
+  </div>
+</div>
+
+<!-- PAGE HEADER WITH ILLUSTRATION -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-header-text">
+      <div class="section-kicker">Community</div>
+      <h1>Our Sponsors</h1>
+      <p>These local businesses and organizations support Westmont PTO programs, events, and students. We're grateful for their partnership.</p>
+    </div>
+    <div class="page-header-illustration">
+      <svg width="220" height="155" viewBox="0 0 220 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Main Street storefronts -->
+        <!-- Ground / sidewalk -->
+        <rect x="10" y="128" width="200" height="8" rx="2" fill="#E4E4E7" opacity="0.5"/>
+        <rect x="10" y="134" width="200" height="12" rx="0" fill="#F4F4F5" opacity="0.4"/>
+
+        <!-- Storefront 1: Bakery (left, shorter) -->
+        <rect x="18" y="58" width="52" height="70" rx="3" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Roof -->
+        <rect x="15" y="52" width="58" height="10" rx="2" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Door -->
+        <rect x="36" y="100" width="16" height="28" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <circle cx="49" cy="115" r="1.5" fill="#1B6DC2" opacity="0.4"/>
+        <!-- Window -->
+        <rect x="24" y="70" width="18" height="16" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <line x1="33" y1="70" x2="33" y2="86" stroke="#BFDBFE" stroke-width="0.75"/>
+        <rect x="54" y="70" width="10" height="16" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <!-- Awning -->
+        <path d="M20 68 Q33 62 46 68 Q59 62 72 68" fill="none" stroke="#1B6DC2" stroke-width="1.5" opacity="0.3"/>
+        <!-- Sign placeholder -->
+        <rect x="26" y="90" width="14" height="4" rx="1" fill="#1B6DC2" opacity="0.15"/>
+
+        <!-- Storefront 2: Cafe (center, taller) -->
+        <rect x="78" y="35" width="64" height="93" rx="3" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Roof / upper facade -->
+        <rect x="75" y="28" width="70" height="12" rx="2" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Upper windows -->
+        <rect x="86" y="44" width="14" height="12" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <rect x="106" y="44" width="14" height="12" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <rect x="126" y="44" width="10" height="12" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <!-- Large storefront window -->
+        <rect x="84" y="72" width="52" height="24" rx="3" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <line x1="110" y1="72" x2="110" y2="96" stroke="#BFDBFE" stroke-width="0.75"/>
+        <!-- Door -->
+        <rect x="100" y="102" width="20" height="26" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <circle cx="116" cy="116" r="1.5" fill="#1B6DC2" opacity="0.4"/>
+        <!-- Awning -->
+        <path d="M82 70 Q97 63 110 70 Q123 63 140 70" fill="none" stroke="#1B6DC2" stroke-width="1.5" opacity="0.3"/>
+        <!-- Sign placeholder -->
+        <rect x="96" y="62" width="28" height="4" rx="1" fill="#1B6DC2" opacity="0.15"/>
+
+        <!-- Storefront 3: Shop (right, medium) -->
+        <rect x="150" y="48" width="52" height="80" rx="3" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Roof -->
+        <rect x="147" y="42" width="58" height="10" rx="2" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="1.5"/>
+        <!-- Window -->
+        <rect x="156" y="60" width="22" height="16" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <line x1="167" y1="60" x2="167" y2="76" stroke="#BFDBFE" stroke-width="0.75"/>
+        <rect x="183" y="60" width="13" height="16" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <!-- Door -->
+        <rect x="164" y="100" width="16" height="28" rx="2" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+        <circle cx="177" cy="115" r="1.5" fill="#1B6DC2" opacity="0.4"/>
+        <!-- Awning -->
+        <path d="M152 58 Q165 52 176 58 Q189 52 204 58" fill="none" stroke="#1B6DC2" stroke-width="1.5" opacity="0.3"/>
+        <!-- Sign placeholder -->
+        <rect x="158" y="82" width="18" height="4" rx="1" fill="#1B6DC2" opacity="0.15"/>
+
+        <!-- Tree between buildings -->
+        <rect x="73" y="108" width="4" height="20" rx="1" fill="#86EFAC" opacity="0.4"/>
+        <circle cx="75" cy="102" r="10" fill="#86EFAC" opacity="0.3"/>
+        <circle cx="71" cy="106" r="7" fill="#86EFAC" opacity="0.25"/>
+        <circle cx="80" cy="105" r="8" fill="#86EFAC" opacity="0.25"/>
+
+        <!-- Lamp post -->
+        <rect x="145" y="95" width="2" height="33" rx="0.5" fill="#71717A" opacity="0.2"/>
+        <circle cx="146" cy="93" r="4" fill="#FBBF24" opacity="0.3"/>
+
+        <!-- Accent dots -->
+        <circle cx="8" cy="30" r="3" fill="#FBBF24" opacity="0.5"/>
+        <circle cx="212" cy="22" r="3.5" fill="#FBBF24" opacity="0.6"/>
+        <circle cx="205" cy="50" r="2" fill="#1B6DC2" opacity="0.2"/>
+
+        <!-- Paw print accent -->
+        <g transform="translate(195, 120)" opacity="0.15">
+          <circle cx="0" cy="8" r="5" fill="#1B6DC2"/>
+          <circle cx="-4" cy="0" r="2.5" fill="#1B6DC2"/>
+          <circle cx="0" cy="-3" r="2.5" fill="#1B6DC2"/>
+          <circle cx="4" cy="0" r="2.5" fill="#1B6DC2"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+  <div class="content-inner">
+
+    <!-- Sponsor logo grid -->
+    <div class="sponsor-grid">
+
+      <!-- Sponsor with link -->
+      <a href="#" class="sponsor-card" target="_blank" rel="noopener">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Westmont Family Dentistry</div>
+        <div class="sponsor-link-hint">Visit website &#x2197;</div>
+      </a>
+
+      <!-- Sponsor with link -->
+      <a href="#" class="sponsor-card" target="_blank" rel="noopener">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Main Street Pizza</div>
+        <div class="sponsor-link-hint">Visit website &#x2197;</div>
+      </a>
+
+      <!-- Sponsor without link (static) -->
+      <div class="sponsor-card static">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Riverside Dance Academy</div>
+      </div>
+
+      <!-- Sponsor with link -->
+      <a href="#" class="sponsor-card" target="_blank" rel="noopener">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Summit Realty Group</div>
+        <div class="sponsor-link-hint">Visit website &#x2197;</div>
+      </a>
+
+      <!-- Sponsor without link (static) -->
+      <div class="sponsor-card static">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Bright Futures Tutoring</div>
+      </div>
+
+      <!-- Sponsor with link -->
+      <a href="#" class="sponsor-card" target="_blank" rel="noopener">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Oak Valley Veterinary Clinic</div>
+        <div class="sponsor-link-hint">Visit website &#x2197;</div>
+      </a>
+
+      <!-- Sponsor with link -->
+      <a href="#" class="sponsor-card" target="_blank" rel="noopener">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Community First Credit Union</div>
+        <div class="sponsor-link-hint">Visit website &#x2197;</div>
+      </a>
+
+      <!-- Sponsor without link (static) -->
+      <div class="sponsor-card static">
+        <div class="sponsor-logo-placeholder">LOGO</div>
+        <div class="sponsor-name">Little Explorers Childcare</div>
+      </div>
+
+    </div>
+
+    <!-- Become a sponsor CTA -->
+    <div class="sponsor-cta-section">
+      <div class="sponsor-cta-text">
+        <h2>Interested in sponsoring?</h2>
+        <p>Support Westmont students and connect with local families. We'd love to hear from you.</p>
+      </div>
+      <a href="mailto:pto@westmontelementary.org" class="sponsor-cta-btn">Get in Touch &#x2192;</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo-row"><img src="./westmont-logo.jpg" alt="Westmont" /><span class="footer-name">Westmont Elementary PTO</span></div>
+      <p class="footer-desc">A volunteer-run parent teacher organization supporting every student, teacher, and family at Westmont Elementary School.</p>
+    </div>
+    <div>
+      <h4>Site</h4>
+      <ul>
+        <li><a href="#">Events</a></li><li><a href="#">Newsletter</a></li>
+        <li><a href="#">Meeting Minutes</a></li><li><a href="#">Sponsors</a></li><li><a href="#">Donate</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Facebook</a></li><li><a href="#">Instagram</a></li><li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Westmont Elementary PTO &middot; Built with AI-assisted tools<span class="admin-link"> &middot; <a href="#" style="color:inherit;text-decoration:none;font-size:inherit;font-weight:inherit;">Admin</a></span></span>
+    <span>Go Wildcats! &#x1F43E;</span>
+  </div>
+</footer>
+
+</div></div>
+
+<script>
+  const site = document.getElementById('site');
+  const frame = document.getElementById('preview-frame');
+  const drawer = document.getElementById('nav-drawer');
+
+  function setView(view, btn) {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (view === 'mobile') {
+      frame.className = 'preview-wrapper mobile';
+      site.classList.add('is-mobile');
+      document.body.style.background = '#1E293B';
+      document.body.style.padding = '1rem 0 3rem';
+    } else {
+      frame.className = 'preview-wrapper desktop';
+      site.classList.remove('is-mobile');
+      document.body.style.background = '#E8EDF2';
+      document.body.style.padding = '0';
+    }
+
+    drawer.classList.remove('open');
+  }
+
+  function toggleDrawer() {
+    drawer.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

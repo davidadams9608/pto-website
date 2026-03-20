@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Westmont PTO — Admin Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── PREVIEW CHROME ── */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #E8EDF2; margin: 0; }
+
+    .preview-toolbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #1E293B;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 48px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-label { color: #94A3B8; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .toolbar-label span { color: #93C5FD; }
+    .toolbar-note { color: #64748B; font-size: 0.7rem; font-weight: 600; }
+
+    .preview-wrapper { margin-top: 48px; }
+
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --blue:     #1B6DC2;
+      --blue-dk:  #0F4F8A;
+      --blue-lt:  #EFF6FF;
+      --blue-mid: #BFDBFE;
+      --text:     #09090B;
+      --muted:    #71717A;
+      --border:   #E4E4E7;
+      --white:    #FFFFFF;
+      --bg:       #FAFAFA;
+    }
+
+    /* ── LOGIN PAGE ── */
+    .login-page {
+      min-height: calc(100vh - 48px);
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+
+    .login-brand {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 2.5rem;
+    }
+    .login-brand img { width: 42px; height: 42px; object-fit: contain; }
+    .login-brand-text { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .login-brand-badge {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--blue);
+      background: var(--blue-lt); border: 1px solid var(--blue-mid);
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      margin-left: 0.25rem;
+    }
+
+    /* Clerk component placeholder */
+    .clerk-placeholder {
+      width: 400px;
+      background: var(--white);
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+    .clerk-placeholder-icon {
+      width: 48px; height: 48px; color: var(--border);
+      margin: 0 auto 1.25rem;
+    }
+    .clerk-placeholder h2 {
+      font-size: 1rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .clerk-placeholder p {
+      font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Mock form fields (visual only — represents what Clerk renders) */
+    .mock-field {
+      width: 100%; padding: 0.7rem 0.85rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.85rem;
+      color: #A1A1AA; text-align: left;
+      margin-bottom: 0.75rem;
+    }
+    .mock-btn {
+      width: 100%; padding: 0.75rem;
+      background: var(--text); color: var(--white);
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: 0.875rem; font-weight: 700;
+      margin-top: 0.25rem;
+    }
+    .mock-divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1rem 0;
+      font-size: 0.7rem; color: var(--muted); font-weight: 600;
+    }
+    .mock-divider::before, .mock-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .mock-sso-btn {
+      width: 100%; padding: 0.65rem;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.8rem;
+      font-weight: 600; color: var(--text);
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+
+    .clerk-note {
+      margin-top: 1.5rem;
+      font-size: 0.65rem; color: var(--muted);
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .clerk-note svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    .login-footer {
+      margin-top: 3rem;
+      font-size: 0.75rem; color: var(--muted);
+    }
+    .login-footer a { color: var(--blue); text-decoration: none; font-weight: 600; }
+    .login-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <span class="toolbar-label">Westmont PTO · <span>Admin Login</span></span>
+  <span class="toolbar-note">Route: /admin/login · Desktop only</span>
+</div>
+
+<div class="preview-wrapper">
+<div class="login-page">
+
+  <!-- Brand -->
+  <div class="login-brand">
+    <img src="./westmont-logo.jpg" alt="Westmont Wildcats" />
+    <span class="login-brand-text">Westmont PTO</span>
+    <span class="login-brand-badge">Admin</span>
+  </div>
+
+  <!-- Clerk Sign-In Component Placeholder -->
+  <div class="clerk-placeholder">
+    <svg class="clerk-placeholder-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="36" height="36" rx="8"/>
+      <circle cx="24" cy="20" r="6"/>
+      <path d="M14 38c0-5.5 4.5-10 10-10s10 4.5 10 10"/>
+    </svg>
+    <h2>Sign in to Admin Panel</h2>
+    <p>Clerk handles authentication. Email + MFA required.<br/>This component renders via <code>&lt;SignIn /&gt;</code>.</p>
+
+    <!-- Visual mock of what Clerk renders -->
+    <div class="mock-field">admin@westmontpto.org</div>
+    <div class="mock-field">••••••••</div>
+    <div class="mock-btn">Sign In</div>
+
+    <div class="mock-divider">or</div>
+
+    <div class="mock-sso-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.68 8.18c0-.57-.05-1.11-.15-1.64H8v3.1h4.31a3.68 3.68 0 0 1-1.6 2.42v2h2.59c1.51-1.4 2.38-3.45 2.38-5.88z" fill="#4285F4"/><path d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.59-2a5.07 5.07 0 0 1-7.56-2.66H.56v2.07A8 8 0 0 0 8 16z" fill="#34A853"/><path d="M3.15 9.4a4.82 4.82 0 0 1 0-2.8V4.53H.56a8 8 0 0 0 0 6.94l2.59-2.07z" fill="#FBBC05"/><path d="M8 3.18c1.22 0 2.31.42 3.17 1.24l2.38-2.38A7.97 7.97 0 0 0 8 0 8 8 0 0 0 .56 4.53l2.59 2.07A4.77 4.77 0 0 1 8 3.18z" fill="#EA4335"/></svg>
+      Continue with Google
+    </div>
+
+    <div class="clerk-note">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><path d="M6 4v2"/><circle cx="6" cy="8.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+      Rendered by Clerk — not custom UI
+    </div>
+  </div>
+
+  <div class="login-footer">
+    <a href="#">← Back to public site</a>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>

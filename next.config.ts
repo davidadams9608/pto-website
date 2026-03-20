@@ -10,6 +10,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      // Cloudflare R2 — production logo uploads
+      { protocol: "https", hostname: "**.r2.cloudflarestorage.com" },
+      // Seed / dev placeholder images
+      { protocol: "https", hostname: "placeholder.example.com" },
+    ],
+  },
   async headers() {
     return [
       {
