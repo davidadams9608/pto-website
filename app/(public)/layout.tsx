@@ -31,7 +31,7 @@ export default function PublicLayout({
                 Westmont Elementary PTO
               </p>
               <p className="text-[0.8rem] leading-7">
-                A volunteer-run parent teacher organization supporting every
+                A volunteer-run Parent Teacher Organization (PTO) supporting every
                 student, teacher, and family at Westmont Elementary School.
               </p>
             </div>
@@ -69,7 +69,7 @@ export default function PublicLayout({
               <ul className="flex flex-col gap-2.5">
                 <li>
                   <a
-                    href="https://www.facebook.com/westmontpto"
+                    href="https://www.facebook.com/ptowestmont"
                     className="text-[0.825rem] font-medium transition-colors hover:text-white"
                   >
                     Facebook
@@ -77,10 +77,10 @@ export default function PublicLayout({
                 </li>
                 <li>
                   <a
-                    href="https://www.instagram.com/westmontpto"
+                    href="https://we.spcsne.org"
                     className="text-[0.825rem] font-medium transition-colors hover:text-white"
                   >
-                    Instagram
+                    Westmont Elementary School
                   </a>
                 </li>
                 <li>
@@ -122,16 +122,33 @@ export default function PublicLayout({
 
           {/* Bottom bar */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-[0.775rem]">
+            {/* Left: copyright + admin link (admin desktop-only) */}
             <span>
               &copy; 2026 Westmont Elementary PTO &middot; This website was
-              developed with AI-assisted tools.
+              developed with AI-assisted tools &middot;{' '}
+              <Link
+                href="/admin"
+                className="hidden transition-colors hover:text-white md:inline"
+              >
+                Admin
+              </Link>
             </span>
-            <Link
-              href="/admin"
-              className="hidden transition-colors hover:text-white md:inline"
-            >
-              Admin
-            </Link>
+
+            {/* Right: Go Wildcats */}
+            <span className="flex items-center gap-1.5 font-bold text-[#52525B]">
+              Go Wildcats!
+              <svg
+                width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                aria-hidden="true"
+              >
+                {/* Paw print: central pad + 4 toe pads */}
+                <ellipse cx="12" cy="15" rx="5" ry="4.2"/>
+                <ellipse cx="6.5" cy="10" rx="2.2" ry="2.8" transform="rotate(-15 6.5 10)"/>
+                <ellipse cx="17.5" cy="10" rx="2.2" ry="2.8" transform="rotate(15 17.5 10)"/>
+                <ellipse cx="9.5" cy="7.2" rx="1.9" ry="2.4" transform="rotate(-5 9.5 7.2)"/>
+                <ellipse cx="14.5" cy="7.2" rx="1.9" ry="2.4" transform="rotate(5 14.5 7.2)"/>
+              </svg>
+            </span>
           </div>
         </div>
       </footer>

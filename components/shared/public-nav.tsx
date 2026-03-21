@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -27,17 +28,23 @@ export function PublicNav() {
       {/* Main nav bar */}
       <nav
         aria-label="Main navigation"
-        className="flex h-[60px] items-center justify-between border-b border-[#E4E4E7] bg-white px-8"
+        className="flex h-[60px] items-center border-b border-[#E4E4E7] bg-white px-8"
       >
-        <Link
-          href="/"
-          className="text-[0.95rem] font-extrabold text-[#09090B]"
-        >
-          Westmont Elementary PTO
-        </Link>
+        {/* Left: logo (flex-1 so center links are truly centered) */}
+        <div className="flex flex-1 items-center">
+          <Link href="/" aria-label="Westmont Elementary PTO — Home">
+            <Image
+              src="/westmont-logo.svg"
+              alt="Westmont Elementary PTO"
+              width={36}
+              height={36}
+              priority
+            />
+          </Link>
+        </div>
 
-        {/* Desktop links */}
-        <ul className="hidden list-none gap-8 md:flex">
+        {/* Center: desktop links */}
+        <ul className="hidden list-none items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
@@ -54,29 +61,42 @@ export function PublicNav() {
           ))}
         </ul>
 
-        {/* Hamburger button — mobile only */}
-        <button
-          className="rounded-md p-1.5 text-[#09090B] hover:bg-[#FAFAFA] md:hidden"
-          onClick={() => setDrawerOpen((prev) => !prev)}
-          aria-label={drawerOpen ? "Close menu" : "Open menu"}
-          aria-expanded={drawerOpen}
-          aria-controls="mobile-nav-drawer"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            aria-hidden="true"
+        {/* Right: subscribe button (desktop) + hamburger (mobile) — flex-1 + justify-end mirrors the left */}
+        <div className="flex flex-1 items-center justify-end">
+          {/* Subscribe — desktop only */}
+          <div className="hidden md:flex">
+            <Link
+              href="/newsletters"
+              className="rounded-[7px] bg-[#09090B] px-4 py-[0.6rem] text-[0.8rem] font-bold text-white transition-opacity hover:opacity-90"
+            >
+              Subscribe
+            </Link>
+          </div>
+
+          {/* Hamburger button — mobile only */}
+          <button
+            className="rounded-md p-1.5 text-[#09090B] hover:bg-[#F4F4F5] md:hidden"
+            onClick={() => setDrawerOpen((prev) => !prev)}
+            aria-label={drawerOpen ? "Close menu" : "Open menu"}
+            aria-expanded={drawerOpen}
+            aria-controls="mobile-nav-drawer"
           >
-            <line x1="2" y1="6" x2="20" y2="6" />
-            <line x1="2" y1="11" x2="20" y2="11" />
-            <line x1="2" y1="16" x2="20" y2="16" />
-          </svg>
-        </button>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <line x1="2" y1="6" x2="20" y2="6" />
+              <line x1="2" y1="11" x2="20" y2="11" />
+              <line x1="2" y1="16" x2="20" y2="16" />
+            </svg>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile drawer */}

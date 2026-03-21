@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getNewsletters } from "@/lib/db/queries/newsletters";
 import type { Newsletter } from "@/lib/db/queries/newsletters";
+import { SITE_TIMEZONE } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Newsletters — Westmont Elementary PTO",
@@ -13,8 +14,8 @@ export const metadata: Metadata = {
 
 /** Aug–Jul school year, e.g. Aug 2025–Jul 2026 → "2025–2026" */
 function schoolYearKey(date: Date): string {
-  const m = date.getMonth() + 1; // 1–12
-  const y = date.getFullYear();
+  const m = parseInt(date.toLocaleDateString('en-US', { month: 'numeric', timeZone: SITE_TIMEZONE }), 10);
+  const y = parseInt(date.toLocaleDateString('en-US', { year: 'numeric', timeZone: SITE_TIMEZONE }), 10);
   return m >= 8 ? `${y}–${y + 1}` : `${y - 1}–${y}`;
 }
 
@@ -35,7 +36,7 @@ function seasonalEmoji(date: Date): string {
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
-    month: "long", day: "numeric", year: "numeric",
+    month: "long", day: "numeric", year: "numeric", timeZone: SITE_TIMEZONE,
   });
 }
 

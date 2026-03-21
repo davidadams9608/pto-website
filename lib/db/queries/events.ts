@@ -31,6 +31,17 @@ export async function getUpcomingEventsWithinDays(days: number): Promise<Event[]
     .orderBy(asc(events.date));
 }
 
+export async function getNextEvent(): Promise<Event | undefined> {
+  const rows = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.isPublished, true), gte(events.date, new Date())))
+    .orderBy(asc(events.date))
+    .limit(1);
+
+  return rows[0];
+}
+
 export async function getEventById(id: string): Promise<Event | undefined> {
   const rows = await db
     .select()

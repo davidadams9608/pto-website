@@ -61,6 +61,15 @@ async function seed() {
         ],
       },
       {
+        title: 'Monthly PTO Meeting',
+        description:
+          'Join us for our monthly PTO meeting! All Westmont families are welcome to attend. We\'ll cover updates on upcoming events, budget discussions, and school initiatives.\n\nAgenda items include the spring fundraiser recap, end-of-year field day planning, and an update from Principal Davis. Light refreshments will be provided.',
+        date: new Date('2026-04-15T18:30:00-07:00'),
+        location: 'School Library',
+        isPublished: true,
+        volunteerSlots: null,
+      },
+      {
         title: 'Fall Festival Planning Meeting',
         description:
           'Planning meeting for the upcoming Fall Festival. All interested volunteers welcome.',

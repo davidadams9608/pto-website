@@ -12,6 +12,12 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Westmont PTO",
   description: "Westmont Elementary School Parent Teacher Organization",
+  icons: {
+    icon: [
+      { url: '/westmont-logo.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: light)' },
+      { url: '/westmont-logo-white.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: dark)' },
+    ],
+  },
 };
 
 export default function RootLayout({

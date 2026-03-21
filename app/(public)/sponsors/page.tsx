@@ -13,8 +13,9 @@ export const metadata: Metadata = {
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function SponsorLogo({ sponsor }: { sponsor: Sponsor }) {
+  if (!sponsor.logoUrl) return null;
   return (
-    <div className="relative mb-3 h-[60px] w-[100px] md:h-[60px] md:w-[100px]">
+    <div className="relative mb-3 h-[60px] w-[100px]">
       <Image
         src={sponsor.logoUrl}
         alt={`${sponsor.name} logo`}
