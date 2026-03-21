@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import { getEventById } from '@/lib/db/queries/events';
+import { SITE_TIMEZONE } from '@/lib/site-config';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -22,13 +23,13 @@ function totalSlots(slots: unknown): number {
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true,
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: SITE_TIMEZONE,
   });
 }
 
 function formatFullDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: SITE_TIMEZONE,
   });
 }
 

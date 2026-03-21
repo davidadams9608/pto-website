@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { getFlag } from '@/lib/flags';
+import { SITE_TIMEZONE } from '@/lib/site-config';
 import { getUpcomingEventsWithinDays, getNextEvent } from '@/lib/db/queries/events';
 import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatMiniDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: SITE_TIMEZONE });
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────

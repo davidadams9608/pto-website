@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { FileViewer } from "@/components/shared/file-viewer";
 import { getNewsletterById } from "@/lib/db/queries/newsletters";
+import { SITE_TIMEZONE } from "@/lib/site-config";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -25,7 +26,7 @@ export default async function NewsletterViewerPage({ params }: Props) {
 
   const publishedDate = new Date(newsletter.publishedAt).toLocaleDateString(
     "en-US",
-    { month: "long", day: "numeric", year: "numeric" },
+    { month: "long", day: "numeric", year: "numeric", timeZone: SITE_TIMEZONE },
   );
 
   return (

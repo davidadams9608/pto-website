@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import Link from 'next/link';
 
+import { SITE_TIMEZONE } from '@/lib/site-config';
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type SerializedEvent = {
@@ -28,7 +30,7 @@ function hasVolunteers(slots: unknown): boolean {
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true,
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: SITE_TIMEZONE,
   });
 }
 
@@ -58,11 +60,12 @@ function PinIcon() {
 
 export function EventCard({ event }: { event: SerializedEvent }) {
   const d = new Date(event.date);
-  const monthFull  = d.toLocaleDateString('en-US', { month: 'long' });
-  const monthAbbr  = d.toLocaleDateString('en-US', { month: 'short' });
-  const dayNum     = d.getDate();
-  const weekdayFull = d.toLocaleDateString('en-US', { weekday: 'long' });
-  const weekdayAbbr = d.toLocaleDateString('en-US', { weekday: 'short' });
+  const tz = { timeZone: SITE_TIMEZONE };
+  const monthFull   = d.toLocaleDateString('en-US', { month: 'long', ...tz });
+  const monthAbbr   = d.toLocaleDateString('en-US', { month: 'short', ...tz });
+  const dayNum      = parseInt(d.toLocaleDateString('en-US', { day: 'numeric', ...tz }), 10);
+  const weekdayFull = d.toLocaleDateString('en-US', { weekday: 'long', ...tz });
+  const weekdayAbbr = d.toLocaleDateString('en-US', { weekday: 'short', ...tz });
   const time = formatTime(event.date);
   const signUp = hasVolunteers(event.volunteerSlots);
 

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { EventsAccordion } from '@/components/shared/events-accordion';
 import type { MonthGroup } from '@/components/shared/events-accordion';
 import { getUpcomingEvents } from '@/lib/db/queries/events';
+import { SITE_TIMEZONE } from '@/lib/site-config';
 
 export const metadata: Metadata = {
   title: 'Upcoming Events — Westmont Elementary PTO',
@@ -14,11 +15,13 @@ export const metadata: Metadata = {
 
 function toMonthKey(date: Date): string {
   // "2026-03" — sorts lexicographically
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const y = date.toLocaleDateString('en-US', { year: 'numeric', timeZone: SITE_TIMEZONE });
+  const m = date.toLocaleDateString('en-US', { month: '2-digit', timeZone: SITE_TIMEZONE });
+  return `${y}-${m}`;
 }
 
 function toMonthLabel(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: SITE_TIMEZONE });
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
