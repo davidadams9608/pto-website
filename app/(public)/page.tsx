@@ -1,16 +1,29 @@
-import type { Metadata } from "next";
-import Image from "next/image";
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { getFlag } from "@/lib/flags";
+import { getFlag } from '@/lib/flags';
+import { getUpcomingEventsWithinDays, getNextEvent } from '@/lib/db/queries/events';
+import { getNewsletters } from '@/lib/db/queries/newsletters';
+import { getActiveSponsors } from '@/lib/db/queries/sponsors';
+import { EventCard } from '@/components/shared/events-accordion';
 
 export const metadata: Metadata = {
-  title: "Westmont Elementary PTO",
+  title: 'Westmont Elementary PTO',
   description:
-    "The official website of the Westmont Elementary School Parent Teacher Organization.",
+    'The official website of the Westmont Elementary School Parent Teacher Organization.',
 };
 
-export default function HomePage() {
-  const isPublicSiteEnabled = getFlag("PUBLIC_SITE");
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function formatMiniDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────
+
+export default async function HomePage() {
+  const isPublicSiteEnabled = getFlag('PUBLIC_SITE');
 
   if (!isPublicSiteEnabled) {
     return (
@@ -33,17 +46,290 @@ export default function HomePage() {
     );
   }
 
+  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors] = await Promise.all([
+    getUpcomingEventsWithinDays(60),
+    getNextEvent(),
+    getNewsletters(1, 3),
+    getActiveSponsors(),
+  ]);
+
   return (
-    <main className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-      <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-        Westmont PTO
-      </h1>
-      <p className="mt-4 max-w-2xl text-lg text-zinc-600">
-        Welcome to the Westmont Elementary School Parent Teacher Organization.
-        We bring together parents, teachers, and community members to support
-        our students and enrich their educational experience. Stay connected
-        with upcoming events, volunteer opportunities, and school news.
-      </p>
-    </main>
+    <>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="border-b border-[#E4E4E7] bg-white">
+        <div className="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-8 px-6 pb-[2.5rem] pt-[3.5rem] md:grid-cols-2 md:gap-[5rem] md:px-8 md:pb-[5rem] md:pt-[5.5rem]">
+
+          {/* Left: text */}
+          <div>
+            <div className="mb-6 hidden items-center gap-1.5 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-1.5 text-[0.75rem] font-bold text-[#1B6DC2] md:inline-flex">
+              🐾 Westmont Elementary PTO
+            </div>
+            <h1 className="mb-5 text-[1.9rem] font-extrabold leading-[1.15] tracking-[-0.03em] md:text-[clamp(2.1rem,4vw,3.1rem)]">
+              Supporting every student at{' '}
+              <span className="bg-gradient-to-br from-[#1B6DC2] to-[#3B82F6] bg-clip-text text-transparent">
+                Westmont
+              </span>
+            </h1>
+            <p className="mb-8 text-[1rem] leading-[1.75] text-[#71717A]">
+              We&apos;re parents and teachers who believe in showing up. For our kids, for our
+              school, for our community. Get involved — it makes a real difference.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/events"
+                className="rounded-[7px] bg-[#1B6DC2] px-6 py-[0.7rem] text-[0.875rem] font-bold text-white transition-opacity hover:opacity-90"
+              >
+                Upcoming Events →
+              </Link>
+              <Link
+                href="/newsletters"
+                className="text-[0.875rem] font-semibold text-[#71717A] transition-colors hover:text-[#09090B]"
+              >
+                Newsletter archive ↗
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: visual — hidden on mobile */}
+          <div className="hidden flex-col gap-4 md:flex">
+            <div className="flex h-[220px] items-center justify-center rounded-[16px] border border-[#BFDBFE] bg-gradient-to-br from-[#EFF6FF] to-[#BFDBFE] text-[0.85rem] font-semibold text-[#1B6DC2]">
+              [ School photography ]
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-4">
+                <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
+                  Next event
+                </p>
+                {nextEvent ? (
+                  <>
+                    <p className="text-[1.5rem] font-extrabold tracking-[-0.03em] text-[#1B6DC2]">
+                      {formatMiniDate(nextEvent.date)}
+                    </p>
+                    <p className="mt-0.5 truncate text-[0.7rem] font-medium text-[#71717A]">
+                      {nextEvent.title}
+                    </p>
+                  </>
+                ) : (
+                  <p className="mt-1 text-[0.8rem] font-medium text-[#71717A]">None upcoming</p>
+                )}
+              </div>
+              <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-4">
+                <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
+                  Newsletter
+                </p>
+                <p className="text-[1.5rem] font-extrabold tracking-[-0.03em] text-[#1B6DC2]">380+</p>
+                <p className="mt-0.5 text-[0.7rem] font-medium text-[#71717A]">Subscribers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Events ───────────────────────────────────────────────────────── */}
+      <div className="bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#1B6DC2]">
+                What&apos;s next
+              </p>
+              <h2 className="text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
+                Upcoming Events
+              </h2>
+            </div>
+            <Link
+              href="/events"
+              className="text-[0.825rem] font-semibold text-[#1B6DC2] transition-opacity hover:opacity-70"
+            >
+              View all →
+            </Link>
+          </div>
+
+          {upcomingEvents.length === 0 ? (
+            <p className="text-[0.875rem] text-[#71717A]">
+              No events in the next 60 days.{' '}
+              <Link href="/events" className="font-semibold text-[#1B6DC2]">
+                Check the full events page for what&apos;s ahead.
+              </Link>
+            </p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {upcomingEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={{
+                    id: event.id,
+                    title: event.title,
+                    date: event.date.toISOString(),
+                    location: event.location,
+                    volunteerSlots: event.volunteerSlots,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Newsletter ────────────────────────────────────────────────────── */}
+      <div className="bg-[#FAFAFA] px-6 py-[3rem] md:px-8 md:py-[5rem]">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-[3rem]">
+
+            {/* Left: archive list */}
+            <div>
+              <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#1B6DC2]">
+                Newsletter
+              </p>
+              <h2 className="mb-1 text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
+                The Westmont Weekly
+              </h2>
+              <p className="mb-8 max-w-[460px] text-[0.9rem] leading-[1.7] text-[#71717A]">
+                Stay connected to everything happening at school. Event previews, meeting recaps,
+                and volunteer opportunities.
+              </p>
+              <div className="flex flex-col">
+                {newsletters.map((nl) => (
+                  <Link
+                    key={nl.id}
+                    href={`/newsletters/${nl.id}`}
+                    className="flex items-center justify-between border-b border-[#E4E4E7] py-4 text-[#09090B] no-underline transition-opacity hover:opacity-70"
+                  >
+                    <div>
+                      <p className="text-[0.875rem] font-semibold">{nl.title}</p>
+                      <p className="mt-[0.15rem] text-[0.775rem] text-[#71717A]">
+                        Published{' '}
+                        {nl.publishedAt.toLocaleDateString('en-US', {
+                          month: 'long', day: 'numeric', year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    <span className="ml-4 shrink-0 rounded-[4px] bg-[#EFF6FF] px-2 py-[0.2rem] text-[0.65rem] font-bold text-[#1B6DC2]">
+                      PDF
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: signup card — MailerLite placeholder */}
+            <div className="rounded-[20px] bg-[#09090B] p-10">
+              {/* TODO: Replace with MailerLite embed in M6 */}
+              <h3 className="mb-2 text-[1.3rem] font-extrabold tracking-[-0.02em] text-white">
+                Get the newsletter
+              </h3>
+              <p className="mb-6 text-[0.875rem] leading-[1.7] text-[#A1A1AA]">
+                Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.
+              </p>
+              <input
+                type="text"
+                placeholder="Your first name"
+                disabled
+                aria-label="First name"
+                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                disabled
+                aria-label="Email address"
+                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
+              />
+              <button
+                type="button"
+                disabled
+                className="w-full cursor-not-allowed rounded-[8px] bg-[#1B6DC2] py-[0.7rem] text-[0.875rem] font-bold text-white opacity-60"
+              >
+                Subscribe →
+              </button>
+              <p className="mt-[0.6rem] text-[0.72rem] text-[#71717A]">
+                Already subscribed?{' '}
+                <span className="text-[#A1A1AA]">Check status</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Sponsors ─────────────────────────────────────────────────────── */}
+      <div className="bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
+        <div className="mx-auto max-w-[1100px]">
+          <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#1B6DC2]">
+            Thank you
+          </p>
+          <h2 className="mb-1 text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
+            Our Sponsors
+          </h2>
+          <p className="text-[0.9rem] leading-[1.7] text-[#71717A] text-pretty">
+            Local businesses that invest in our students and make our programs possible.
+          </p>
+
+          {/* Chip belt */}
+          <div className="mt-10 flex flex-wrap gap-3 pb-2">
+            {sponsors.map((sponsor) =>
+              sponsor.websiteUrl ? (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative inline-block rounded-[8px] border border-[#BFDBFE] bg-[#FAFAFA] px-6 py-3 text-[0.825rem] font-semibold text-[#1B6DC2] transition hover:shadow-[0_2px_8px_rgba(27,109,194,0.06)] md:border-[#E4E4E7] md:text-[#71717A] md:hover:border-[#BFDBFE] md:hover:text-[#09090B]"
+                >
+                  {sponsor.name}
+                  {/* Mobile only: inline ↗ arrow */}
+                  <span className="md:hidden"> ↗</span>
+                  {/* Desktop only: tooltip below on hover */}
+                  <span className="pointer-events-none absolute left-1/2 top-full mt-1 hidden -translate-x-1/2 whitespace-nowrap text-[0.58rem] font-semibold text-[#1B6DC2] opacity-0 transition-opacity group-hover:opacity-100 md:block">
+                    Visit website ↗
+                  </span>
+                </a>
+              ) : (
+                <span
+                  key={sponsor.id}
+                  className="inline-block rounded-[8px] border border-[#E4E4E7] bg-[#FAFAFA] px-6 py-3 text-[0.825rem] font-semibold text-[#71717A]"
+                >
+                  {sponsor.name}
+                </span>
+              )
+            )}
+          </div>
+
+          {/* Sponsor CTA */}
+          <div className="mt-8 flex flex-col items-center justify-between gap-5 rounded-[20px] bg-[#09090B] px-6 py-8 text-center md:flex-row md:px-12 md:py-10 md:text-left">
+            <div>
+              <h3 className="mb-1.5 text-[1.1rem] font-extrabold tracking-[-0.02em] text-white md:text-[1.3rem]">
+                Interested in sponsoring?
+              </h3>
+              <p className="text-[0.8rem] leading-[1.7] text-[#A1A1AA] md:text-[0.85rem]">
+                Support Westmont students and connect with local families. We&apos;d love to hear
+                from you.
+              </p>
+            </div>
+            <a
+              href="mailto:pto@westmontpto.org"
+              className="shrink-0 rounded-[8px] bg-[#1B6DC2] px-6 py-[0.7rem] text-[0.85rem] font-bold text-white transition-colors hover:bg-[#0F4F8A]"
+            >
+              Get in Touch →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CTA Band ─────────────────────────────────────────────────────── */}
+      <div className="bg-[#1B6DC2] px-8 py-14 text-center">
+        <h2 className="mb-2 text-[1.75rem] font-extrabold tracking-[-0.025em] text-white">
+          Ready to get involved?
+        </h2>
+        <p className="mb-6 text-[0.9rem] text-[#BFDBFE]">
+          Every volunteer hour makes a real difference for Westmont students.
+        </p>
+        <Link
+          href="/events"
+          className="inline-block rounded-[7px] bg-white px-7 py-3 text-[0.9rem] font-bold text-[#1B6DC2] transition-opacity hover:opacity-90"
+        >
+          See Volunteer Opportunities →
+        </Link>
+      </div>
+    </>
   );
 }
