@@ -8,3 +8,9 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+    ignore:
+      # eslint-config-next bundles eslint-plugin-react which uses a removed
+      # eslint@10 API (getFilename). Upgrade eslint together with next/
+      # eslint-config-next once they ship a compatible eslint-plugin-react.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
