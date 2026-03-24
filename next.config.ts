@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "placeholder.example.com" },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/admin",
+        destination: "/admin/dashboard",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

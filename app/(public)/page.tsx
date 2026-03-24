@@ -201,7 +201,7 @@ export default async function HomePage() {
                       <p className="mt-[0.15rem] text-[0.775rem] text-[#71717A]">
                         Published{' '}
                         {nl.publishedAt.toLocaleDateString('en-US', {
-                          month: 'long', day: 'numeric', year: 'numeric',
+                          month: 'long', day: 'numeric', year: 'numeric', timeZone: SITE_TIMEZONE,
                         })}
                       </p>
                     </div>
