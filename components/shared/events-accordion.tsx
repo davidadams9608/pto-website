@@ -13,6 +13,7 @@ export type SerializedEvent = {
   title: string;
   date: string; // ISO string
   location: string;
+  zoomUrl: string | null;
   volunteerSlots: unknown;
 };
 
@@ -56,6 +57,16 @@ function PinIcon() {
   );
 }
 
+function VideoIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="1" y="3.5" width="8" height="7" rx="1.5"/>
+      <path d="M9 6 L13 4v6L9 8"/>
+    </svg>
+  );
+}
+
 // ── Event card ─────────────────────────────────────────────────────────────
 
 export function EventCard({ event }: { event: SerializedEvent }) {
@@ -70,9 +81,8 @@ export function EventCard({ event }: { event: SerializedEvent }) {
   const signUp = hasVolunteers(event.volunteerSlots);
 
   return (
-    <Link
-      href={`/events/${event.id}`}
-      className="flex overflow-hidden rounded-[10px] border border-[#E4E4E7] bg-white text-[#09090B] no-underline transition-[border-color,box-shadow] hover:border-[#BFDBFE] hover:shadow-[0_4px_16px_rgba(27,109,194,0.08)]"
+    <div
+      className="flex overflow-hidden rounded-[10px] border border-[#E4E4E7] bg-white text-[#09090B] transition-[border-color,box-shadow] md:hover:border-[#BFDBFE] md:hover:shadow-[0_4px_16px_rgba(27,109,194,0.08)]"
     >
       {/* Date block */}
       <div className="flex min-w-[70px] flex-col items-center justify-center border-r border-[#E4E4E7] bg-[#EFF6FF] px-2 py-4 md:min-w-[150px] md:px-5">
@@ -110,16 +120,31 @@ export function EventCard({ event }: { event: SerializedEvent }) {
             <PinIcon />
             {event.location}
           </span>
+          {event.zoomUrl && (
+            <a
+              href={event.zoomUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 text-[#1B6DC2] transition-opacity hover:opacity-70"
+            >
+              <VideoIcon />
+              Zoom
+            </a>
+          )}
         </div>
       </div>
 
       {/* Action */}
       <div className="flex shrink-0 items-center pr-3 md:pr-5">
-        <span className="whitespace-nowrap rounded-[6px] bg-[#09090B] px-3 py-1.5 text-[0.7rem] font-bold text-white md:px-4 md:text-[0.75rem]">
+        <Link
+          href={`/events/${event.id}`}
+          className="whitespace-nowrap rounded-[8px] bg-[#09090B] px-5 py-2.5 text-[0.9rem] font-bold text-white transition-opacity hover:opacity-80 md:px-6 md:py-3 md:text-[1rem]"
+        >
           {signUp ? 'Sign Up' : 'Details'}
-        </span>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 

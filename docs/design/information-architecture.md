@@ -28,16 +28,18 @@ PTO administrators access a dedicated admin panel at `/admin/*` routes, fully be
 | Page | Route | Purpose | Complexity |
 |---|---|---|---|
 | Homepage | `/` | Landing page — mission, upcoming events preview, newsletter signup, social links | **LOCKED** — `homepage-design-final-v1.html` |
+| About | `/about` | PTO organization description + officer list (name/role). Admin-managed via site settings + officers table. | **LOCKED** — Session 6 design change (no mockup — follows shared patterns) |
 | Events List | `/events` | Upcoming events grouped by month (accordion, all expanded), with date blocks and Sign Up/Details buttons. Only upcoming events shown (no past). | **LOCKED** — `events-list-v1.html` |
 | Event Detail | `/events/[id]` | Single event — description, date/time, location, volunteer signup (admin-configurable per event) | **LOCKED** — `event-detail-v1.html` |
 | Volunteer Signup | (within Event Detail) | Signup for volunteer slots on a specific event (only shown if admin enables for that event) | **LOCKED** (part of Event Detail) |
-| Newsletter Archive | `/newsletters` | Accordion by school year, seasonal badges, newsletter signup sidebar | **LOCKED** — `newsletter-archive-v1.html` |
-| Newsletter Viewer | `/newsletters/[id]` | Breadcrumb strip + embedded PDF viewer (no download) | **LOCKED** — `file-viewer-v1.html` |
-| Meeting Minutes | `/minutes` | Accordion by school year, seasonal badges, single-column (no sidebar) | **LOCKED** — `meeting-minutes-v1.html` |
-| Minutes Viewer | `/minutes/[id]` | Same file viewer as newsletter (breadcrumb strip + embedded PDF) | **LOCKED** — `file-viewer-v1.html` |
+| Archive | `/archive` | Tabbed view: Newsletters tab + Meeting Minutes tab. Replaces separate newsletter/minutes pages per stakeholder feedback (Session 33). | **LOCKED** — Session 6 design change (tabbed view, reuses newsletter-archive-v1 + meeting-minutes-v1 patterns) |
+| Newsletter Viewer | `/archive/newsletters/[id]` | Breadcrumb strip + embedded PDF viewer (no download). Back link → `/archive` | **LOCKED** — `file-viewer-v1.html` |
+| Minutes Viewer | `/archive/minutes/[id]` | Same file viewer as newsletter (breadcrumb strip + embedded PDF). Back link → `/archive` | **LOCKED** — `file-viewer-v1.html` |
 | Sponsors | `/sponsors` | 4-col grid (2-col mobile), optional website links, storefront illustration, sponsor CTA | **LOCKED** — `sponsors-v1.html` |
 | Donate | `/donate` | Page header + centered Venmo card with QR placeholder. No 501(c)(3) language. | **LOCKED** — `donate-v1.html` |
 | Newsletter Signup | (embedded on Homepage) | MailerLite form embed for email signups | N/A — third-party embed |
+
+**Redirects (old routes):** `/newsletters` → `/archive` (308), `/minutes` → `/archive` (308), `/newsletters/[id]` → `/archive/newsletters/[id]` (308), `/minutes/[id]` → `/archive/minutes/[id]` (308)
 
 ---
 
@@ -51,8 +53,8 @@ PTO administrators access a dedicated admin panel at `/admin/*` routes, fully be
 | Event Editor | `/admin/events/new` or `/admin/events/[id]/edit` | Create or edit event details | High |
 | Volunteer Slots Config | (within Event Editor) | Add/remove/edit volunteer roles and slot capacities per event | High (part of Event Editor) |
 | View Signups | `/admin/events/[id]/signups` | Per-event volunteer signup list with contact info | Medium |
-| Newsletter Manager | `/admin/newsletters` | List uploaded PDFs, upload new, delete | Low |
-| Minutes Manager | `/admin/minutes` | List uploaded files, upload new, delete | Low |
+| Archive Manager | `/admin/archive` | Toggled views for Newsletter + Minutes upload/management (replaces separate managers) | Low |
+| About Manager | `/admin/about` | Edit about text + manage PTO officer list (name, role, display order) | Low-Medium |
 | Sponsors Manager | `/admin/sponsors` | Logo grid management — upload, reorder, delete | Low |
 | Homepage Editor | `/admin/homepage` | Edit mission text, photos, social links | Medium |
 | Site Settings | `/admin/settings` | Venmo link, social media URLs, other config | Low |
@@ -63,12 +65,12 @@ PTO administrators access a dedicated admin panel at `/admin/*` routes, fully be
 ## Navigation Model
 
 ### Public Site Nav
-Primary navigation (header): Home, Events, Newsletters, Minutes, Sponsors, Donate
+Primary navigation (header): Home, About, Events, Archive, Sponsors, Donate
 Footer: Social links, Newsletter signup link, Admin login link
 Mobile: Hamburger menu with slide-down drawer (already designed in homepage)
 
 ### Admin Panel Nav
-Sidebar navigation (persistent): Dashboard, Events, Newsletters, Minutes, Sponsors, Homepage, Settings, Help Center
+Sidebar navigation (persistent): Dashboard, Events, Archive, About, Sponsors, Homepage, Settings, Help Center
 No public site nav visible in admin — clean separation. A "View Site" link in the admin sidebar opens the public site in a new tab.
 
 ---
@@ -82,7 +84,7 @@ Homepage → Events List → Event Detail → Volunteer Signup Form → Confirma
 Admin Login → Dashboard → Events Manager → Create Event → Configure Volunteer Slots → Save → Back to Events Manager
 
 ### Admin uploads a newsletter
-Admin Login → Dashboard → Newsletter Manager → Upload PDF → Confirmation → Back to Newsletter Manager
+Admin Login → Dashboard → Archive Manager → Newsletters tab → Upload PDF → Confirmation → Back to Archive Manager
 
 ### Admin updates homepage content
 Admin Login → Dashboard → Homepage Editor → Edit fields → Save → Preview (opens public site in new tab)
@@ -157,7 +159,8 @@ Admin Login → Dashboard → Homepage Editor → Edit fields → Save → Previ
 | Login | `admin-login-v1.html` | Standalone page (no sidebar), centered Clerk placeholder with mock form fields, brand + Admin badge, "Back to public site" link |
 | Dashboard | `admin-dashboard-v1.html` | 240px sticky sidebar + fluid main, 4 stat cards, 2×2 draggable tile grid (Quick Actions, Recent Activity, Upcoming Events, Newsletter Snapshot), HTML5 drag-to-reorder |
 | Events | `admin-events-v1.html` | Three toggled views (List / Editor / Signups). 5-column table (Event, Date, Volunteers, Published, Actions) with colored action icons. Contact Volunteers modal with selectable recipient list, subject/body fields, CC admin checkbox. Event editor with volunteer signup toggle + spots config, publish toggle. Signups view with summary cards + full table + CSV export |
-| Content | `admin-content-v1.html` | Two toggled views (Newsletters / Minutes). Inline upload form with title, school year, PDF drag-drop. File list grouped by school year with preview/delete actions |
+| Archive (was Content) | `admin-content-v1.html` | Two toggled views (Newsletters / Minutes). Inline upload form with title, school year, PDF drag-drop. File list grouped by school year with preview/delete actions. Route changed to `/admin/archive` per stakeholder feedback (Session 33). |
+| About | N/A (no mockup — follows shared admin patterns) | Edit about text (textarea) + PTO officer list CRUD (name, role, display order, reorder). Added per stakeholder feedback (Session 33). |
 | Sponsors | `admin-sponsors-v1.html` | Sponsor grid manager with logo upload, website link, reorder capability |
 | Homepage | `admin-homepage-v1.html` | Homepage content editor for mission statement, hero image, social links |
 | Settings & Help | `admin-settings-v1.html` | Two toggled views (Settings / Help Center). Settings: Org Info, Donation (Venmo QR upload), Contact Info cards. Help Center: searchable documentation with 7 accordion topic cards, live filter |

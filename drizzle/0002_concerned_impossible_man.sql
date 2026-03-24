@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "zoom_url" text;

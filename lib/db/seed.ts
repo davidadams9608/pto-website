@@ -15,6 +15,7 @@ async function seed() {
   await db.delete(schema.newsletters);
   await db.delete(schema.meetingMinutes);
   await db.delete(schema.sponsors);
+  await db.delete(schema.officers);
   await db.delete(schema.siteSettings);
 
   // Events
@@ -66,6 +67,7 @@ async function seed() {
           'Join us for our monthly PTO meeting! All Westmont families are welcome to attend. We\'ll cover updates on upcoming events, budget discussions, and school initiatives.\n\nAgenda items include the spring fundraiser recap, end-of-year field day planning, and an update from Principal Davis. Light refreshments will be provided.',
         date: new Date('2026-04-15T18:30:00-07:00'),
         location: 'School Library',
+        zoomUrl: 'https://zoom.us/j/1234567890',
         isPublished: true,
         volunteerSlots: null,
       },
@@ -181,6 +183,15 @@ async function seed() {
     },
   ]);
 
+  // Officers
+  console.log('👥 Seeding officers...');
+  await db.insert(schema.officers).values([
+    { name: 'Bethany Adams', role: 'President', displayOrder: 1 },
+    { name: 'Pryce Sandfort', role: 'Vice President', displayOrder: 2 },
+    { name: 'Sam Hoiberg', role: 'Treasurer', displayOrder: 3 },
+    { name: 'Braden Frager', role: 'Secretary', displayOrder: 4 },
+  ]);
+
   // Site settings
   console.log('⚙️  Seeding site settings...');
   await db.insert(schema.siteSettings).values([
@@ -188,7 +199,7 @@ async function seed() {
     {
       key: 'about_text',
       value:
-        'The Westmont Elementary PTO supports our school community through events, fundraising, and volunteer coordination.',
+        'The Parent Teacher Organization (PTO) is dedicated to enriching the educational experience of every student at our school. Through fundraising efforts, we provide essential support for programs, resources, and equipment that enhance learning. We collaborate on key issues that impact our students and school community, believing that active parent and guardian involvement leads to greater student success. Join us in making a difference—get involved today!\n\nThe PTO is 100% committed to being fully transparent on what our expenses are throughout the year. We have our main fundraiser in October with the fall harvest festival and do monthly Cook\'s Night Outs. Keep an eye out for some Westmont nights at local restaurants. We are always looking for more parents to join us and bring their ideas to the table.',
     },
     { key: 'school_name', value: 'Westmont Elementary School' },
     { key: 'hero_image_url', value: '' },

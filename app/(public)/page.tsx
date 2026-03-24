@@ -83,7 +83,7 @@ export default async function HomePage() {
                 Upcoming Events →
               </Link>
               <Link
-                href="/newsletters"
+                href="/archive"
                 className="text-[0.875rem] font-semibold text-[#71717A] transition-colors hover:text-[#09090B]"
               >
                 Newsletter archive ↗
@@ -163,6 +163,7 @@ export default async function HomePage() {
                     title: event.title,
                     date: event.date.toISOString(),
                     location: event.location,
+                    zoomUrl: event.zoomUrl,
                     volunteerSlots: event.volunteerSlots,
                   }}
                 />
@@ -193,7 +194,7 @@ export default async function HomePage() {
                 {newsletters.map((nl) => (
                   <Link
                     key={nl.id}
-                    href={`/newsletters/${nl.id}`}
+                    href={`/archive/newsletters/${nl.id}`}
                     className="flex items-center justify-between border-b border-[#E4E4E7] py-4 text-[#09090B] no-underline transition-opacity hover:opacity-70"
                   >
                     <div>
