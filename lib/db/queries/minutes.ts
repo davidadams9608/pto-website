@@ -20,6 +20,11 @@ export async function getMinutes(
   return { items, total: Number(total), page, limit };
 }
 
+export async function getMinutesCount(): Promise<number> {
+  const [{ total }] = await db.select({ total: count() }).from(meetingMinutes);
+  return Number(total);
+}
+
 export async function getMinuteById(id: string): Promise<MeetingMinutes | undefined> {
   const rows = await db
     .select()

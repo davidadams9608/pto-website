@@ -21,6 +21,19 @@ export async function getNewsletters(
   return { items, total: Number(total), page, limit };
 }
 
+export async function getNewsletterCount(): Promise<number> {
+  const [{ total }] = await db.select({ total: count() }).from(newsletters);
+  return Number(total);
+}
+
+export async function getRecentNewsletters(limit: number): Promise<Newsletter[]> {
+  return db
+    .select()
+    .from(newsletters)
+    .orderBy(desc(newsletters.publishedAt))
+    .limit(limit);
+}
+
 export async function getNewsletterById(id: string): Promise<Newsletter | undefined> {
   const rows = await db
     .select()
