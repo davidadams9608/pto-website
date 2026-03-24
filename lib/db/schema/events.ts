@@ -8,6 +8,7 @@ export const events = pgTable('events', {
   location: text('location').notNull(),
   zoomUrl: text('zoom_url'),
   imageUrl: text('image_url'),
+  imageKey: text('image_key'),
   volunteerSlots: jsonb('volunteer_slots'),
   isPublished: boolean('is_published').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
