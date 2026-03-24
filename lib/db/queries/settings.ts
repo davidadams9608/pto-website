@@ -18,3 +18,10 @@ export async function getSetting(key: string): Promise<string | undefined> {
 
   return rows[0]?.value;
 }
+
+export async function updateSetting(key: string, value: string): Promise<void> {
+  await db
+    .update(siteSettings)
+    .set({ value, updatedAt: new Date() })
+    .where(eq(siteSettings.key, key));
+}

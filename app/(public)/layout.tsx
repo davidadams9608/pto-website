@@ -43,9 +43,9 @@ export default function PublicLayout({
               </h2>
               <ul className="flex flex-col gap-2.5">
                 {[
+                  { href: "/about", label: "About" },
                   { href: "/events", label: "Events" },
-                  { href: "/newsletters", label: "Newsletter" },
-                  { href: "/minutes", label: "Meeting Minutes" },
+                  { href: "/archive", label: "Archive" },
                   { href: "/sponsors", label: "Sponsors" },
                   { href: "/donate", label: "Donate" },
                 ].map((link) => (

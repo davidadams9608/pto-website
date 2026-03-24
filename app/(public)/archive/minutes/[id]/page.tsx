@@ -31,8 +31,8 @@ export default async function MinutesViewerPage({ params }: Props) {
 
   return (
     <FileViewer
-      backHref="/minutes"
-      backLabel="Meeting Minutes"
+      backHref="/archive"
+      backLabel="Archive"
       title={minutes.title}
       meta={`Meeting date: ${meetingDate}`}
       fileUrl={minutes.fileUrl}

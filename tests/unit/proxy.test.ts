@@ -18,8 +18,7 @@ describe("proxy route protection", () => {
     it.each([
       "/",
       "/events",
-      "/newsletters",
-      "/minutes",
+      "/archive",
       "/sponsors",
       "/donate",
       "/api/health",

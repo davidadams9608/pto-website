@@ -31,8 +31,8 @@ export default async function NewsletterViewerPage({ params }: Props) {
 
   return (
     <FileViewer
-      backHref="/newsletters"
-      backLabel="Newsletters"
+      backHref="/archive"
+      backLabel="Archive"
       title={newsletter.title}
       meta={`Published ${publishedDate}`}
       fileUrl={newsletter.pdfUrl}

@@ -57,6 +57,17 @@ function PinIcon() {
   );
 }
 
+function VideoIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      className="mt-[0.1rem] shrink-0 text-[#1B6DC2]" aria-hidden="true">
+      <rect x="1.5" y="4.5" width="10.5" height="9" rx="2"/>
+      <path d="M12 7.5 L16.5 5.5v7L12 10.5"/>
+    </svg>
+  );
+}
+
 function CalendarIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor"
@@ -141,6 +152,22 @@ export default async function EventDetailPage({ params }: Props) {
                   <CalendarIcon />
                   <span className="font-medium"><strong className="font-bold">Date:</strong> {formatFullDate(date)}</span>
                 </div>
+                {event.zoomUrl && (
+                  <div className="flex items-start gap-[0.6rem] text-[0.85rem] md:text-[0.9rem]">
+                    <VideoIcon />
+                    <span className="font-medium">
+                      <strong className="font-bold">Virtual:</strong>{' '}
+                      <a
+                        href={event.zoomUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1B6DC2] underline transition-opacity hover:opacity-70"
+                      >
+                        Join via Zoom
+                      </a>
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -186,36 +213,44 @@ export default async function EventDetailPage({ params }: Props) {
               </aside>
             ) : (
               <aside className="hidden md:flex md:justify-center md:pt-6" aria-hidden="true">
-                {/* Volunteering illustration — matches style of other page header illustrations */}
+                {/* Info/bulletin board illustration — matches style of other page illustrations */}
                 <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
                   {/* Background circle */}
                   <circle cx="100" cy="108" r="78" fill="#EFF6FF" stroke="#BFDBFE" strokeWidth="2"/>
-                  {/* Palm */}
-                  <rect x="68" y="98" width="64" height="50" rx="8" fill="#1B6DC2"/>
-                  {/* Index finger */}
-                  <rect x="72" y="58" width="13" height="46" rx="6.5" fill="#1B6DC2"/>
-                  {/* Middle finger */}
-                  <rect x="88" y="50" width="13" height="52" rx="6.5" fill="#1B6DC2"/>
-                  {/* Ring finger */}
-                  <rect x="104" y="53" width="13" height="49" rx="6.5" fill="#1B6DC2"/>
-                  {/* Pinky */}
-                  <rect x="118" y="61" width="11" height="41" rx="5.5" fill="#1B6DC2"/>
-                  {/* Thumb */}
-                  <rect x="50" y="86" width="22" height="32" rx="11" fill="#1B6DC2" transform="rotate(-20 61 102)"/>
-                  {/* White highlight dots on fingertips */}
-                  <circle cx="78" cy="61" r="3" fill="rgba(255,255,255,0.45)"/>
-                  <circle cx="94" cy="53" r="3" fill="rgba(255,255,255,0.45)"/>
-                  <circle cx="110" cy="56" r="3" fill="rgba(255,255,255,0.45)"/>
-                  <circle cx="123" cy="64" r="3" fill="rgba(255,255,255,0.45)"/>
-                  {/* Heart above hand */}
-                  <path d="M100 38 C100 35 97 29 92 32 C87 35 87 41 100 50 C113 41 113 35 108 32 C103 29 100 35 100 38Z" fill="#1B6DC2" opacity="0.22"/>
+                  {/* Bulletin board */}
+                  <rect x="52" y="58" width="96" height="100" rx="8" fill="white" stroke="#BFDBFE" strokeWidth="2"/>
+                  {/* Board header bar */}
+                  <rect x="52" y="58" width="96" height="22" rx="8" fill="#1B6DC2"/>
+                  <rect x="52" y="72" width="96" height="8" fill="#1B6DC2"/>
+                  {/* Header dots */}
+                  <circle cx="72" cy="69" r="2.5" fill="rgba(255,255,255,0.5)"/>
+                  <circle cx="100" cy="69" r="2.5" fill="rgba(255,255,255,0.5)"/>
+                  <circle cx="128" cy="69" r="2.5" fill="rgba(255,255,255,0.5)"/>
+                  {/* Note card 1 */}
+                  <rect x="62" y="88" width="34" height="26" rx="3" fill="#DBEAFE" stroke="#BFDBFE" strokeWidth="1"/>
+                  <rect x="67" y="94" width="20" height="2.5" rx="1.25" fill="#1B6DC2" opacity="0.5"/>
+                  <rect x="67" y="100" width="24" height="2" rx="1" fill="#BFDBFE"/>
+                  <rect x="67" y="105" width="16" height="2" rx="1" fill="#BFDBFE"/>
+                  {/* Note card 2 */}
+                  <rect x="104" y="88" width="34" height="26" rx="3" fill="#DBEAFE" stroke="#BFDBFE" strokeWidth="1"/>
+                  <rect x="109" y="94" width="18" height="2.5" rx="1.25" fill="#1B6DC2" opacity="0.5"/>
+                  <rect x="109" y="100" width="24" height="2" rx="1" fill="#BFDBFE"/>
+                  <rect x="109" y="105" width="20" height="2" rx="1" fill="#BFDBFE"/>
+                  {/* Note card 3 (wider, bottom) */}
+                  <rect x="62" y="122" width="76" height="26" rx="3" fill="#DBEAFE" stroke="#BFDBFE" strokeWidth="1"/>
+                  <rect x="67" y="128" width="30" height="2.5" rx="1.25" fill="#1B6DC2" opacity="0.5"/>
+                  <rect x="67" y="134" width="62" height="2" rx="1" fill="#BFDBFE"/>
+                  <rect x="67" y="139" width="48" height="2" rx="1" fill="#BFDBFE"/>
+                  {/* Pushpin accents */}
+                  <circle cx="79" cy="86" r="3" fill="#FBBF24"/>
+                  <circle cx="121" cy="86" r="3" fill="#FBBF24"/>
+                  <circle cx="100" cy="120" r="3" fill="#FBBF24"/>
                   {/* Sparkle star */}
-                  <path d="M158 28 L160 22 L162 28 L168 30 L162 32 L160 38 L158 32 L152 30 Z" fill="#BFDBFE"/>
+                  <path d="M158 48 L160 42 L162 48 L168 50 L162 52 L160 58 L158 52 L152 50 Z" fill="#BFDBFE"/>
                   {/* Accent circles */}
-                  <circle cx="42" cy="50" r="5" fill="#BFDBFE"/>
+                  <circle cx="42" cy="55" r="5" fill="#BFDBFE"/>
                   <circle cx="166" cy="152" r="4" fill="#BFDBFE"/>
                   <circle cx="38" cy="152" r="3" fill="#E4E4E7"/>
-                  <circle cx="168" cy="70" r="3" fill="#E4E4E7"/>
                 </svg>
               </aside>
             )}

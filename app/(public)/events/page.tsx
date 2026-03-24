@@ -42,6 +42,7 @@ export default async function EventsPage() {
       title: event.title,
       date: event.date.toISOString(),
       location: event.location,
+      zoomUrl: event.zoomUrl,
       volunteerSlots: event.volunteerSlots,
     });
   }

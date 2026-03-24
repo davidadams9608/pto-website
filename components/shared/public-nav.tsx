@@ -7,9 +7,9 @@ import { useState } from "react";
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
   { href: "/events", label: "Events" },
-  { href: "/newsletters", label: "Newsletters" },
-  { href: "/minutes", label: "Minutes" },
+  { href: "/archive", label: "Archive" },
   { href: "/sponsors", label: "Sponsors" },
   { href: "/donate", label: "Donate" },
 ];
@@ -64,12 +64,12 @@ export function PublicNav() {
         {/* Right: subscribe button (desktop) + hamburger (mobile) — flex-1 + justify-end mirrors the left */}
         <div className="flex flex-1 items-center justify-end">
           {/* Subscribe — desktop only */}
-          <div className="hidden md:flex">
+          <div className="hidden lg:flex">
             <Link
-              href="/newsletters"
-              className="rounded-[7px] bg-[#09090B] px-4 py-[0.6rem] text-[0.8rem] font-bold text-white transition-opacity hover:opacity-90"
+              href="/archive"
+              className="whitespace-nowrap rounded-[7px] bg-[#09090B] px-4 py-[0.6rem] text-[0.8rem] font-bold text-white transition-opacity hover:opacity-90"
             >
-              Subscribe
+              Subscribe to Newsletter
             </Link>
           </div>
 
@@ -123,7 +123,7 @@ export function PublicNav() {
             </Link>
           ))}
           <Link
-            href="/newsletters"
+            href="/archive"
             onClick={() => setDrawerOpen(false)}
             className="mt-4 block rounded-[7px] bg-[#09090B] px-4 py-3 text-center text-sm font-bold text-white"
           >
