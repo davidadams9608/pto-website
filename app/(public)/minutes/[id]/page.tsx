@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { FileViewer } from "@/components/shared/file-viewer";
 import { getMinuteById } from "@/lib/db/queries/minutes";
+import { SITE_TIMEZONE } from "@/lib/site-config";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -25,7 +26,7 @@ export default async function MinutesViewerPage({ params }: Props) {
 
   const meetingDate = new Date(minutes.meetingDate).toLocaleDateString(
     "en-US",
-    { month: "long", day: "numeric", year: "numeric" },
+    { month: "long", day: "numeric", year: "numeric", timeZone: SITE_TIMEZONE },
   );
 
   return (
