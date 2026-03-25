@@ -6,6 +6,8 @@ import type { Metadata } from 'next';
 import { getEventById } from '@/lib/db/queries/events';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
+export const dynamic = 'force-dynamic';
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface Props {

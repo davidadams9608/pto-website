@@ -309,7 +309,13 @@ export default function EventsListPage() {
           title: `${data.title} (Copy)`,
           description: data.description ?? '',
           date: new Date(data.date).toISOString().slice(0, 10),
-          startTime: new Date(data.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Chicago' }),
+          startTime: (() => {
+            const formatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: false, timeZone: SITE_TIMEZONE });
+            const parts = formatter.formatToParts(new Date(data.date));
+            const h = (parts.find((p) => p.type === 'hour')?.value ?? '00').padStart(2, '0');
+            const m = (parts.find((p) => p.type === 'minute')?.value ?? '00').padStart(2, '0');
+            return `${h}:${m}`;
+          })(),
           location: data.location,
           zoomUrl: data.zoomUrl ?? '',
           volunteerSlots: data.volunteerSlots ?? [],

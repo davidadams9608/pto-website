@@ -9,6 +9,8 @@ import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
 import { EventCard } from '@/components/shared/events-accordion';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Westmont Elementary PTO',
   description:
