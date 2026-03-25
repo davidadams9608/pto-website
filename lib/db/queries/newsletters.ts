@@ -21,6 +21,10 @@ export async function getNewsletters(
   return { items, total: Number(total), page, limit };
 }
 
+export async function getAllNewsletters(): Promise<Newsletter[]> {
+  return db.select().from(newsletters).orderBy(desc(newsletters.publishedAt));
+}
+
 export async function getNewsletterCount(): Promise<number> {
   const [{ total }] = await db.select({ total: count() }).from(newsletters);
   return Number(total);
@@ -42,4 +46,16 @@ export async function getNewsletterById(id: string): Promise<Newsletter | undefi
     .limit(1);
 
   return rows[0];
+}
+
+export type NewNewsletter = typeof newsletters.$inferInsert;
+
+export async function createNewsletter(data: NewNewsletter): Promise<Newsletter> {
+  const [row] = await db.insert(newsletters).values(data).returning();
+  return row;
+}
+
+export async function deleteNewsletter(id: string): Promise<Newsletter | undefined> {
+  const [row] = await db.delete(newsletters).where(eq(newsletters.id, id)).returning();
+  return row;
 }
