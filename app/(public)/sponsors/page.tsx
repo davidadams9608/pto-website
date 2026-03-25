@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getActiveSponsors } from "@/lib/db/queries/sponsors";
 import type { Sponsor } from "@/lib/db/queries/sponsors";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Our Sponsors — Westmont Elementary PTO",
   description:

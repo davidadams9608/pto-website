@@ -42,7 +42,7 @@ export function FileViewer({ backHref, backLabel, title, meta, fileUrl }: FileVi
       <div className="flex justify-center bg-[#FAFAFA] p-0 md:p-8">
         <div className="w-full max-w-[900px] overflow-hidden rounded-none bg-[#52525B] shadow-lg md:rounded-lg">
           <iframe
-            src={fileUrl}
+            src={`${fileUrl}#view=FitH`}
             title={title}
             className="block h-[calc(100vh-130px)] w-full border-0 md:h-[calc(100vh-180px)]"
             allow="fullscreen"

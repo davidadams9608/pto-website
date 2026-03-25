@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getAboutText, getOfficers } from "@/lib/db/queries";
 import type { Officer } from "@/lib/db/queries/officers";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "About — Westmont Elementary PTO",
   description:
