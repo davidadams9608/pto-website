@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 
+import { ContactVolunteersModal } from '@/components/shared/contact-volunteers-modal';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -16,6 +17,8 @@ interface EventRow {
   volunteerSlots: { role: string; count: number }[] | null;
   isPublished: boolean;
   signupCount: number;
+  retentionExpired: boolean;
+  daysSinceEvent: number | null;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -62,6 +65,33 @@ function DuplicateIcon() {
     <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
       strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
       <rect x="4.5" y="4.5" width="8" height="8" rx="1.5"/><path d="M1.5 9.5V2.5a1 1 0 0 1 1-1h7"/>
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="1" y="3" width="12" height="8" rx="1.5"/><path d="M1 4l6 4 6-4"/>
+    </svg>
+  );
+}
+
+function ClockAlertIcon() {
+  return (
+    <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      <circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2.5 1.5"/>
+    </svg>
+  );
+}
+
+function BroomIcon() {
+  return (
+    <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
+      strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      <path d="M3 13l2-6"/><path d="M5 7c0-2 1-4 2-5"/><path d="M5 7c2 0 4-1 5-2"/><path d="M1.5 13h5"/>
     </svg>
   );
 }
@@ -168,13 +198,103 @@ function DeleteDialog({ event, onConfirm, onCancel }: { event: EventRow; onConfi
   );
 }
 
+// ── Purge volunteer data dialog ──────────────────────────────────────────────
+
+function PurgeDataDialog({ event, onConfirm, onCancel }: { event: EventRow; onConfirm: () => void; onCancel: () => void }) {
+  const [portalEl, setPortalEl] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    el.id = 'purge-dialog-portal';
+    document.body.appendChild(el);
+    setPortalEl(el); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: need re-render after portal DOM element is created
+
+    return () => {
+      document.body.removeChild(el);
+    };
+  }, []);
+
+  if (!portalEl) return null;
+
+  return createPortal(
+    <>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div
+        style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.3)' }}
+        onClick={onCancel}
+      />
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="purge-dialog-title"
+        aria-describedby="purge-dialog-desc"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 100000,
+          width: '100%',
+          maxWidth: '28rem',
+        }}
+      >
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+          <h2 id="purge-dialog-title" className="text-base font-semibold text-zinc-900">
+            Delete Volunteer Data
+          </h2>
+          <p id="purge-dialog-desc" className="mt-2 text-sm text-zinc-500">
+            This action can&apos;t be undone. This will permanently delete all volunteer signup data
+            for <strong className="text-zinc-700">{event.title}</strong>. This data is past the 90-day
+            retention period.
+          </p>
+          <div className="mt-8 flex justify-end gap-2">
+            <button
+              onClick={onCancel}
+              className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              style={{ backgroundColor: '#dc2626', color: '#ffffff', padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </>,
+    portalEl,
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function EventsListPage() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<EventRow | null>(null);
+  const [purgeTarget, setPurgeTarget] = useState<EventRow | null>(null);
+  const [contactTarget, setContactTarget] = useState<{ event: EventRow; recipients: { id: string; name: string; email: string }[] } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const handleContactVolunteers = async (event: EventRow) => {
+    try {
+      const res = await fetch(`/api/admin/events/${event.id}/signups`);
+      if (!res.ok) throw new Error('Failed to fetch signups');
+      const { data } = await res.json();
+      const recipients = data.signups.map((s: { id: string; name: string; email: string }) => ({
+        id: s.id,
+        name: s.name,
+        email: s.email,
+      }));
+      setContactTarget({ event, recipients });
+    } catch {
+      setToast({ message: 'Failed to load volunteer data', type: 'error' });
+    }
+  };
 
   const handleDuplicate = async (event: EventRow) => {
     try {
@@ -189,7 +309,13 @@ export default function EventsListPage() {
           title: `${data.title} (Copy)`,
           description: data.description ?? '',
           date: new Date(data.date).toISOString().slice(0, 10),
-          startTime: new Date(data.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Chicago' }),
+          startTime: (() => {
+            const formatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: false, timeZone: SITE_TIMEZONE });
+            const parts = formatter.formatToParts(new Date(data.date));
+            const h = (parts.find((p) => p.type === 'hour')?.value ?? '00').padStart(2, '0');
+            const m = (parts.find((p) => p.type === 'minute')?.value ?? '00').padStart(2, '0');
+            return `${h}:${m}`;
+          })(),
           location: data.location,
           zoomUrl: data.zoomUrl ?? '',
           volunteerSlots: data.volunteerSlots ?? [],
@@ -236,6 +362,29 @@ export default function EventsListPage() {
       setToast({ message: 'Failed to delete event', type: 'error' });
     } finally {
       setDeleteTarget(null);
+    }
+  };
+
+  const handlePurgeSignups = async () => {
+    if (!purgeTarget) return;
+    try {
+      const res = await fetch(`/api/admin/events/${purgeTarget.id}/signups`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 204) {
+        setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+        return;
+      }
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === purgeTarget.id
+            ? { ...e, signupCount: 0, retentionExpired: false }
+            : e,
+        ),
+      );
+      setToast({ message: `Volunteer data deleted for ${purgeTarget.title}`, type: 'success' });
+    } catch {
+      setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+    } finally {
+      setPurgeTarget(null);
     }
   };
 
@@ -292,16 +441,27 @@ export default function EventsListPage() {
                       {formatDate(event.date)}
                     </td>
                     <td className="px-4 py-3.5 text-sm">
-                      {slots > 0 ? (
-                        <Link
-                          href={`/admin/events/${event.id}/signups`}
-                          className="font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          {event.signupCount} / {slots}
-                        </Link>
-                      ) : (
-                        <span className="text-zinc-400">&mdash;</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {slots > 0 ? (
+                          <Link
+                            href={`/admin/events/${event.id}/signups`}
+                            className="font-medium text-blue-600 hover:text-blue-700"
+                          >
+                            {event.signupCount} / {slots}
+                          </Link>
+                        ) : (
+                          <span className="text-zinc-400">&mdash;</span>
+                        )}
+                        {event.retentionExpired && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[0.6rem] font-bold text-amber-700"
+                            title={`Event was ${event.daysSinceEvent} days ago — volunteer data should be deleted per retention policy`}
+                          >
+                            <ClockAlertIcon />
+                            90d+
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <span
@@ -330,6 +490,15 @@ export default function EventsListPage() {
                         >
                           <SignupsIcon />
                         </Link>
+                        {event.signupCount > 0 && (
+                          <button
+                            onClick={() => handleContactVolunteers(event)}
+                            title="Contact Volunteers"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-blue-200 text-blue-600 transition-colors hover:bg-blue-50"
+                          >
+                            <MailIcon />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDuplicate(event)}
                           title="Duplicate"
@@ -337,6 +506,15 @@ export default function EventsListPage() {
                         >
                           <DuplicateIcon />
                         </button>
+                        {event.retentionExpired && (
+                          <button
+                            onClick={() => setPurgeTarget(event)}
+                            title="Delete Volunteer Data (past 90-day retention)"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-amber-300 text-amber-600 transition-colors hover:bg-amber-50"
+                          >
+                            <BroomIcon />
+                          </button>
+                        )}
                         <button
                           onClick={() => setDeleteTarget(event)}
                           title="Delete"
@@ -354,8 +532,25 @@ export default function EventsListPage() {
         </div>
       )}
 
+      {/* Contact Volunteers modal */}
+      {contactTarget && (
+        <ContactVolunteersModal
+          eventId={contactTarget.event.id}
+          eventTitle={contactTarget.event.title}
+          recipients={contactTarget.recipients}
+          onClose={() => setContactTarget(null)}
+          onSuccess={(count) => {
+            setContactTarget(null);
+            setToast({ message: `Message sent to ${count} volunteer${count !== 1 ? 's' : ''}`, type: 'success' });
+          }}
+        />
+      )}
+
       {/* Delete confirmation dialog */}
       {deleteTarget && <DeleteDialog event={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />}
+
+      {/* Purge volunteer data confirmation dialog */}
+      {purgeTarget && <PurgeDataDialog event={purgeTarget} onConfirm={handlePurgeSignups} onCancel={() => setPurgeTarget(null)} />}
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}

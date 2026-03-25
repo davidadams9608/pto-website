@@ -128,3 +128,32 @@ export async function updateEvent(id: string, data: Partial<NewEvent>): Promise<
 export async function deleteEvent(id: string): Promise<void> {
   await db.delete(events).where(eq(events.id, id));
 }
+
+export type VolunteerSignup = typeof volunteerSignups.$inferSelect;
+
+export interface EventWithSignups {
+  event: Event;
+  signups: VolunteerSignup[];
+}
+
+export async function getEventWithSignups(eventId: string): Promise<EventWithSignups | null> {
+  const event = await getEventByIdAdmin(eventId);
+  if (!event) return null;
+
+  const signups = await db
+    .select()
+    .from(volunteerSignups)
+    .where(eq(volunteerSignups.eventId, eventId))
+    .orderBy(desc(volunteerSignups.createdAt));
+
+  return { event, signups };
+}
+
+export async function deleteSignupsForEvent(eventId: string): Promise<number> {
+  const deleted = await db
+    .delete(volunteerSignups)
+    .where(eq(volunteerSignups.eventId, eventId))
+    .returning({ id: volunteerSignups.id });
+
+  return deleted.length;
+}

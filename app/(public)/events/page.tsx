@@ -5,6 +5,8 @@ import type { MonthGroup } from '@/components/shared/events-accordion';
 import { getUpcomingEvents } from '@/lib/db/queries/events';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Upcoming Events — Westmont Elementary PTO',
   description:
