@@ -80,14 +80,42 @@ async function seed() {
         isPublished: false,
         volunteerSlots: null,
       },
+      {
+        title: 'Winter Holiday Craft Night',
+        description:
+          'Families gathered for a festive evening of holiday crafts, hot cocoa, and community spirit.',
+        date: new Date('2025-12-24T18:00:00-06:00'),
+        location: 'School Cafeteria',
+        isPublished: true,
+        volunteerSlots: [
+          { role: 'Craft Station Lead', count: 5 },
+          { role: 'Refreshments', count: 3 },
+        ],
+      },
+      {
+        title: 'Fall Harvest Festival',
+        description:
+          'Our biggest fundraiser of the year! Games, food trucks, a cake walk, and fun for the whole family.',
+        date: new Date('2025-11-24T10:00:00-06:00'),
+        location: 'School Grounds',
+        isPublished: true,
+        volunteerSlots: [
+          { role: 'Game Booth', count: 8 },
+          { role: 'Food Truck Coordination', count: 3 },
+          { role: 'Ticket Sales', count: 4 },
+        ],
+      },
     ])
     .returning();
 
   const picnic = insertedEvents.find((e) => e.title === 'Spring Family Picnic')!;
+  const craftNight = insertedEvents.find((e) => e.title === 'Winter Holiday Craft Night')!;
+  const harvestFest = insertedEvents.find((e) => e.title === 'Fall Harvest Festival')!;
 
-  // Volunteer signups (for Spring Picnic)
+  // Volunteer signups
   console.log('🙋 Seeding volunteer signups...');
   await db.insert(schema.volunteerSignups).values([
+    // Spring Picnic signups
     {
       eventId: picnic.id,
       name: 'Sarah Johnson',
@@ -111,6 +139,48 @@ async function seed() {
       phone: '(555) 987-6543',
       role: 'Cleanup',
       notes: 'Can arrive 30 min early',
+    },
+    // Winter Holiday Craft Night signups (exactly 90 days old — no retention badge)
+    {
+      eventId: craftNight.id,
+      name: 'Amy Torres',
+      email: 'amy@example.com',
+      phone: '(555) 222-3333',
+      role: 'Craft Station Lead',
+      notes: null,
+    },
+    {
+      eventId: craftNight.id,
+      name: 'David Kim',
+      email: 'david@example.com',
+      phone: '(555) 444-5555',
+      role: 'Refreshments',
+      notes: null,
+    },
+    // Fall Harvest Festival signups (120 days old — should show retention badge)
+    {
+      eventId: harvestFest.id,
+      name: 'Rachel Green',
+      email: 'rachel@example.com',
+      phone: '(555) 666-7777',
+      role: 'Game Booth',
+      notes: null,
+    },
+    {
+      eventId: harvestFest.id,
+      name: 'Tom Wilson',
+      email: 'tom@example.com',
+      phone: '(555) 888-9999',
+      role: 'Ticket Sales',
+      notes: 'Has cash box from last year',
+    },
+    {
+      eventId: harvestFest.id,
+      name: 'Jenny Martinez',
+      email: 'jenny@example.com',
+      phone: '(555) 111-2222',
+      role: 'Food Truck Coordination',
+      notes: null,
     },
   ]);
 
