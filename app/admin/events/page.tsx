@@ -430,7 +430,7 @@ export default function EventsListPage() {
               {events.map((event) => {
                 const slots = totalSlots(event.volunteerSlots);
                 return (
-                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0">
+                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-blue-50/40">
                     <td className="px-5 py-3.5">
                       <div className="text-sm font-semibold text-zinc-900">{event.title}</div>
                       <div className="mt-0.5 text-xs text-zinc-400">
@@ -479,14 +479,14 @@ export default function EventsListPage() {
                         <Link
                           href={`/admin/events/${event.id}/edit`}
                           title="Edit"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-blue-200 text-blue-600 transition-colors hover:bg-blue-50"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
                         >
                           <EditIcon />
                         </Link>
                         <Link
                           href={`/admin/events/${event.id}/signups`}
                           title="View Signups"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-emerald-200 text-emerald-600 transition-colors hover:bg-emerald-50"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-emerald-200 hover:text-emerald-600"
                         >
                           <SignupsIcon />
                         </Link>
@@ -494,7 +494,7 @@ export default function EventsListPage() {
                           <button
                             onClick={() => handleContactVolunteers(event)}
                             title="Contact Volunteers"
-                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-blue-200 text-blue-600 transition-colors hover:bg-blue-50"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
                           >
                             <MailIcon />
                           </button>
@@ -502,7 +502,7 @@ export default function EventsListPage() {
                         <button
                           onClick={() => handleDuplicate(event)}
                           title="Duplicate"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-zinc-700"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
                         >
                           <DuplicateIcon />
                         </button>
@@ -510,7 +510,7 @@ export default function EventsListPage() {
                           <button
                             onClick={() => setPurgeTarget(event)}
                             title="Delete Volunteer Data (past 90-day retention)"
-                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-amber-300 text-amber-600 transition-colors hover:bg-amber-50"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-amber-200 hover:text-amber-600"
                           >
                             <BroomIcon />
                           </button>
@@ -518,7 +518,7 @@ export default function EventsListPage() {
                         <button
                           onClick={() => setDeleteTarget(event)}
                           title="Delete"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-red-200 text-red-500 transition-colors hover:bg-red-50"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-red-200 hover:text-red-500"
                         >
                           <TrashIcon />
                         </button>

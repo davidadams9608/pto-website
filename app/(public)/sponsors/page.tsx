@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 import { getActiveSponsors } from "@/lib/db/queries/sponsors";
 import type { Sponsor } from "@/lib/db/queries/sponsors";
@@ -12,36 +11,36 @@ export const metadata: Metadata = {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function SponsorLogo({ sponsor }: { sponsor: Sponsor }) {
-  if (!sponsor.logoUrl) return null;
-  return (
-    <div className="relative mb-3 h-[60px] w-[100px]">
-      <Image
-        src={sponsor.logoUrl}
-        alt={`${sponsor.name} logo`}
-        fill
-        sizes="100px"
-        className="object-contain"
-      />
-    </div>
-  );
-}
-
 function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
   const inner = (
     <>
-      <SponsorLogo sponsor={sponsor} />
-      <p className="text-[0.825rem] font-bold leading-snug">{sponsor.name}</p>
-      {sponsor.websiteUrl && (
-        <p className="mt-1.5 text-[0.65rem] font-semibold text-[#1B6DC2] opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
-          Visit website ↗
-        </p>
-      )}
+      {/* Fixed logo zone */}
+      <div className="flex h-[100px] shrink-0 items-center justify-center overflow-hidden">
+        {sponsor.logoUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={sponsor.logoUrl}
+            alt={`${sponsor.name} logo`}
+            style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain' }}
+          />
+        )}
+      </div>
+      {/* Fixed text zone */}
+      <div className="flex h-[60px] shrink-0 items-center justify-center">
+        <div>
+          <p className="text-[0.825rem] font-bold leading-snug">{sponsor.name}</p>
+          {sponsor.websiteUrl && (
+            <p className="mt-1 text-[0.65rem] font-semibold text-[#1B6DC2] opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+              Visit website ↗
+            </p>
+          )}
+        </div>
+      </div>
     </>
   );
 
   const baseCard =
-    "group flex min-h-[160px] flex-col items-center justify-center rounded-[12px] border bg-white p-8 text-center text-[#09090B] transition-[border-color,box-shadow] md:min-h-[160px]";
+    "group flex h-[200px] flex-col items-center rounded-[12px] border bg-white px-6 py-5 text-center text-[#09090B] transition-[border-color,box-shadow]";
 
   if (sponsor.websiteUrl) {
     return (

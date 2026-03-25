@@ -20,6 +20,10 @@ export async function getMinutes(
   return { items, total: Number(total), page, limit };
 }
 
+export async function getAllMinutes(): Promise<MeetingMinutes[]> {
+  return db.select().from(meetingMinutes).orderBy(desc(meetingMinutes.meetingDate));
+}
+
 export async function getMinutesCount(): Promise<number> {
   const [{ total }] = await db.select({ total: count() }).from(meetingMinutes);
   return Number(total);
@@ -33,4 +37,16 @@ export async function getMinuteById(id: string): Promise<MeetingMinutes | undefi
     .limit(1);
 
   return rows[0];
+}
+
+export type NewMeetingMinutes = typeof meetingMinutes.$inferInsert;
+
+export async function createMinute(data: NewMeetingMinutes): Promise<MeetingMinutes> {
+  const [row] = await db.insert(meetingMinutes).values(data).returning();
+  return row;
+}
+
+export async function deleteMinute(id: string): Promise<MeetingMinutes | undefined> {
+  const [row] = await db.delete(meetingMinutes).where(eq(meetingMinutes.id, id)).returning();
+  return row;
 }

@@ -50,12 +50,13 @@ export async function deleteOfficer(id: string): Promise<void> {
 }
 
 export async function reorderOfficers(ids: string[]): Promise<void> {
-  await db.transaction(async (tx) => {
-    for (let i = 0; i < ids.length; i++) {
-      await tx
+  const now = new Date();
+  await Promise.all(
+    ids.map((id, i) =>
+      db
         .update(officers)
-        .set({ displayOrder: i + 1, updatedAt: new Date() })
-        .where(eq(officers.id, ids[i]));
-    }
-  });
+        .set({ displayOrder: i + 1, updatedAt: now })
+        .where(eq(officers.id, id)),
+    ),
+  );
 }

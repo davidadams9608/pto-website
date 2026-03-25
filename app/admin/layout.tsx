@@ -4,13 +4,14 @@ import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navLinks = [
+const navLinks: { href: string; label: string; disabled?: boolean }[] = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/events", label: "Events" },
   { href: "/admin/archive", label: "Archive" },
   { href: "/admin/about", label: "About" },
   { href: "/admin/sponsors", label: "Sponsors" },
-  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/homepage", label: "Homepage", disabled: true },
+  { href: "/admin/settings", label: "Settings", disabled: true },
 ];
 
 export default function AdminLayout({
@@ -33,20 +34,37 @@ export default function AdminLayout({
 
         <nav aria-label="Admin navigation" className="flex-1 px-2 py-4">
           <ul className="space-y-1">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    pathname === link.href
-                      ? "bg-zinc-100 text-zinc-900"
-                      : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
+
+              if (link.disabled) {
+                return (
+                  <li key={link.href}>
+                    <span
+                      className="block cursor-default rounded-md px-3 py-2 text-sm font-medium text-zinc-300"
+                      title="Coming soon"
+                    >
+                      {link.label}
+                    </span>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-zinc-100 text-zinc-900"
+                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </aside>

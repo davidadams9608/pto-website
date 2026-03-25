@@ -12,8 +12,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      // Cloudflare R2 — production logo uploads
+      // Cloudflare R2 — production uploads
       { protocol: "https", hostname: "**.r2.cloudflarestorage.com" },
+      { protocol: "https", hostname: "**.r2.dev" },
       // Seed / dev placeholder images
       { protocol: "https", hostname: "placeholder.example.com" },
     ],
