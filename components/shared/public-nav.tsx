@@ -30,9 +30,9 @@ export function PublicNav() {
         aria-label="Main navigation"
         className="flex h-[60px] items-center border-b border-[#E4E4E7] bg-white px-8"
       >
-        {/* Left: logo (flex-1 so center links are truly centered) */}
-        <div className="flex flex-1 items-center">
-          <Link href="/" aria-label="Westmont Elementary PTO — Home">
+        {/* Left: logo + site name (flex-1 so center links are truly centered) */}
+        <div className="flex flex-1 items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5" aria-label="Westmont Elementary PTO — Home">
             <Image
               src="/westmont-logo.svg"
               alt="Westmont Elementary PTO"
@@ -40,6 +40,9 @@ export function PublicNav() {
               height={36}
               priority
             />
+            <span className="text-[0.9rem] font-extrabold tracking-tight text-[#09090B] lg:hidden">
+              Westmont PTO
+            </span>
           </Link>
         </div>
 
