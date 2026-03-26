@@ -19,12 +19,14 @@ function Spinner() {
 interface VolunteerSignupFormProps {
   eventId: string;
   spotsLeft: number;
+  roles: string[];
 }
 
-export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormProps) {
+export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSignupFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -42,7 +44,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormP
     }
 
     // Client-side validation
-    const result = volunteerSignupSchema.safeParse({ name, email, phone });
+    const result = volunteerSignupSchema.safeParse({ name, email, phone, role });
     if (!result.success) {
       const errors: Record<string, string> = {};
       for (const issue of result.error.issues) {
@@ -59,7 +61,12 @@ export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormP
       const res = await fetch(`/api/events/${eventId}/volunteer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: result.data.name, email: result.data.email, phone: result.data.phone }),
+        body: JSON.stringify({
+          name: result.data.name,
+          email: result.data.email,
+          phone: result.data.phone,
+          role: result.data.role,
+        }),
       });
 
       if (res.status === 429) {
@@ -85,7 +92,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormP
   // Success state
   if (state === 'success') {
     return (
-      <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
+      <div className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M20 6 L9 17 L4 12" />
@@ -105,7 +112,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormP
     }`;
 
   return (
-    <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
+    <div className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
       {/* Card header */}
       <div className="mb-5 flex items-center justify-between border-b border-[#E4E4E7] pb-4">
         <span className="text-[1rem] font-extrabold tracking-tight md:text-[1.1rem]">
@@ -178,6 +185,26 @@ export function VolunteerSignupForm({ eventId, spotsLeft }: VolunteerSignupFormP
               className={inputClass('phone')}
             />
             {fieldErrors.phone && <p className="mt-1 text-[0.75rem] font-medium text-red-600">{fieldErrors.phone}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="vol-role" className="mb-1 block text-[0.7rem] font-bold uppercase tracking-[0.06em] text-[#71717A]">
+              Preferred Role
+            </label>
+            <select
+              id="vol-role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              disabled={state === 'submitting'}
+              className={inputClass('role')}
+            >
+              <option value="">Select a role...</option>
+              {roles.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+              <option value="Any">Any (no preference)</option>
+            </select>
+            {fieldErrors.role && <p className="mt-1 text-[0.75rem] font-medium text-red-600">{fieldErrors.role}</p>}
           </div>
         </div>
 

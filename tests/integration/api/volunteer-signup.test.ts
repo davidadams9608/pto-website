@@ -127,6 +127,7 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
     name: 'Jane Smith',
     email: 'jane-vol-test@example.com',
     phone: '(555) 123-4567',
+    role: 'Setup',
   };
 
   it('returns 201 for valid signup', async () => {
@@ -232,6 +233,7 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer (rate limited)', () => 
           name: 'Test',
           email: 'test@example.com',
           phone: '(555) 123-4567',
+          role: 'Setup',
         }),
       }),
       { params: Promise.resolve({ id: 'any-id' }) },

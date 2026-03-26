@@ -186,7 +186,11 @@ export default async function EventDetailPage({ params }: Props) {
             {/* ── Right: signup card or volunteering illustration ── */}
             {hasSignup ? (
               <aside>
-                <VolunteerSignupForm eventId={id} spotsLeft={spotsLeft} />
+                <VolunteerSignupForm
+                  eventId={id}
+                  spotsLeft={spotsLeft}
+                  roles={(event.volunteerSlots as VolunteerSlot[] ?? []).map((s) => s.role)}
+                />
               </aside>
             ) : (
               <aside className="hidden md:flex md:justify-center md:pt-6" aria-hidden="true">

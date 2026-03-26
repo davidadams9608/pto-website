@@ -6,6 +6,7 @@ const validPayload = {
   name: 'Jane Smith',
   email: 'jane@example.com',
   phone: '(555) 123-4567',
+  role: 'Setup',
 };
 
 describe('volunteerSignupSchema', () => {
@@ -74,6 +75,16 @@ describe('volunteerSignupSchema', () => {
   it('rejects empty phone', () => {
     const result = volunteerSignupSchema.safeParse({ ...validPayload, phone: '' });
     expect(result.success).toBe(false);
+  });
+
+  it('rejects empty role', () => {
+    const result = volunteerSignupSchema.safeParse({ ...validPayload, role: '' });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts "Any" as role', () => {
+    const result = volunteerSignupSchema.safeParse({ ...validPayload, role: 'Any' });
+    expect(result.success).toBe(true);
   });
 
   it('passes when honeypot is empty string', () => {

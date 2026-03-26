@@ -53,7 +53,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     const { id: eventId } = await params;
-    const { name, email, phone } = result.data;
+    const { name, email, phone, role } = result.data;
 
     // 4. Event existence + published check
     const event = await getEventById(eventId);
@@ -79,7 +79,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     // 7. Insert record
-    await createVolunteerSignup({ eventId, name, email, phone });
+    await createVolunteerSignup({ eventId, name, email, phone, role });
 
     // 8. Send confirmation email — best-effort, don't fail signup if email fails
     try {

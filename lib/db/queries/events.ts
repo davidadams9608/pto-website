@@ -107,6 +107,7 @@ export async function createVolunteerSignup(data: {
   name: string;
   email: string;
   phone: string;
+  role: string;
 }): Promise<VolunteerSignup> {
   const rows = await db
     .insert(volunteerSignups)
@@ -115,7 +116,7 @@ export async function createVolunteerSignup(data: {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      role: 'Unassigned',
+      role: data.role,
     })
     .returning();
 

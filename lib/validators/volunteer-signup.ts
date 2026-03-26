@@ -12,6 +12,7 @@ export const volunteerSignupSchema = z.object({
     .refine((val) => usPhoneRegex.test(val.trim()), {
       message: 'Must be a valid US phone number',
     }),
+  role: z.string().min(1, 'Please select a role'),
   honeypot: z.string().optional(),
 });
 
