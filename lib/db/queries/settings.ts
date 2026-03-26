@@ -25,3 +25,29 @@ export async function updateSetting(key: string, value: string): Promise<void> {
     .set({ value, updatedAt: new Date() })
     .where(eq(siteSettings.key, key));
 }
+
+export async function getSettings(keys: string[]): Promise<Record<string, string>> {
+  const rows = await db.select().from(siteSettings);
+  const result: Record<string, string> = {};
+  for (const row of rows) {
+    if (keys.includes(row.key)) {
+      result[row.key] = row.value;
+    }
+  }
+  return result;
+}
+
+export async function updateSettings(settings: { key: string; value: string }[]): Promise<void> {
+  const now = new Date();
+  await Promise.all(
+    settings.map(({ key, value }) =>
+      db
+        .insert(siteSettings)
+        .values({ key, value, updatedAt: now })
+        .onConflictDoUpdate({
+          target: siteSettings.key,
+          set: { value, updatedAt: now },
+        }),
+    ),
+  );
+}

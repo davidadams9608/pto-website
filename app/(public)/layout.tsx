@@ -1,18 +1,34 @@
+import { connection } from "next/server";
 import Link from "next/link";
 
 import { PublicNav } from "@/components/shared/public-nav";
 import { getPublicFlag } from "@/lib/flags";
+import { getSettings } from "@/lib/db/queries/settings";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await connection(); // Force dynamic rendering so footer settings are always fresh
   const isPublicSiteEnabled = getPublicFlag("PUBLIC_SITE");
 
   if (!isPublicSiteEnabled) {
     return <div className="flex min-h-screen flex-col">{children}</div>;
   }
+
+  const settings = await getSettings([
+    'social_facebook',
+    'social_instagram',
+    'social_school_website',
+    'contact_email',
+    'contact_phone',
+  ]);
+
+  const facebookUrl = settings.social_facebook || '';
+  const instagramUrl = settings.social_instagram || '';
+  const contactEmail = settings.contact_email || '';
+  const schoolWebsite = settings.social_school_website || '';
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAFA] text-[#09090B]">
@@ -24,7 +40,7 @@ export default function PublicLayout({
       <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#71717A]">
         <div className="mx-auto max-w-[1100px]">
           {/* 4-column grid */}
-          <div className="grid grid-cols-1 gap-6 border-b border-[#27272A] pb-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
+          <div className="grid grid-cols-1 gap-6 border-b border-[#27272A] pb-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
             {/* About */}
             <div>
               <p className="mb-2 text-[0.9rem] font-extrabold tracking-tight text-white">
@@ -46,7 +62,6 @@ export default function PublicLayout({
                   { href: "/about", label: "About" },
                   { href: "/events", label: "Events" },
                   { href: "/archive", label: "Archive" },
-                  { href: "/sponsors", label: "Sponsors" },
                   { href: "/donate", label: "Donate" },
                 ].map((link) => (
                   <li key={link.href}>
@@ -67,55 +82,41 @@ export default function PublicLayout({
                 Connect
               </h2>
               <ul className="flex flex-col gap-2.5">
-                <li>
-                  <a
-                    href="https://www.facebook.com/ptowestmont"
-                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
-                  >
-                    Facebook
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://we.spcsne.org"
-                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
-                  >
-                    Westmont Elementary School
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    href="/contact"
-                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h2 className="mb-4 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#52525B]">
-                Contact
-              </h2>
-              <ul className="flex flex-col gap-2.5">
-                <li>
-                  <a
-                    href="mailto:pto@westmontpto.org"
-                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
-                  >
-                    pto@westmontpto.org
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="tel:+1-555-000-0000"
-                    className="text-[0.825rem] font-medium transition-colors hover:text-white"
-                  >
-                    (555) 000-0000
-                  </a>
-                </li>
+                {facebookUrl && (
+                  <li>
+                    <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-[0.825rem] font-medium transition-colors hover:text-white">
+                      Facebook
+                    </a>
+                  </li>
+                )}
+                {instagramUrl && (
+                  <li>
+                    <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[0.825rem] font-medium transition-colors hover:text-white">
+                      Instagram
+                    </a>
+                  </li>
+                )}
+                {schoolWebsite && (
+                  <li>
+                    <a href={schoolWebsite} target="_blank" rel="noopener noreferrer" className="text-[0.825rem] font-medium transition-colors hover:text-white">
+                      Westmont Elementary School
+                    </a>
+                  </li>
+                )}
+                {contactEmail && (
+                  <li>
+                    <a href={`mailto:${contactEmail}`} className="text-[0.825rem] font-medium transition-colors hover:text-white">
+                      Email
+                    </a>
+                  </li>
+                )}
+                {settings.contact_phone && (
+                  <li>
+                    <a href={`tel:${settings.contact_phone}`} className="text-[0.825rem] font-medium transition-colors hover:text-white">
+                      {settings.contact_phone}
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
@@ -144,7 +145,6 @@ export default function PublicLayout({
                 width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
                 aria-hidden="true"
               >
-                {/* Paw print: central pad + 4 toe pads */}
                 <ellipse cx="12" cy="15" rx="5" ry="4.2"/>
                 <ellipse cx="6.5" cy="10" rx="2.2" ry="2.8" transform="rotate(-15 6.5 10)"/>
                 <ellipse cx="17.5" cy="10" rx="2.2" ry="2.8" transform="rotate(15 17.5 10)"/>
