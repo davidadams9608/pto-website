@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -20,14 +20,17 @@ export function NewsletterSignup() {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [error, setError] = useState('');
-  const [alreadySubscribed] = useState(() => {
-    if (typeof window === 'undefined') return false;
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+
+  useEffect(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY) === 'true';
+      if (localStorage.getItem(STORAGE_KEY) === 'true') {
+        setAlreadySubscribed(true); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: reading localStorage requires mount
+      }
     } catch {
-      return false;
+      // localStorage unavailable
     }
-  });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

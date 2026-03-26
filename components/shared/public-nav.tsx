@@ -22,14 +22,15 @@ export function PublicNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [subscribed, setSubscribed] = useState(() => {
-    if (typeof window === 'undefined') return true;
+  const [subscribed, setSubscribed] = useState(true); // default hidden to avoid hydration mismatch
+
+  useEffect(() => {
     try {
-      return localStorage.getItem('pto-newsletter-subscribed') === 'true';
+      setSubscribed(localStorage.getItem('pto-newsletter-subscribed') === 'true'); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: reading localStorage requires mount
     } catch {
-      return false;
+      setSubscribed(false); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: fallback for localStorage unavailable
     }
-  });
+  }, []);
 
   const scrollToNewsletter = useCallback(() => {
     const scrollToEl = () => {
@@ -154,7 +155,7 @@ export function PublicNav() {
               key={link.href}
               href={link.href}
               onClick={() => setDrawerOpen(false)}
-              className={`block border-b border-[#E4E4E7] py-3.5 text-[0.95rem] font-semibold transition-colors ${
+              className={`block border-b border-[#E4E4E7] py-3.5 text-[0.95rem] font-semibold transition-colors last:border-b-0 ${
                 isActive(link.href, pathname)
                   ? "text-[#1B6DC2]"
                   : "text-[#09090B]"

@@ -127,3 +127,10 @@
     @apply font-sans;
   }
 }
+
+/* Mobile-only scroll snapping for homepage sections */
+@media (max-width: 767px) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+}
