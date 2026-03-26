@@ -8,6 +8,7 @@ const templateData = {
   eventDate: 'Saturday, April 12, 2026',
   eventTime: '1:00 PM',
   eventLocation: 'Westmont Elementary School Field',
+  role: 'Setup',
 };
 
 describe('volunteerConfirmationTemplate', () => {
@@ -40,6 +41,12 @@ describe('volunteerConfirmationTemplate', () => {
   it('includes the event location', () => {
     const html = volunteerConfirmationTemplate(templateData);
     expect(html).toContain('Westmont Elementary School Field');
+  });
+
+  it('includes the role preference', () => {
+    const html = volunteerConfirmationTemplate(templateData);
+    expect(html).toContain('Setup');
+    expect(html).toContain('Role preference');
   });
 
   it('includes the PTO footer', () => {

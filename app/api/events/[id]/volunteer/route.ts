@@ -100,6 +100,7 @@ export async function POST(request: Request, { params }: RouteContext) {
             hour: 'numeric', minute: '2-digit', hour12: true, timeZone: SITE_TIMEZONE,
           }),
           eventLocation: event.location,
+          role,
         }),
       });
       if (!emailResult.success) {

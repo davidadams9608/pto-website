@@ -4,10 +4,11 @@ interface VolunteerConfirmationData {
   eventDate: string;
   eventTime: string;
   eventLocation: string;
+  role: string;
 }
 
 export function volunteerConfirmationTemplate(data: VolunteerConfirmationData): string {
-  const { volunteerName, eventTitle, eventDate, eventTime, eventLocation } = data;
+  const { volunteerName, eventTitle, eventDate, eventTime, eventLocation, role } = data;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -28,8 +29,11 @@ export function volunteerConfirmationTemplate(data: VolunteerConfirmationData): 
         <p style="font-size:14px;color:#71717a;margin:0 0 4px;">
           <strong>Time:</strong> ${escapeHtml(eventTime)}
         </p>
-        <p style="font-size:14px;color:#71717a;margin:0;">
+        <p style="font-size:14px;color:#71717a;margin:0 0 4px;">
           <strong>Location:</strong> ${escapeHtml(eventLocation)}
+        </p>
+        <p style="font-size:14px;color:#71717a;margin:0;">
+          <strong>Role preference:</strong> ${escapeHtml(role)}
         </p>
       </div>
 
