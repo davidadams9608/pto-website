@@ -66,6 +66,22 @@ export default function AdminLayout({
               );
             })}
           </ul>
+
+          <div className="mt-4 border-t border-zinc-200 px-1 pt-4">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+            >
+              View Site
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 3.5h-2.5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2.5" />
+                <path d="M9.5 2.5h4v4" />
+                <path d="M13.5 2.5l-6 6" />
+              </svg>
+            </a>
+          </div>
         </nav>
       </aside>
 

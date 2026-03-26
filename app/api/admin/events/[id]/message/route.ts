@@ -1,6 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 
-import { getEventByIdAdmin } from '@/lib/db/queries/events';
+import { getEventByIdAdmin, getVolunteersByIds } from '@/lib/db/queries/events';
+import { getEmailProvider } from '@/lib/email';
+import { adminToVolunteersTemplate } from '@/lib/email/templates/admin-to-volunteers';
 import { sendMessageSchema } from '@/lib/validators/messages';
 
 interface RouteContext {
@@ -25,19 +27,53 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     const { recipientIds, subject, body: messageBody, ccAdmin } = result.data;
 
-    // Stub: log message details. Actual Resend integration is M7 scope.
-    console.log('[Contact Volunteers] Stub — email not sent');
-    console.log(`  Event: ${event.title} (${id})`);
-    console.log(`  Recipients: ${recipientIds.length} volunteer(s)`);
-    console.log(`  Subject: ${subject}`);
-    console.log(`  Body: ${messageBody.slice(0, 100)}${messageBody.length > 100 ? '...' : ''}`);
-    console.log(`  CC Admin: ${ccAdmin}`);
+    // Look up volunteer email addresses
+    const volunteers = await getVolunteersByIds(recipientIds);
+    const recipientEmails = volunteers.map((v) => v.email);
+
+    if (recipientEmails.length === 0) {
+      return Response.json({ error: 'No valid recipients found' }, { status: 400 });
+    }
+
+    // Get admin email for reply-to and CC
+    const user = await currentUser();
+    const adminEmail = user?.emailAddresses?.[0]?.emailAddress;
+
+    const emailProvider = getEmailProvider();
+    const emailResult = await emailProvider.sendEmail({
+      to: recipientEmails,
+      subject,
+      html: adminToVolunteersTemplate({
+        body: messageBody,
+        eventTitle: event.title,
+      }),
+      replyTo: adminEmail,
+    });
+
+    if (!emailResult.success) {
+      return Response.json(
+        { error: 'Failed to send message. Please try again.' },
+        { status: 500 },
+      );
+    }
+
+    // CC admin separately if requested
+    if (ccAdmin && adminEmail) {
+      await emailProvider.sendEmail({
+        to: adminEmail,
+        subject: `[CC] ${subject}`,
+        html: adminToVolunteersTemplate({
+          body: messageBody,
+          eventTitle: event.title,
+        }),
+      });
+    }
 
     return Response.json({
       data: {
         success: true,
-        message: 'Message queued (email integration pending)',
-        recipientCount: recipientIds.length,
+        message: `Message sent to ${recipientEmails.length} volunteer${recipientEmails.length !== 1 ? 's' : ''}`,
+        recipientCount: recipientEmails.length,
       },
     });
   } catch (err) {

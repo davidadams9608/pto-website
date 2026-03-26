@@ -4,6 +4,15 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 // Mock Clerk auth
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'test-admin-user' }),
+  currentUser: vi.fn().mockResolvedValue({
+    emailAddresses: [{ emailAddress: 'admin@westmontpto.org' }],
+  }),
+}));
+
+// Mock email provider
+const sendEmailMock = vi.fn().mockResolvedValue({ success: true });
+vi.mock('@/lib/email', () => ({
+  getEmailProvider: vi.fn(() => ({ sendEmail: sendEmailMock })),
 }));
 
 const hasDb = !!process.env.DATABASE_URL;
@@ -95,7 +104,8 @@ describe.skipIf(!hasDb)('Admin volunteer management API', () => {
   });
 
   describe('POST /api/admin/events/[id]/message', () => {
-    it('succeeds with valid payload', async () => {
+    it('sends email to selected volunteers', async () => {
+      sendEmailMock.mockClear();
       const req = new Request('http://localhost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,6 +121,14 @@ describe.skipIf(!hasDb)('Admin volunteer management API', () => {
       const body = await res.json();
       expect(body.data.success).toBe(true);
       expect(body.data.recipientCount).toBe(2);
+
+      // Verify email was sent to volunteers
+      expect(sendEmailMock).toHaveBeenCalled();
+      const firstCall = sendEmailMock.mock.calls[0][0];
+      expect(firstCall.to).toEqual(expect.arrayContaining(['a@test.com', 'b@test.com']));
+      expect(firstCall.subject).toBe('Test message');
+      expect(firstCall.html).toContain('Hello volunteers!');
+      expect(firstCall.replyTo).toBe('admin@westmontpto.org');
     });
 
     it('rejects missing recipients', async () => {
