@@ -125,13 +125,16 @@ export default function PublicLayout({
             {/* Left: copyright + admin link (admin desktop-only) */}
             <span>
               &copy; 2026 Westmont Elementary PTO &middot; This website was
-              developed with AI-assisted tools &middot;{' '}
-              <Link
-                href="/admin"
-                className="hidden transition-colors hover:text-white md:inline"
-              >
-                Admin
-              </Link>
+              developed with AI-assisted tools
+              <span className="hidden md:inline">
+                {' '}&middot;{' '}
+                <Link
+                  href="/admin"
+                  className="transition-colors hover:text-white"
+                >
+                  Admin
+                </Link>
+              </span>
             </span>
 
             {/* Right: Go Wildcats */}

@@ -193,26 +193,29 @@ export default async function HomePage() {
                 and volunteer opportunities.
               </p>
               <div className="flex flex-col">
-                {newsletters.map((nl) => (
-                  <Link
-                    key={nl.id}
-                    href={`/archive/newsletters/${nl.id}`}
-                    className="flex items-center justify-between border-b border-[#E4E4E7] py-4 text-[#09090B] no-underline transition-opacity hover:opacity-70"
-                  >
-                    <div>
-                      <p className="text-[0.875rem] font-semibold">{nl.title}</p>
-                      <p className="mt-[0.15rem] text-[0.775rem] text-[#71717A]">
-                        Published{' '}
-                        {nl.publishedAt.toLocaleDateString('en-US', {
-                          month: 'long', day: 'numeric', year: 'numeric', timeZone: SITE_TIMEZONE,
-                        })}
-                      </p>
+                {newsletters.map((nl) => {
+                  const pubDate = nl.publishedAt.toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric', timeZone: SITE_TIMEZONE,
+                  });
+                  const inner = (
+                    <>
+                      <div>
+                        <p className="text-[0.875rem] font-semibold">{nl.title}</p>
+                        <p className="mt-[0.15rem] text-[0.775rem] text-[#71717A]">Published {pubDate}</p>
+                      </div>
+                      <span className="ml-4 shrink-0 rounded-[4px] bg-[#EFF6FF] px-2 py-[0.2rem] text-[0.65rem] font-bold text-[#1B6DC2]">PDF</span>
+                    </>
+                  );
+                  const linkClass = "flex items-center justify-between border-b border-[#E4E4E7] py-4 text-[#09090B] no-underline transition-opacity hover:opacity-70";
+                  return (
+                    <div key={nl.id}>
+                      {/* Desktop: file viewer */}
+                      <Link href={`/archive/newsletters/${nl.id}`} className={`${linkClass} hidden md:flex`}>{inner}</Link>
+                      {/* Mobile: open PDF directly */}
+                      <a href={nl.pdfUrl} target="_blank" rel="noopener noreferrer" className={`${linkClass} flex md:hidden`}>{inner}</a>
                     </div>
-                    <span className="ml-4 shrink-0 rounded-[4px] bg-[#EFF6FF] px-2 py-[0.2rem] text-[0.65rem] font-bold text-[#1B6DC2]">
-                      PDF
-                    </span>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
