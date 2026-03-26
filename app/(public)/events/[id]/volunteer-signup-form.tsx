@@ -107,7 +107,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
   }
 
   const inputClass = (field: string) =>
-    `w-full rounded-[8px] border px-3 py-[0.6rem] text-[0.875rem] text-[#09090B] placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
+    `w-full rounded-[8px] border px-3 py-[0.6rem] text-[16px] md:text-[0.875rem] text-[#09090B] placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
       fieldErrors[field] ? 'border-red-600' : 'border-[#E4E4E7]'
     }`;
 
