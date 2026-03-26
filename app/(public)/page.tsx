@@ -88,7 +88,7 @@ export default async function HomePage() {
                 href="/archive"
                 className="text-[0.875rem] font-semibold text-[#71717A] transition-colors hover:text-[#09090B]"
               >
-                Newsletter archive ↗
+                Newsletter archive <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
               </Link>
             </div>
           </div>
@@ -280,11 +280,11 @@ export default async function HomePage() {
                   className="group relative inline-block rounded-[8px] border border-[#BFDBFE] bg-[#FAFAFA] px-6 py-3 text-[0.825rem] font-semibold text-[#1B6DC2] transition hover:shadow-[0_2px_8px_rgba(27,109,194,0.06)] md:border-[#E4E4E7] md:text-[#71717A] md:hover:border-[#BFDBFE] md:hover:text-[#09090B]"
                 >
                   {sponsor.name}
-                  {/* Mobile only: inline ↗ arrow */}
-                  <span className="md:hidden"> ↗</span>
+                  {/* Mobile only: inline arrow */}
+                  <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 ml-0.5 inline md:hidden" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
                   {/* Desktop only: tooltip below on hover */}
                   <span className="pointer-events-none absolute left-1/2 top-full mt-1 hidden -translate-x-1/2 whitespace-nowrap text-[0.58rem] font-semibold text-[#1B6DC2] opacity-0 transition-opacity group-hover:opacity-100 md:block">
-                    Visit website ↗
+                    Visit website <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
                   </span>
                 </a>
               ) : (

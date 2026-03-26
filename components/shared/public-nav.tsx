@@ -40,7 +40,7 @@ export function PublicNav() {
               height={36}
               priority
             />
-            <span className="text-[0.9rem] font-extrabold tracking-tight text-[#09090B] lg:hidden">
+            <span className="text-[0.9rem] font-extrabold tracking-tight text-[#09090B] md:hidden lg:inline">
               Westmont PTO
             </span>
           </Link>

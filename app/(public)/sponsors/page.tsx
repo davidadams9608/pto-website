@@ -33,7 +33,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
           <p className="text-[0.825rem] font-bold leading-snug">{sponsor.name}</p>
           {sponsor.websiteUrl && (
             <p className="mt-1 text-[0.65rem] font-semibold text-[#1B6DC2] opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
-              Visit website ↗
+              Visit website <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
             </p>
           )}
         </div>
