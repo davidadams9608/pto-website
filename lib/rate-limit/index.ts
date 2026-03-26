@@ -18,3 +18,12 @@ export const newsletterRateLimit = redis
       prefix: 'ratelimit:newsletter',
     })
   : null;
+
+/** 5 requests per IP per minute for volunteer signup */
+export const volunteerSignupRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, '1 m'),
+      prefix: 'ratelimit:volunteer-signup',
+    })
+  : null;

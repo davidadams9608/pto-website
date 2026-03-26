@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'test-admin-user' }),
@@ -9,16 +9,41 @@ const hasDb = !!process.env.DATABASE_URL;
 
 describe.skipIf(!hasDb)('Settings audit log', () => {
   let PUT: (request: Request) => Promise<Response>;
+  let GET: () => Promise<Response>;
   let db: typeof import('@/lib/db')['db'];
   let settingsAuditLog: typeof import('@/lib/db/schema')['settingsAuditLog'];
+  let originalValues: Record<string, string>;
 
   beforeAll(async () => {
     const route = await import('@/app/api/admin/settings/route');
     PUT = route.PUT;
+    GET = route.GET;
     const dbModule = await import('@/lib/db');
     db = dbModule.db;
     const schema = await import('@/lib/db/schema');
     settingsAuditLog = schema.settingsAuditLog;
+
+    // Save original values for keys we'll modify
+    const res = await GET();
+    const body = await res.json();
+    originalValues = {};
+    for (const key of ['venmo_url', 'contact_email', 'contact_phone']) {
+      if (body.data[key] !== undefined) {
+        originalValues[key] = body.data[key];
+      }
+    }
+  });
+
+  afterAll(async () => {
+    // Restore original values
+    const settings = Object.entries(originalValues).map(([key, value]) => ({ key, value }));
+    if (settings.length > 0) {
+      await PUT(new Request('http://localhost', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings }),
+      }));
+    }
   });
 
   it('creates audit log entry when a setting value changes', async () => {

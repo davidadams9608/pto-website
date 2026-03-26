@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
 import { events, volunteerSignups } from '@/lib/db/schema';
@@ -78,6 +78,57 @@ export async function getEventById(id: string): Promise<Event | undefined> {
     .limit(1);
 
   return rows[0];
+}
+
+export async function getSignupCountForEvent(eventId: string): Promise<number> {
+  const rows = await db
+    .select({ count: count() })
+    .from(volunteerSignups)
+    .where(eq(volunteerSignups.eventId, eventId));
+
+  return rows[0]?.count ?? 0;
+}
+
+export async function getVolunteerSignupByEmail(
+  eventId: string,
+  email: string,
+): Promise<VolunteerSignup | undefined> {
+  const rows = await db
+    .select()
+    .from(volunteerSignups)
+    .where(and(eq(volunteerSignups.eventId, eventId), eq(volunteerSignups.email, email)))
+    .limit(1);
+
+  return rows[0];
+}
+
+export async function createVolunteerSignup(data: {
+  eventId: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}): Promise<VolunteerSignup> {
+  const rows = await db
+    .insert(volunteerSignups)
+    .values({
+      eventId: data.eventId,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      role: data.role,
+    })
+    .returning();
+
+  return rows[0];
+}
+
+export async function getVolunteersByIds(ids: string[]): Promise<VolunteerSignup[]> {
+  if (ids.length === 0) return [];
+  return db
+    .select()
+    .from(volunteerSignups)
+    .where(inArray(volunteerSignups.id, ids));
 }
 
 // ── Admin queries ──────────────────────────────────────────────────────────

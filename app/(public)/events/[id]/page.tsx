@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-import { getEventById } from '@/lib/db/queries/events';
+import { getEventById, getSignupCountForEvent } from '@/lib/db/queries/events';
+import { VolunteerSignupForm } from './volunteer-signup-form';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
 export const dynamic = 'force-dynamic';
@@ -104,6 +105,8 @@ export default async function EventDetailPage({ params }: Props) {
   const date = new Date(event.date);
   const slots = totalSlots(event.volunteerSlots);
   const hasSignup = slots > 0;
+  const signupCount = hasSignup ? await getSignupCountForEvent(id) : 0;
+  const spotsLeft = Math.max(0, slots - signupCount);
 
   // Split description on double-newlines into paragraphs
   const paragraphs = event.description
@@ -183,35 +186,11 @@ export default async function EventDetailPage({ params }: Props) {
             {/* ── Right: signup card or volunteering illustration ── */}
             {hasSignup ? (
               <aside>
-                <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
-                  {/* Card header */}
-                  <div className="mb-5 flex items-center justify-between border-b border-[#E4E4E7] pb-4">
-                    <span className="text-[1rem] font-extrabold tracking-tight md:text-[1.1rem]">
-                      Volunteer Signup
-                    </span>
-                    <span className="whitespace-nowrap rounded-full border border-[#BBF7D0] bg-[#DCFCE7] px-2.5 py-0.5 text-[0.7rem] font-bold text-[#16A34A]">
-                      {slots} volunteer {slots === 1 ? 'spot' : 'spots'}
-                    </span>
-                  </div>
-
-                  {/* Signup closed — form coming in M7 */}
-                  <div className="px-4 py-6 text-center text-[#71717A]">
-                    <svg
-                      width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                      className="mx-auto mb-3 text-[#E4E4E7]"
-                      aria-hidden="true"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2"/>
-                      <path d="M16 2v4M8 2v4M3 10h18"/>
-                      <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
-                    </svg>
-                    <h3 className="mb-1 text-[0.95rem] font-bold text-[#09090B]">Signup opens soon</h3>
-                    <p className="text-[0.8rem] leading-[1.5]">
-                      Check back closer to the event date to sign up as a volunteer.
-                    </p>
-                  </div>
-                </div>
+                <VolunteerSignupForm
+                  eventId={id}
+                  spotsLeft={spotsLeft}
+                  roles={(event.volunteerSlots as VolunteerSlot[] ?? []).map((s) => s.role)}
+                />
               </aside>
             ) : (
               <aside className="hidden md:flex md:justify-center md:pt-6" aria-hidden="true">
