@@ -140,7 +140,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── Events ───────────────────────────────────────────────────────── */}
-      <div className="snap-start bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
+      <div className="bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
         <div className="mx-auto max-w-[1100px]">
           <div className="mb-8 flex items-end justify-between">
             <div>
@@ -187,7 +187,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── Newsletter ────────────────────────────────────────────────────── */}
-      <div className="snap-start bg-[#FAFAFA] px-6 py-[3rem] md:px-8 md:py-[5rem]">
+      <div className="bg-[#FAFAFA] px-6 py-[3rem] md:px-8 md:py-[5rem]">
         <div className="mx-auto max-w-[1100px]">
           <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-[3rem]">
 
@@ -239,7 +239,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── Sponsors ─────────────────────────────────────────────────────── */}
-      <div className="snap-start bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
+      <div className="bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
         <div className="mx-auto max-w-[1100px]">
           {sponsors.length > 0 && (
             <>
@@ -322,7 +322,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── CTA Band ─────────────────────────────────────────────────────── */}
-      <div className="snap-start bg-[#1B6DC2] px-8 py-14 text-center">
+      <div className="bg-[#1B6DC2] px-8 py-14 text-center">
         <h2 className="mb-2 text-[1.75rem] font-extrabold tracking-[-0.025em] text-white">
           Ready to get involved?
         </h2>
