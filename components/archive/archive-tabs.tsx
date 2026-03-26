@@ -104,28 +104,40 @@ function NewslettersTab({ newsletters }: { newsletters: Newsletter[] }) {
                   const pubDate = new Date(nl.publishedAt);
                   return (
                     <li key={nl.id}>
+                      {/* Desktop: open in file viewer */}
                       <Link
                         href={`/archive/newsletters/${nl.id}`}
-                        className="flex items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70"
+                        className="hidden items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70 md:flex"
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <span
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]"
-                            aria-hidden="true"
-                          >
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]" aria-hidden="true">
                             {seasonalEmoji(pubDate)}
                           </span>
                           <div className="min-w-0">
                             <p className="text-[0.875rem] font-semibold">{nl.title}</p>
-                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">
-                              Published {formatDate(pubDate)}
-                            </p>
+                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">Published {formatDate(pubDate)}</p>
                           </div>
                         </div>
-                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">
-                          PDF
-                        </span>
+                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">PDF</span>
                       </Link>
+                      {/* Mobile: open PDF directly */}
+                      <a
+                        href={nl.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70 md:hidden"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]" aria-hidden="true">
+                            {seasonalEmoji(pubDate)}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[0.875rem] font-semibold">{nl.title}</p>
+                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">Published {formatDate(pubDate)}</p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">PDF</span>
+                      </a>
                     </li>
                   );
                 })}
@@ -212,28 +224,36 @@ function MinutesTab({ minutes }: { minutes: MeetingMinutes[] }) {
                   const meetingDate = new Date(m.meetingDate);
                   return (
                     <li key={m.id}>
+                      {/* Desktop: open in file viewer */}
                       <Link
                         href={`/archive/minutes/${m.id}`}
-                        className="flex items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70"
+                        className="hidden items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70 md:flex"
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <span
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]"
-                            aria-hidden="true"
-                          >
-                            {"\u{1F4CB}"}
-                          </span>
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]" aria-hidden="true">{"\u{1F4CB}"}</span>
                           <div className="min-w-0">
                             <p className="text-[0.875rem] font-semibold">{m.title}</p>
-                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">
-                              Meeting date: {formatDate(meetingDate)}
-                            </p>
+                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">Meeting date: {formatDate(meetingDate)}</p>
                           </div>
                         </div>
-                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">
-                          PDF
-                        </span>
+                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">PDF</span>
                       </Link>
+                      {/* Mobile: open PDF directly */}
+                      <a
+                        href={m.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-3 border-b border-[#E4E4E7] py-4 text-[#09090B] transition-opacity hover:opacity-70 md:hidden"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[0.7rem]" aria-hidden="true">{"\u{1F4CB}"}</span>
+                          <div className="min-w-0">
+                            <p className="text-[0.875rem] font-semibold">{m.title}</p>
+                            <p className="mt-0.5 text-[0.775rem] text-[#71717A]">Meeting date: {formatDate(meetingDate)}</p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 rounded bg-[#EFF6FF] px-1.5 py-0.5 text-[0.65rem] font-bold text-[#1B6DC2]">PDF</span>
+                      </a>
                     </li>
                   );
                 })}

@@ -4,6 +4,8 @@ import { getNewsletters } from "@/lib/db/queries/newsletters";
 import { getMinutes } from "@/lib/db/queries/minutes";
 import { ArchiveTabs } from "@/components/archive/archive-tabs";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Archive — Westmont Elementary PTO",
   description: "Browse newsletters, meeting minutes, and other PTO documents.",

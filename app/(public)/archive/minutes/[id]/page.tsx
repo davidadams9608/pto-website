@@ -4,6 +4,8 @@ import { FileViewer } from "@/components/shared/file-viewer";
 import { getMinuteById } from "@/lib/db/queries/minutes";
 import { SITE_TIMEZONE } from "@/lib/site-config";
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ id: string }>;
 }
