@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { volunteerSignupSchema } from '@/lib/validators/volunteer-signup';
 
@@ -23,6 +23,7 @@ interface VolunteerSignupFormProps {
 }
 
 export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSignupFormProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -83,6 +84,9 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
       }
 
       setState('success');
+      requestAnimationFrame(() => {
+        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     } catch {
       setServerError('Something went wrong. Please try again.');
       setState('error');
@@ -92,7 +96,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
   // Success state
   if (state === 'success') {
     return (
-      <div className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
+      <div ref={cardRef} className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M20 6 L9 17 L4 12" />
@@ -112,7 +116,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
     }`;
 
   return (
-    <div className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
+    <div ref={cardRef} className="min-w-0 rounded-[12px] border border-[#E4E4E7] bg-white p-6 md:sticky md:top-[130px] md:rounded-[16px] md:p-8">
       {/* Card header */}
       <div className="mb-5 flex items-center justify-between border-b border-[#E4E4E7] pb-4">
         <span className="text-[1rem] font-extrabold tracking-tight md:text-[1.1rem]">
