@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
       return Response.json({ error: result.error.issues[0].message }, { status: 400 });
     }
 
-    await updateSettings(result.data.settings);
+    await updateSettings(result.data.settings, userId);
     return Response.json({ data: { success: true } });
   } catch (err) {
     const error = err instanceof Error ? err.message : 'Failed to update settings';

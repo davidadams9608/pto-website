@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type UploadType = 'newsletters' | 'minutes' | 'sponsors' | 'events';
+type UploadType = 'newsletters' | 'minutes' | 'sponsors' | 'events' | 'settings';
 
 interface UploadResult {
   fileKey: string;

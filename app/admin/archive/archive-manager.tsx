@@ -490,27 +490,38 @@ export function ArchiveManager({ newsletters: initialNewsletters, minutes: initi
 
   return (
     <div>
-      {/* Header with tabs */}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Page header */}
+      <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-zinc-900">Archive</h1>
-        <div className="flex gap-1 rounded-lg border border-zinc-200 bg-white p-1">
-          <button
-            onClick={() => setActiveTab('newsletters')}
-            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
-              activeTab === 'newsletters' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-          >
-            Newsletters
-          </button>
-          <button
-            onClick={() => setActiveTab('minutes')}
-            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
-              activeTab === 'minutes' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-          >
-            Meeting Minutes
-          </button>
-        </div>
+        <p className="mt-1 text-sm text-zinc-500">Manage newsletters and meeting minutes.</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-6 flex gap-1 rounded-lg bg-zinc-100 p-1" role="tablist">
+        <button
+          role="tab"
+          aria-selected={activeTab === 'newsletters'}
+          onClick={() => setActiveTab('newsletters')}
+          className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+            activeTab === 'newsletters'
+              ? 'bg-zinc-900 text-white'
+              : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          Newsletters
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'minutes'}
+          onClick={() => setActiveTab('minutes')}
+          className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+            activeTab === 'minutes'
+              ? 'bg-zinc-900 text-white'
+              : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          Meeting Minutes
+        </button>
       </div>
 
       {/* Tab content */}

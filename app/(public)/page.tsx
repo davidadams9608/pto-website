@@ -9,6 +9,7 @@ import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
 import { getSetting } from '@/lib/db/queries/settings';
 import { EventCard } from '@/components/shared/events-accordion';
+import { NewsletterSignup } from '@/components/shared/newsletter-signup';
 
 export const dynamic = 'force-dynamic';
 
@@ -229,40 +230,9 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right: signup card — MailerLite placeholder */}
-            <div className="rounded-[20px] bg-[#09090B] p-10">
-              {/* TODO: Replace with MailerLite embed in M6 */}
-              <h3 className="mb-2 text-[1.3rem] font-extrabold tracking-[-0.02em] text-white">
-                Get the newsletter
-              </h3>
-              <p className="mb-6 text-[0.875rem] leading-[1.7] text-[#A1A1AA]">
-                Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.
-              </p>
-              <input
-                type="text"
-                placeholder="Your first name"
-                disabled
-                aria-label="First name"
-                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
-              />
-              <input
-                type="email"
-                placeholder="Email address"
-                disabled
-                aria-label="Email address"
-                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
-              />
-              <button
-                type="button"
-                disabled
-                className="w-full cursor-not-allowed rounded-[8px] bg-[#1B6DC2] py-[0.7rem] text-[0.875rem] font-bold text-white opacity-60"
-              >
-                Subscribe →
-              </button>
-              <p className="mt-[0.6rem] text-[0.72rem] text-[#71717A]">
-                Already subscribed?{' '}
-                <span className="text-[#A1A1AA]">Check status</span>
-              </p>
+            {/* Right: signup card */}
+            <div id="newsletter" style={{ scrollMarginTop: '76px' }}>
+              <NewsletterSignup />
             </div>
           </div>
         </div>

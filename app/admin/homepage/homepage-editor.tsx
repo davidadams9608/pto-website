@@ -12,11 +12,6 @@ interface HomepageSettings {
   heroImageUrl: string;
   heroImageKey: string;
   heroImagePosition: string;
-  socialFacebook: string;
-  socialInstagram: string;
-  contactEmail: string;
-  contactPhone: string;
-  socialSchoolWebsite: string;
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -54,37 +49,20 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
   const [heroImageUrl, setHeroImageUrl] = useState(initialSettings.heroImageUrl);
   const [heroImageKey, setHeroImageKey] = useState(initialSettings.heroImageKey);
   const [heroImagePosition, setHeroImagePosition] = useState(initialSettings.heroImagePosition || 'center');
-  const [socialFacebook, setSocialFacebook] = useState(initialSettings.socialFacebook);
-  const [socialInstagram, setSocialInstagram] = useState(initialSettings.socialInstagram);
-  const [contactEmail, setContactEmail] = useState(initialSettings.contactEmail);
-  const [contactPhone, setContactPhone] = useState(initialSettings.contactPhone || '');
-  const [socialSchoolWebsite, setSocialSchoolWebsite] = useState(initialSettings.socialSchoolWebsite || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const router = useRouter();
 
+  const isHeroDirty =
+    missionText !== initialSettings.missionText ||
+    heroImageUrl !== initialSettings.heroImageUrl ||
+    heroImageKey !== initialSettings.heroImageKey ||
+    heroImagePosition !== (initialSettings.heroImagePosition || 'center');
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!missionText.trim()) newErrors.missionText = 'Mission text is required';
-    if (socialFacebook.trim() && !/^https?:\/\/.+/.test(socialFacebook.trim())) {
-      newErrors.socialFacebook = 'Must be a valid URL (https://...)';
-    }
-    if (socialInstagram.trim() && !/^https?:\/\/.+/.test(socialInstagram.trim())) {
-      newErrors.socialInstagram = 'Must be a valid URL (https://...)';
-    }
-    if (contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(contactEmail.trim())) {
-      newErrors.contactEmail = 'Must be a valid email address';
-    }
-    if (contactPhone.trim()) {
-      const digits = contactPhone.replace(/\D/g, '');
-      if (digits.length < 10 || digits.length > 15) {
-        newErrors.contactPhone = 'Must be a valid phone number (at least 10 digits)';
-      }
-    }
-    if (socialSchoolWebsite.trim() && !/^https?:\/\/.+/.test(socialSchoolWebsite.trim())) {
-      newErrors.socialSchoolWebsite = 'Must be a valid URL (https://...)';
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -102,11 +80,6 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
             { key: 'hero_image_url', value: heroImageUrl },
             { key: 'hero_image_key', value: heroImageKey },
             { key: 'hero_image_position', value: heroImagePosition },
-            { key: 'social_facebook', value: socialFacebook.trim() },
-            { key: 'social_instagram', value: socialInstagram.trim() },
-            { key: 'contact_email', value: contactEmail.trim() },
-            { key: 'contact_phone', value: contactPhone.trim() },
-            { key: 'social_school_website', value: socialSchoolWebsite.trim() },
           ],
         }),
       });
@@ -124,7 +97,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-zinc-900">Homepage Editor</h1>
-        <p className="mt-1 text-sm text-zinc-500">Edit the hero section, social links, and newsletter settings for the public homepage.</p>
+        <p className="mt-1 text-sm text-zinc-500">Edit the hero section for the public homepage.</p>
       </div>
 
       {/* Hero Section */}
@@ -212,94 +185,15 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
             <p className="mt-1 text-[0.65rem] text-zinc-400">Recommended: 1200 x 400px. JPG or PNG, max 5MB.</p>
           </div>
         </div>
-      </div>
-
-      {/* Social Links */}
-      <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-6">
-        <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Connect</h2>
-        <p className="mb-4 text-xs text-zinc-400">These links appear in the footer. Leave blank to hide.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label htmlFor="social-facebook" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Facebook URL</label>
-            <input
-              id="social-facebook"
-              type="text"
-              value={socialFacebook}
-              onChange={(e) => { setSocialFacebook(e.target.value); setErrors((prev) => ({ ...prev, socialFacebook: '' })); }}
-              placeholder="https://facebook.com/..."
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialFacebook ? 'border-red-400' : 'border-zinc-200'}`}
-            />
-            {errors.socialFacebook && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialFacebook}</p>}
-          </div>
-          <div>
-            <label htmlFor="social-instagram" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Instagram URL</label>
-            <input
-              id="social-instagram"
-              type="text"
-              value={socialInstagram}
-              onChange={(e) => { setSocialInstagram(e.target.value); setErrors((prev) => ({ ...prev, socialInstagram: '' })); }}
-              placeholder="https://instagram.com/..."
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialInstagram ? 'border-red-400' : 'border-zinc-200'}`}
-            />
-            {errors.socialInstagram && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialInstagram}</p>}
-          </div>
-          <div>
-            <label htmlFor="social-email" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Email</label>
-            <input
-              id="social-email"
-              type="text"
-              value={contactEmail}
-              onChange={(e) => { setContactEmail(e.target.value); setErrors((prev) => ({ ...prev, contactEmail: '' })); }}
-              placeholder="pto@westmontpto.org"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? 'border-red-400' : 'border-zinc-200'}`}
-            />
-            {errors.contactEmail && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactEmail}</p>}
-          </div>
-          <div>
-            <label htmlFor="contact-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Phone <span className="font-normal normal-case text-zinc-400">(optional)</span></label>
-            <input
-              id="contact-phone"
-              type="text"
-              value={contactPhone}
-              onChange={(e) => {
-                // Auto-format as (XXX) XXX-XXXX
-                const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                let formatted = digits;
-                if (digits.length > 6) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-                else if (digits.length > 3) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-                else if (digits.length > 0) formatted = `(${digits}`;
-                setContactPhone(formatted);
-                setErrors((prev) => ({ ...prev, contactPhone: '' }));
-              }}
-              placeholder="(555) 123-4567"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? 'border-red-400' : 'border-zinc-200'}`}
-            />
-            {errors.contactPhone && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactPhone}</p>}
-          </div>
-          <div>
-            <label htmlFor="social-school-website" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">School Website</label>
-            <input
-              id="social-school-website"
-              type="text"
-              value={socialSchoolWebsite}
-              onChange={(e) => { setSocialSchoolWebsite(e.target.value); setErrors((prev) => ({ ...prev, socialSchoolWebsite: '' })); }}
-              placeholder="https://school.example.org"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialSchoolWebsite ? 'border-red-400' : 'border-zinc-200'}`}
-            />
-            {errors.socialSchoolWebsite && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialSchoolWebsite}</p>}
-          </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving || !isHeroDirty}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
-      </div>
-
-      {/* Save */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="rounded-lg bg-zinc-900 px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
       </div>
 
       {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}

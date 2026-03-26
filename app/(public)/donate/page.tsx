@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { getSetting } from "@/lib/db/queries/settings";
+import { getSettings } from "@/lib/db/queries/settings";
 
 export const metadata: Metadata = {
   title: "Support Our PTO — Westmont Elementary PTO",
@@ -9,7 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default async function DonatePage() {
-  const venmoUrl = await getSetting("venmo_url");
+  const settings = await getSettings(["venmo_url", "venmo_qr_url"]);
+  const venmoUrl = settings.venmo_url;
+  const venmoQrUrl = settings.venmo_qr_url;
 
   // Derive display handle from URL (e.g. https://venmo.com/westmontpto → @westmontpto)
   const venmoHandle = venmoUrl
@@ -63,16 +65,26 @@ export default async function DonatePage() {
       <div className="flex justify-center px-8 pb-16 pt-12">
         <div className="w-full max-w-[520px] rounded-[20px] border border-[#E4E4E7] bg-white p-10 text-center shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
 
-          {/* QR code placeholder */}
-          <div
-            className="mx-auto mb-6 flex h-[180px] w-[180px] flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#E4E4E7] bg-[#FAFAFA]"
-            aria-label="Venmo QR code — coming soon"
-          >
-            <span className="text-2xl opacity-30" aria-hidden="true">📱</span>
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
-              Venmo QR Code
-            </span>
-          </div>
+          {/* QR code */}
+          {venmoQrUrl ? (
+            <div className="mx-auto mb-6 h-[180px] w-[180px] overflow-hidden rounded-[12px] border border-[#E4E4E7]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={venmoQrUrl}
+                alt="Venmo QR code — scan to donate"
+                className="h-full w-full object-contain"
+              />
+            </div>
+          ) : (
+            <div
+              className="mx-auto mb-6 flex h-[180px] w-[180px] flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#E4E4E7] bg-[#FAFAFA]"
+              aria-label="Venmo QR code"
+            >
+              <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
+                Venmo QR Code
+              </span>
+            </div>
+          )}
 
           <p className="mb-4 text-[0.75rem] font-semibold text-[#71717A]">
             Scan the QR code or open in the Venmo app
