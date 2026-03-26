@@ -5,9 +5,10 @@ const ALLOWED_CONTENT_TYPES: Record<string, string[]> = {
   minutes: ['application/pdf'],
   sponsors: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'],
   events: ['image/jpeg', 'image/png', 'image/webp'],
+  settings: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'],
 };
 
-export const uploadTypes = ['newsletters', 'minutes', 'sponsors', 'events'] as const;
+export const uploadTypes = ['newsletters', 'minutes', 'sponsors', 'events', 'settings'] as const;
 export type UploadType = (typeof uploadTypes)[number];
 
 export const presignedUploadSchema = z

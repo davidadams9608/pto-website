@@ -2,15 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/events", label: "Events" },
   { href: "/archive", label: "Archive" },
-  { href: "/sponsors", label: "Sponsors" },
   { href: "/donate", label: "Donate" },
 ];
 
@@ -21,7 +20,45 @@ function isActive(href: string, pathname: string) {
 
 export function PublicNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [subscribed, setSubscribed] = useState(true); // default hidden to avoid hydration mismatch
+
+  useEffect(() => {
+    try {
+      setSubscribed(localStorage.getItem('pto-newsletter-subscribed') === 'true'); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: reading localStorage requires mount
+    } catch {
+      setSubscribed(false); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: fallback for localStorage unavailable
+    }
+  }, []);
+
+  const scrollToNewsletter = useCallback(() => {
+    const scrollToEl = () => {
+      document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    if (pathname === '/') {
+      scrollToEl();
+    } else {
+      router.push('/');
+      const observer = new MutationObserver(() => {
+        if (document.getElementById('newsletter')) {
+          observer.disconnect();
+          requestAnimationFrame(() => {
+            document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => observer.disconnect(), 5000);
+    }
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const onSubscribed = () => setSubscribed(true);
+    window.addEventListener('newsletter-subscribed', onSubscribed);
+    return () => window.removeEventListener('newsletter-subscribed', onSubscribed);
+  }, []);
 
   return (
     <div className="sticky top-0 z-50">
@@ -65,16 +102,18 @@ export function PublicNav() {
         </ul>
 
         {/* Right: subscribe button (desktop) + hamburger (mobile) — flex-1 + justify-end mirrors the left */}
-        <div className="flex flex-1 items-center justify-end">
-          {/* Subscribe — desktop only */}
-          <div className="hidden lg:flex">
-            <Link
-              href="/archive"
-              className="whitespace-nowrap rounded-[7px] bg-[#09090B] px-4 py-[0.6rem] text-[0.8rem] font-bold text-white transition-opacity hover:opacity-90"
-            >
-              Subscribe to Newsletter
-            </Link>
-          </div>
+        <div className="flex flex-1 items-center justify-end gap-3">
+          {/* Subscribe — desktop only, hidden if already subscribed */}
+          {!subscribed && (
+            <div className="hidden lg:flex">
+              <button
+                onClick={scrollToNewsletter}
+                className="whitespace-nowrap rounded-[7px] bg-[#09090B] px-4 py-[0.6rem] text-[0.8rem] font-bold text-white transition-opacity hover:opacity-90"
+              >
+                Subscribe to Newsletter
+              </button>
+            </div>
+          )}
 
           {/* Hamburger button — mobile only */}
           <button
@@ -116,7 +155,7 @@ export function PublicNav() {
               key={link.href}
               href={link.href}
               onClick={() => setDrawerOpen(false)}
-              className={`block border-b border-[#E4E4E7] py-3.5 text-[0.95rem] font-semibold transition-colors ${
+              className={`block border-b border-[#E4E4E7] py-3.5 text-[0.95rem] font-semibold transition-colors last:border-b-0 ${
                 isActive(link.href, pathname)
                   ? "text-[#1B6DC2]"
                   : "text-[#09090B]"
@@ -125,13 +164,22 @@ export function PublicNav() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/archive"
-            onClick={() => setDrawerOpen(false)}
-            className="mt-4 block rounded-[7px] bg-[#09090B] px-4 py-3 text-center text-sm font-bold text-white"
-          >
-            Subscribe to Newsletter
-          </Link>
+          {!subscribed && (
+            <button
+              onClick={() => {
+                setDrawerOpen(false);
+                const drawer = document.getElementById('mobile-nav-drawer');
+                if (drawer) {
+                  drawer.addEventListener('transitionend', scrollToNewsletter, { once: true });
+                } else {
+                  scrollToNewsletter();
+                }
+              }}
+              className="mt-4 block w-full rounded-[7px] bg-[#09090B] px-4 py-3 text-center text-sm font-bold text-white"
+            >
+              Subscribe to Newsletter
+            </button>
+          )}
         </div>
       </div>
     </div>

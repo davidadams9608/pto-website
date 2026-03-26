@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+import { NewsletterSignup } from "@/components/shared/newsletter-signup";
 import { SITE_TIMEZONE } from "@/lib/site-config";
 import type { Newsletter } from "@/lib/db/queries/newsletters";
 import type { MeetingMinutes } from "@/lib/db/queries/minutes";
@@ -148,35 +149,8 @@ function NewslettersTab({ newsletters }: { newsletters: Newsletter[] }) {
       </section>
 
       {/* Signup sidebar — desktop only */}
-      <aside aria-label="Newsletter signup" className="hidden md:block">
-        <div className="rounded-[20px] bg-[#09090B] p-10 md:sticky md:top-[80px]">
-          <h2 className="mb-2 text-[1.3rem] font-extrabold tracking-tight text-white">
-            Get the newsletter
-          </h2>
-          <p className="mb-6 text-[0.875rem] leading-7 text-[#A1A1AA]">
-            Join Westmont families. One email per month — no spam,
-            unsubscribe anytime.
-          </p>
-          <input
-            type="text"
-            placeholder="Your first name"
-            className="mb-3 w-full rounded-lg border border-[#3F3F46] bg-[#18181B] px-4 py-2.5 text-[0.875rem] text-white placeholder-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
-          />
-          <input
-            type="email"
-            placeholder="Email address"
-            className="mb-3 w-full rounded-lg border border-[#3F3F46] bg-[#18181B] px-4 py-2.5 text-[0.875rem] text-white placeholder-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
-          />
-          <button
-            type="button"
-            className="w-full rounded-lg bg-[#1B6DC2] py-2.5 text-[0.875rem] font-bold text-white transition-opacity hover:opacity-90"
-          >
-            Subscribe &rarr;
-          </button>
-          <p className="mt-2 text-[0.72rem] text-[#71717A]">
-            We respect your privacy. Unsubscribe anytime.
-          </p>
-        </div>
+      <aside aria-label="Newsletter signup" className="hidden md:block md:sticky md:top-[80px]">
+        <NewsletterSignup />
       </aside>
     </div>
   );

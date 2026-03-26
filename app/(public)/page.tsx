@@ -7,7 +7,9 @@ import { SITE_TIMEZONE } from '@/lib/site-config';
 import { getUpcomingEventsWithinDays, getNextEvent } from '@/lib/db/queries/events';
 import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
+import { getSetting } from '@/lib/db/queries/settings';
 import { EventCard } from '@/components/shared/events-accordion';
+import { NewsletterSignup } from '@/components/shared/newsletter-signup';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,11 +51,15 @@ export default async function HomePage() {
     );
   }
 
-  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors] = await Promise.all([
+  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors, missionText, heroImageUrl, heroImagePosition, contactEmail] = await Promise.all([
     getUpcomingEventsWithinDays(60),
     getNextEvent(),
     getNewsletters(1, 3),
     getActiveSponsors(),
+    getSetting('mission_text'),
+    getSetting('hero_image_url'),
+    getSetting('hero_image_position'),
+    getSetting('contact_email'),
   ]);
 
   return (
@@ -74,8 +80,7 @@ export default async function HomePage() {
               </span>
             </h1>
             <p className="mb-8 text-[1rem] leading-[1.75] text-[#71717A]">
-              We&apos;re parents and teachers who believe in showing up. For our kids, for our
-              school, for our community. Get involved — it makes a real difference.
+              {missionText || "We're parents and teachers who believe in showing up. For our kids, for our school, for our community. Get involved — it makes a real difference."}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link
@@ -95,8 +100,14 @@ export default async function HomePage() {
 
           {/* Right: visual — hidden on mobile */}
           <div className="hidden flex-col gap-4 md:flex">
-            <div className="flex h-[220px] items-center justify-center rounded-[16px] border border-[#BFDBFE] bg-gradient-to-br from-[#EFF6FF] to-[#BFDBFE] text-[0.85rem] font-semibold text-[#1B6DC2]">
-              [ School photography ]
+            <div className="h-[220px] overflow-hidden rounded-[16px] border border-[#BFDBFE]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={heroImageUrl || '/hero-default.png'}
+                alt="Westmont Elementary"
+                className="h-full w-full object-cover"
+                style={{ objectPosition: heroImagePosition || 'center' }}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-4">
@@ -219,40 +230,9 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right: signup card — MailerLite placeholder */}
-            <div className="rounded-[20px] bg-[#09090B] p-10">
-              {/* TODO: Replace with MailerLite embed in M6 */}
-              <h3 className="mb-2 text-[1.3rem] font-extrabold tracking-[-0.02em] text-white">
-                Get the newsletter
-              </h3>
-              <p className="mb-6 text-[0.875rem] leading-[1.7] text-[#A1A1AA]">
-                Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.
-              </p>
-              <input
-                type="text"
-                placeholder="Your first name"
-                disabled
-                aria-label="First name"
-                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
-              />
-              <input
-                type="email"
-                placeholder="Email address"
-                disabled
-                aria-label="Email address"
-                className="mb-3 w-full rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A]"
-              />
-              <button
-                type="button"
-                disabled
-                className="w-full cursor-not-allowed rounded-[8px] bg-[#1B6DC2] py-[0.7rem] text-[0.875rem] font-bold text-white opacity-60"
-              >
-                Subscribe →
-              </button>
-              <p className="mt-[0.6rem] text-[0.72rem] text-[#71717A]">
-                Already subscribed?{' '}
-                <span className="text-[#A1A1AA]">Check status</span>
-              </p>
+            {/* Right: signup card */}
+            <div id="newsletter" style={{ scrollMarginTop: '76px' }}>
+              <NewsletterSignup />
             </div>
           </div>
         </div>
@@ -261,48 +241,67 @@ export default async function HomePage() {
       {/* ── Sponsors ─────────────────────────────────────────────────────── */}
       <div className="bg-white px-6 py-[3rem] md:px-8 md:py-[5rem]">
         <div className="mx-auto max-w-[1100px]">
-          <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#1B6DC2]">
-            Thank you
-          </p>
-          <h2 className="mb-1 text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
-            Our Sponsors
-          </h2>
-          <p className="text-[0.9rem] leading-[1.7] text-[#71717A] text-pretty">
-            Local businesses that invest in our students and make our programs possible.
-          </p>
+          {sponsors.length > 0 && (
+            <>
+              <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-[#1B6DC2]">
+                Thank you
+              </p>
+              <h2 className="mb-1 text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
+                Our Sponsors
+              </h2>
+              <p className="text-[0.9rem] leading-[1.7] text-[#71717A] text-pretty">
+                Local businesses that invest in our students and make our programs possible.
+              </p>
 
-          {/* Chip belt */}
-          <div className="mt-10 flex flex-wrap gap-3 pb-2">
-            {sponsors.map((sponsor) =>
-              sponsor.websiteUrl ? (
-                <a
-                  key={sponsor.id}
-                  href={sponsor.websiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative inline-block rounded-[8px] border border-[#BFDBFE] bg-[#FAFAFA] px-6 py-3 text-[0.825rem] font-semibold text-[#1B6DC2] transition hover:shadow-[0_2px_8px_rgba(27,109,194,0.06)] md:border-[#E4E4E7] md:text-[#71717A] md:hover:border-[#BFDBFE] md:hover:text-[#09090B]"
-                >
-                  {sponsor.name}
-                  {/* Mobile only: inline arrow */}
-                  <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 ml-0.5 inline md:hidden" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
-                  {/* Desktop only: tooltip below on hover */}
-                  <span className="pointer-events-none absolute left-1/2 top-full mt-1 hidden -translate-x-1/2 whitespace-nowrap text-[0.58rem] font-semibold text-[#1B6DC2] opacity-0 transition-opacity group-hover:opacity-100 md:block">
-                    Visit website <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
-                  </span>
-                </a>
-              ) : (
-                <span
-                  key={sponsor.id}
-                  className="inline-block rounded-[8px] border border-[#E4E4E7] bg-[#FAFAFA] px-6 py-3 text-[0.825rem] font-semibold text-[#71717A]"
-                >
-                  {sponsor.name}
-                </span>
-              )
-            )}
-          </div>
+              {/* Sponsor cards grid */}
+              <ul className="mt-10 grid list-none grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              {sponsors.map((sponsor) => {
+                const inner = (
+                  <>
+                    <div className="flex h-[100px] shrink-0 items-center justify-center overflow-hidden">
+                      {sponsor.logoUrl && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={sponsor.logoUrl}
+                          alt={`${sponsor.name} logo`}
+                          style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain' }}
+                        />
+                      )}
+                    </div>
+                    <div className="flex h-[60px] shrink-0 items-center justify-center">
+                      <div>
+                        <p className="text-[0.825rem] font-bold leading-snug">{sponsor.name}</p>
+                        {sponsor.websiteUrl && (
+                          <p className="mt-1 text-[0.65rem] font-semibold text-[#1B6DC2] opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+                            Visit website <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+                const cardClass = "group flex h-[200px] flex-col items-center rounded-[12px] border bg-white px-6 py-5 text-center text-[#09090B] transition-[border-color,box-shadow]";
+                return (
+                  <li key={sponsor.id}>
+                    {sponsor.websiteUrl ? (
+                      <a href={sponsor.websiteUrl} target="_blank" rel="noopener noreferrer"
+                        className={`${cardClass} border-[#BFDBFE] hover:border-[#BFDBFE] hover:shadow-[0_2px_12px_rgba(27,109,194,0.08)] md:border-[#E4E4E7]`}>
+                        {inner}
+                      </a>
+                    ) : (
+                      <div className={`${cardClass} cursor-default border-[#E4E4E7]`}>
+                        {inner}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+              </ul>
+            </>
+          )}
 
-          {/* Sponsor CTA */}
-          <div className="mt-8 flex flex-col items-center justify-between gap-5 rounded-[20px] bg-[#09090B] px-6 py-8 text-center md:flex-row md:px-12 md:py-10 md:text-left">
+          {/* Sponsor CTA — always visible */}
+          <div className={`${sponsors.length > 0 ? 'mt-8' : ''} flex flex-col items-center justify-between gap-5 rounded-[20px] bg-[#09090B] px-6 py-8 text-center md:flex-row md:px-12 md:py-10 md:text-left`}>
             <div>
               <h3 className="mb-1.5 text-[1.1rem] font-extrabold tracking-[-0.02em] text-white md:text-[1.3rem]">
                 Interested in sponsoring?
@@ -313,7 +312,7 @@ export default async function HomePage() {
               </p>
             </div>
             <a
-              href="mailto:pto@westmontpto.org"
+              href={`mailto:${contactEmail || 'pto@westmontpto.org'}`}
               className="shrink-0 rounded-[8px] bg-[#1B6DC2] px-6 py-[0.7rem] text-[0.85rem] font-bold text-white transition-colors hover:bg-[#0F4F8A]"
             >
               Get in Touch →

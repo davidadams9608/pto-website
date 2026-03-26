@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { getSetting } from "@/lib/db/queries/settings";
+import { getSettings } from "@/lib/db/queries/settings";
 
 export const metadata: Metadata = {
   title: "Support Our PTO — Westmont Elementary PTO",
@@ -9,12 +9,19 @@ export const metadata: Metadata = {
 };
 
 export default async function DonatePage() {
-  const venmoUrl = await getSetting("venmo_url");
+  const settings = await getSettings(["venmo_url", "venmo_qr_url"]);
+  const venmoUrl = settings.venmo_url;
+  const venmoQrUrl = settings.venmo_qr_url;
 
-  // Derive display handle from URL (e.g. https://venmo.com/westmontpto → @westmontpto)
+  // Derive display handle and deep link from URL (e.g. https://venmo.com/westmontpto → @westmontpto)
   const venmoHandle = venmoUrl
     ? `@${venmoUrl.split("/").filter(Boolean).pop()}`
     : "@WestmontPTO";
+
+  // venmo:// deep link opens the app on mobile if installed, falls back to web
+  const venmoDeepLink = venmoUrl
+    ? `venmo://paycharge?txn=pay&recipients=${venmoUrl.split("/").filter(Boolean).pop()}`
+    : null;
 
   return (
     <>
@@ -63,34 +70,62 @@ export default async function DonatePage() {
       <div className="flex justify-center px-8 pb-16 pt-12">
         <div className="w-full max-w-[520px] rounded-[20px] border border-[#E4E4E7] bg-white p-10 text-center shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
 
-          {/* QR code placeholder */}
-          <div
-            className="mx-auto mb-6 flex h-[180px] w-[180px] flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#E4E4E7] bg-[#FAFAFA]"
-            aria-label="Venmo QR code — coming soon"
-          >
-            <span className="text-2xl opacity-30" aria-hidden="true">📱</span>
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
-              Venmo QR Code
-            </span>
-          </div>
+          <p className="mb-6 text-[0.75rem] leading-relaxed text-[#71717A]">
+            Westmont Elementary PTO appreciates your generous support! All donations go
+            directly toward student programs, school events, and teacher resources.
+          </p>
+
+          {/* QR code */}
+          {venmoQrUrl ? (
+            <div className="mx-auto mb-6 h-[180px] w-[180px] overflow-hidden rounded-[12px] border border-[#E4E4E7]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={venmoQrUrl}
+                alt="Venmo QR code — scan to donate"
+                className="h-full w-full object-contain"
+              />
+            </div>
+          ) : (
+            <div
+              className="mx-auto mb-6 flex h-[180px] w-[180px] flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#E4E4E7] bg-[#FAFAFA]"
+              aria-label="Venmo QR code"
+            >
+              <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
+                Venmo QR Code
+              </span>
+            </div>
+          )}
 
           <p className="mb-4 text-[0.75rem] font-semibold text-[#71717A]">
             Scan the QR code or open in the Venmo app
           </p>
 
-          {/* Venmo button */}
+          {/* Venmo button — deep link for mobile (opens app), web link for desktop */}
           {venmoUrl ? (
-            <a
-              href={venmoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mb-4 inline-flex items-center gap-2 rounded-[10px] bg-[#008CFF] px-8 py-3 text-[0.95rem] font-bold text-white transition-colors hover:bg-[#0070CC]"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M19.5 2.3c.7 1.2 1 2.4 1 3.9 0 4.9-4.2 11.2-7.6 15.7H6.5L4 3.6l5.4-.5 1.4 11.4c1.3-2.1 2.9-5.4 2.9-7.7 0-1.4-.2-2.4-.6-3.2L19.5 2.3z"/>
-              </svg>
-              Pay with Venmo
-            </a>
+            <div className="mb-4 flex flex-col items-center gap-2">
+              {venmoDeepLink && (
+                <a
+                  href={venmoDeepLink}
+                  className="inline-flex w-full max-w-[280px] items-center justify-center gap-2 rounded-[10px] bg-[#008CFF] px-8 py-3 text-[0.95rem] font-bold text-white transition-colors hover:bg-[#0070CC] md:hidden"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M19.5 2.3c.7 1.2 1 2.4 1 3.9 0 4.9-4.2 11.2-7.6 15.7H6.5L4 3.6l5.4-.5 1.4 11.4c1.3-2.1 2.9-5.4 2.9-7.7 0-1.4-.2-2.4-.6-3.2L19.5 2.3z"/>
+                  </svg>
+                  Open in Venmo
+                </a>
+              )}
+              <a
+                href={venmoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex w-full max-w-[280px] items-center justify-center gap-2 rounded-[10px] bg-[#008CFF] px-8 py-3 text-[0.95rem] font-bold text-white transition-colors hover:bg-[#0070CC] ${venmoDeepLink ? 'hidden md:inline-flex' : ''}`}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M19.5 2.3c.7 1.2 1 2.4 1 3.9 0 4.9-4.2 11.2-7.6 15.7H6.5L4 3.6l5.4-.5 1.4 11.4c1.3-2.1 2.9-5.4 2.9-7.7 0-1.4-.2-2.4-.6-3.2L19.5 2.3z"/>
+                </svg>
+                Pay with Venmo
+              </a>
+            </div>
           ) : (
             <p className="mb-4 text-[0.875rem] text-[#71717A]">
               Venmo link coming soon.
@@ -103,10 +138,6 @@ export default async function DonatePage() {
 
           {/* Fine print */}
           <div className="border-t border-[#E4E4E7] pt-6 text-left">
-            <p className="mb-2 text-[0.75rem] leading-relaxed text-[#71717A]">
-              Westmont Elementary PTO appreciates your generous support! All donations go
-              directly toward student programs, school events, and teacher resources.
-            </p>
             <p className="text-[0.75rem] leading-relaxed text-[#71717A]">
               Westmont Elementary PTO is a 501(c)(3) nonprofit organization. Donations
               may be tax deductible to the extent permitted by law. Please consult your

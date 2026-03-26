@@ -10,8 +10,8 @@ const navLinks: { href: string; label: string; disabled?: boolean }[] = [
   { href: "/admin/archive", label: "Archive" },
   { href: "/admin/about", label: "About" },
   { href: "/admin/sponsors", label: "Sponsors" },
-  { href: "/admin/homepage", label: "Homepage", disabled: true },
-  { href: "/admin/settings", label: "Settings", disabled: true },
+  { href: "/admin/homepage", label: "Homepage" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 export default function AdminLayout({

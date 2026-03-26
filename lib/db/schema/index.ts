@@ -5,3 +5,4 @@ export * from './meeting-minutes';
 export * from './sponsors';
 export * from './site-settings';
 export * from './officers';
+export * from './settings-audit-log';

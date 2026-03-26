@@ -422,7 +422,7 @@ export default function EventsListPage() {
                 <th className="w-[36%] px-5 py-3">Event</th>
                 <th className="w-[14%] px-4 py-3">Date</th>
                 <th className="w-[12%] px-4 py-3">Volunteers</th>
-                <th className="w-[10%] px-4 py-3">State</th>
+                <th className="w-[10%] px-4 py-3">Status</th>
                 <th className="w-[28%] px-4 py-3">Actions</th>
               </tr>
             </thead>

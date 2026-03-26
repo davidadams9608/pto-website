@@ -265,6 +265,11 @@ async function seed() {
   // Site settings
   console.log('⚙️  Seeding site settings...');
   await db.insert(schema.siteSettings).values([
+    { key: 'mission_text', value: "We're parents and teachers who believe in showing up. For our kids, for our school, for our community. Get involved — it makes a real difference." },
+    { key: 'social_facebook', value: '' },
+    { key: 'social_instagram', value: '' },
+    { key: 'social_email', value: 'pto@westmontpto.org' },
+    { key: 'hero_image_key', value: '' },
     { key: 'venmo_url', value: 'https://venmo.com/westmontpto' },
     {
       key: 'about_text',

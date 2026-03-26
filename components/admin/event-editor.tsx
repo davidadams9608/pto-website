@@ -167,7 +167,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slotErrors, setSlotErrors] = useState<Record<string, string>>({});
   const [publishErrors, setPublishErrors] = useState<string[]>([]);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; redirect?: boolean } | null>(null);
 
   const markDirty = useCallback(() => setDirty(true), []);
 
@@ -304,8 +304,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
       }
 
       setDirty(false);
-      setToast({ message: isEdit ? 'Event updated' : 'Event created', type: 'success' });
-      setTimeout(() => router.push('/admin/events'), 1500);
+      setToast({ message: isEdit ? 'Event updated' : 'Event created', type: 'success', redirect: true });
     } catch {
       setToast({ message: 'Failed to save event', type: 'error' });
     } finally {
@@ -543,7 +542,11 @@ export function EventEditor({ eventId }: EventEditorProps) {
       )}
 
       {/* Toast */}
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => {
+        const shouldRedirect = toast.redirect;
+        setToast(null);
+        if (shouldRedirect) router.push('/admin/events');
+      }} />}
     </div>
   );
 }
