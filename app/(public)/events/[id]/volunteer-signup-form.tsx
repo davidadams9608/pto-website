@@ -85,7 +85,7 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
 
       setState('success');
       requestAnimationFrame(() => {
-        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     } catch {
       setServerError('Something went wrong. Please try again.');
@@ -175,7 +175,14 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
               id="vol-phone"
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                let formatted = digits;
+                if (digits.length > 6) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+                else if (digits.length > 3) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+                else if (digits.length > 0) formatted = `(${digits}`;
+                setPhone(formatted);
+              }}
               placeholder="(555) 123-4567"
               autoComplete="tel"
               disabled={state === 'submitting'}
