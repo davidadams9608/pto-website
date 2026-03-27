@@ -96,7 +96,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Homepage Editor</h1>
+        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Homepage</h1>
         <p className="mt-1 text-sm text-zinc-500">Edit the hero section for the public homepage.</p>
       </div>
 

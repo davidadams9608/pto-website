@@ -142,7 +142,7 @@ export function NewsletterSignup() {
           placeholder="Enter your email"
           autoComplete="email"
           disabled={state === 'submitting'}
-          className={`mb-3 w-full rounded-[8px] border bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
+          className={`mb-3 w-full rounded-[8px] border bg-[#18181B] px-4 py-[0.7rem] text-[16px] md:text-[0.875rem] text-white placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
             error ? 'border-red-600' : 'border-[#3F3F46]'
           }`}
         />

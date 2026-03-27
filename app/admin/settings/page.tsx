@@ -7,9 +7,6 @@ export const dynamic = 'force-dynamic';
 const SETTINGS_KEYS = [
   'school_name',
   'org_name',
-  'venmo_url',
-  'venmo_qr_url',
-  'venmo_qr_key',
   'social_facebook',
   'social_instagram',
   'social_school_website',
@@ -26,9 +23,6 @@ export default async function AdminSettingsPage() {
       initialSettings={{
         schoolName: settings.school_name ?? '',
         orgName: settings.org_name ?? '',
-        venmoUrl: settings.venmo_url ?? '',
-        venmoQrUrl: settings.venmo_qr_url ?? '',
-        venmoQrKey: settings.venmo_qr_key ?? '',
         socialFacebook: settings.social_facebook ?? '',
         socialInstagram: settings.social_instagram ?? '',
         socialSchoolWebsite: settings.social_school_website ?? '',

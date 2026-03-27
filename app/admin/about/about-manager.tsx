@@ -328,7 +328,10 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold tracking-tight text-zinc-900">About</h1>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold tracking-tight text-zinc-900">About</h1>
+        <p className="mt-1 text-sm text-zinc-500">Manage your organization description and officers.</p>
+      </div>
 
       {/* About Text Section */}
       <div className="mb-8 rounded-xl border border-zinc-200 bg-white p-6">

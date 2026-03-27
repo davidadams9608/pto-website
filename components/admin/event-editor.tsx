@@ -148,8 +148,8 @@ export function EventEditor({ eventId }: EventEditorProps) {
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
+  const [date, setDate] = useState(() => eventId ? '' : new Date().toISOString().slice(0, 10));
+  const [startTime, setStartTime] = useState(() => eventId ? '' : '12:30');
   const [endTime, setEndTime] = useState('');
   const [location, setLocation] = useState('');
   const [zoomUrl, setZoomUrl] = useState('');
@@ -260,12 +260,17 @@ export function EventEditor({ eventId }: EventEditorProps) {
       }
     }
 
-    // Date must not be in the past for new events
+    // Date/time must not be in the past for new events
     if (!isEdit && date && startTime) {
       const eventDate = new Date(`${date}T${startTime}:00`);
       if (eventDate < new Date()) {
-        errors.date = 'Event date must be in the future';
+        errors.date = 'Event date and time cannot be in the past';
       }
+    }
+
+    // End time must be after start time
+    if (startTime && endTime && endTime <= startTime) {
+      errors.endTime = 'End time must be after start time';
     }
 
     if (Object.keys(errors).length > 0 || Object.keys(sErrors).length > 0) {
@@ -304,7 +309,11 @@ export function EventEditor({ eventId }: EventEditorProps) {
       }
 
       setDirty(false);
-      setToast({ message: isEdit ? 'Event updated' : 'Event created', type: 'success', redirect: true });
+      const eventTitle = title.trim();
+      const msg = isEdit ? `Event '${eventTitle}' updated` : `Event '${eventTitle}' created`;
+      // Brief spinner then redirect with banner
+      await new Promise((r) => setTimeout(r, 500));
+      router.push(`/admin/events?success=${encodeURIComponent(msg)}`);
     } catch {
       setToast({ message: 'Failed to save event', type: 'error' });
     } finally {
@@ -381,7 +390,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
             {/* End Time */}
             <div>
               <label htmlFor="endTime" className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.06em] text-zinc-500">End Time <span className="normal-case tracking-normal font-normal text-zinc-400">(optional)</span></label>
-              <input id="endTime" type="time" className={fieldClass('endTime')}
+              <input id="endTime" type="time" className={fieldClass('endTime')} style={!endTime ? { color: '#a1a1aa' } : undefined}
                 value={endTime} onChange={(e) => { setEndTime(e.target.value); markDirty(); }} />
             </div>
 
@@ -405,6 +414,80 @@ export function EventEditor({ eventId }: EventEditorProps) {
                 className={`${fieldClass('description')} min-h-[120px] resize-y`}
                 value={description} onChange={(e) => { setDescription(e.target.value); markDirty(); }} />
               <p className="mt-1 text-xs text-zinc-400">Supports plain text. Displayed on the public event detail page.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Event Options */}
+        <div className="rounded-lg border border-zinc-200 bg-white p-6">
+          <h2 className="mb-4 border-b border-zinc-100 pb-3 text-xs font-bold uppercase tracking-[0.06em] text-zinc-500">
+            Event Options
+          </h2>
+          <div className="space-y-5">
+            <Toggle
+              checked={volunteerEnabled}
+              onChange={(v) => { setVolunteerEnabled(v); if (v && slots.length === 0) addSlot(); markDirty(); }}
+              label="Enable volunteer signup"
+              hint="When enabled, a signup form will appear on the public event page."
+            />
+            {volunteerEnabled && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-zinc-600">
+                    Volunteer Roles &middot; {totalSpots} total spots
+                  </p>
+                  <button type="button" onClick={addSlot}
+                    className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-600 transition-colors hover:bg-zinc-50">
+                    + Add Role
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {slots.map((slot, i) => (
+                    <div key={i}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Role name (e.g., Setup Crew)"
+                          style={slotErrors[`${i}-role`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
+                          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#1B6DC2]"
+                          value={slot.role}
+                          onChange={(e) => updateSlot(i, 'role', e.target.value)}
+                        />
+                        <input
+                          type="number"
+                          min="1"
+                          style={slotErrors[`${i}-count`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
+                          className="w-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-center text-sm font-bold text-zinc-900 outline-none focus:border-[#1B6DC2]"
+                          value={slot.count}
+                          onChange={(e) => updateSlot(i, 'count', parseInt(e.target.value) || 0)}
+                        />
+                        <button type="button" onClick={() => removeSlot(i)} title="Remove role"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500">
+                          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                            <path d="M3 3l8 8M11 3l-8 8"/>
+                          </svg>
+                        </button>
+                      </div>
+                      {(slotErrors[`${i}-role`] || slotErrors[`${i}-count`]) && (
+                        <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#ef4444' }}>
+                          {slotErrors[`${i}-role`] || slotErrors[`${i}-count`]}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-zinc-400">Visitors will see &quot;X spots left&quot; on the public page.</p>
+              </div>
+            )}
+            <div className="border-t border-zinc-100 pt-5">
+              <Toggle
+                checked={isPublished}
+                onChange={(v) => { setIsPublished(v); markDirty(); }}
+                label={isEdit ? 'Published' : 'Publish immediately'}
+                hint={isEdit
+                  ? 'Toggle to publish or unpublish this event on the public site.'
+                  : 'Published events are visible on the public site. Unpublished events are saved as drafts.'}
+              />
             </div>
           </div>
         </div>
@@ -436,83 +519,6 @@ export function EventEditor({ eventId }: EventEditorProps) {
           )}
         </div>
 
-        {/* Volunteer Signup */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-6">
-          <h2 className="mb-4 border-b border-zinc-100 pb-3 text-xs font-bold uppercase tracking-[0.06em] text-zinc-500">
-            Volunteer Signup
-          </h2>
-          <Toggle
-            checked={volunteerEnabled}
-            onChange={(v) => { setVolunteerEnabled(v); if (v && slots.length === 0) addSlot(); markDirty(); }}
-            label="Enable volunteer signup"
-            hint="When enabled, a signup form will appear on the public event page."
-          />
-          {volunteerEnabled && (
-            <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-semibold text-zinc-600">
-                  Volunteer Roles &middot; {totalSpots} total spots
-                </p>
-                <button type="button" onClick={addSlot}
-                  className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-600 transition-colors hover:bg-zinc-50">
-                  + Add Role
-                </button>
-              </div>
-              <div className="flex flex-col gap-2">
-                {slots.map((slot, i) => (
-                  <div key={i}>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Role name (e.g., Setup Crew)"
-                        style={slotErrors[`${i}-role`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
-                        className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#1B6DC2]"
-                        value={slot.role}
-                        onChange={(e) => updateSlot(i, 'role', e.target.value)}
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        style={slotErrors[`${i}-count`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
-                        className="w-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-center text-sm font-bold text-zinc-900 outline-none focus:border-[#1B6DC2]"
-                        value={slot.count}
-                        onChange={(e) => updateSlot(i, 'count', parseInt(e.target.value) || 0)}
-                      />
-                      <button type="button" onClick={() => removeSlot(i)} title="Remove role"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500">
-                        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                          <path d="M3 3l8 8M11 3l-8 8"/>
-                        </svg>
-                      </button>
-                    </div>
-                    {(slotErrors[`${i}-role`] || slotErrors[`${i}-count`]) && (
-                      <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#ef4444' }}>
-                        {slotErrors[`${i}-role`] || slotErrors[`${i}-count`]}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-zinc-400">Visitors will see &quot;X spots left&quot; on the public page.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Publishing */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-6">
-          <h2 className="mb-4 border-b border-zinc-100 pb-3 text-xs font-bold uppercase tracking-[0.06em] text-zinc-500">
-            Publishing
-          </h2>
-          <Toggle
-            checked={isPublished}
-            onChange={(v) => { setIsPublished(v); markDirty(); }}
-            label={isEdit ? 'Published' : 'Publish immediately'}
-            hint={isEdit
-              ? 'Toggle to publish or unpublish this event on the public site.'
-              : 'Published events are visible on the public site. Unpublished events are saved as drafts.'}
-          />
-        </div>
-
         {/* Actions */}
         <div className="flex justify-end gap-3 pb-8">
           <button type="button" onClick={handleCancel}
@@ -521,14 +527,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
           </button>
           <button type="button" onClick={handleSave} disabled={saving}
             style={{ backgroundColor: '#18181b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', opacity: saving ? 0.5 : 1 }}>
-            {saving ? 'Saving...' : (
-              <>
-                <svg viewBox="0 0 15 15" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M3 7.5l3 3 6-6"/>
-                </svg>
-                Save Event
-              </>
-            )}
+            {saving ? 'Saving...' : isEdit ? 'Save' : 'Create'}
           </button>
         </div>
       </div>
