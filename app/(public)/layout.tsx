@@ -37,7 +37,7 @@ export default async function PublicLayout({
       <main className="flex-1">{children}</main>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#71717A]">
+      <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#A1A1AA]">
         <div className="mx-auto max-w-[1100px]">
           {/* 4-column grid */}
           <div className="grid grid-cols-1 gap-6 border-b border-[#27272A] pb-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">

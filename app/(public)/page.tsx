@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import nextDynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -7,9 +8,12 @@ import { SITE_TIMEZONE } from '@/lib/site-config';
 import { getUpcomingEventsWithinDays, getNextEvent } from '@/lib/db/queries/events';
 import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
-import { getSetting } from '@/lib/db/queries/settings';
+import { getSettings } from '@/lib/db/queries/settings';
 import { EventCard } from '@/components/shared/events-accordion';
-import { NewsletterSignup } from '@/components/shared/newsletter-signup';
+
+const NewsletterSignup = nextDynamic(() =>
+  import('@/components/shared/newsletter-signup').then((m) => m.NewsletterSignup),
+);
 
 export const dynamic = 'force-dynamic';
 
@@ -51,16 +55,18 @@ export default async function HomePage() {
     );
   }
 
-  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors, missionText, heroImageUrl, heroImagePosition, contactEmail] = await Promise.all([
+  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors, settings] = await Promise.all([
     getUpcomingEventsWithinDays(60),
     getNextEvent(),
     getNewsletters(1, 3),
     getActiveSponsors(),
-    getSetting('mission_text'),
-    getSetting('hero_image_url'),
-    getSetting('hero_image_position'),
-    getSetting('contact_email'),
+    getSettings(['mission_text', 'hero_image_url', 'hero_image_position', 'contact_email']),
   ]);
+
+  const missionText = settings.mission_text;
+  const heroImageUrl = settings.hero_image_url;
+  const heroImagePosition = settings.hero_image_position;
+  const contactEmail = settings.contact_email;
 
   return (
     <>
@@ -326,7 +332,7 @@ export default async function HomePage() {
         <h2 className="mb-2 text-[1.75rem] font-extrabold tracking-[-0.025em] text-white">
           Ready to get involved?
         </h2>
-        <p className="mb-6 text-[0.9rem] text-[#BFDBFE]">
+        <p className="mb-6 text-[0.9rem] text-white/90">
           Every volunteer hour makes a real difference for Westmont students.
         </p>
         <Link

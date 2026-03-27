@@ -4,6 +4,7 @@ import { deleteEvent, getEventByIdAdmin, updateEvent } from '@/lib/db/queries/ev
 import type { NewEvent } from '@/lib/db/queries/events';
 import { deleteObject } from '@/lib/r2/presigned';
 import { updateEventSchema, validateForPublish } from '@/lib/validators/events';
+import { isValidUUID } from '@/lib/validators/uuid';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
 interface RouteContext {
@@ -19,6 +20,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return Response.json({ error: 'Invalid ID format' }, { status: 400 });
 
   try {
     const event = await getEventByIdAdmin(id);
@@ -36,6 +38,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return Response.json({ error: 'Invalid ID format' }, { status: 400 });
 
   try {
     const existing = await getEventByIdAdmin(id);
@@ -106,6 +109,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return Response.json({ error: 'Invalid ID format' }, { status: 400 });
 
   try {
     const existing = await getEventByIdAdmin(id);

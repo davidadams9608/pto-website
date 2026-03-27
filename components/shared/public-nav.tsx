@@ -69,7 +69,7 @@ export function PublicNav() {
       >
         {/* Left: logo + site name (flex-1 so center links are truly centered) */}
         <div className="flex flex-1 items-center gap-2.5">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="Westmont Elementary PTO — Home">
+          <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/westmont-logo.svg"
               alt="Westmont Elementary PTO"
@@ -154,6 +154,7 @@ export function PublicNav() {
             <Link
               key={link.href}
               href={link.href}
+              tabIndex={drawerOpen ? 0 : -1}
               onClick={() => setDrawerOpen(false)}
               className={`block border-b border-[#E4E4E7] py-3.5 text-[0.95rem] font-semibold transition-colors last:border-b-0 ${
                 isActive(link.href, pathname)
@@ -166,6 +167,7 @@ export function PublicNav() {
           ))}
           {!subscribed && (
             <button
+              tabIndex={drawerOpen ? 0 : -1}
               onClick={() => {
                 setDrawerOpen(false);
                 const drawer = document.getElementById('mobile-nav-drawer');

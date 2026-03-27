@@ -1,12 +1,39 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+// Content-Security-Policy directives
+// 'unsafe-inline'/'unsafe-eval' on script-src required for Next.js hydration.
+// Tighten to nonce-based approach post-launch if desired.
+const cspDirectives = [
+  "default-src 'self'",
+  // Next.js requires unsafe-inline and unsafe-eval for hydration + React
+  // Clerk loads clerk.browser.js from its accounts domain
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev",
+  // Inline styles used by shadcn/ui and Tailwind
+  "style-src 'self' 'unsafe-inline'",
+  // Images: self, data URIs, R2 bucket, Clerk avatars
+  "img-src 'self' data: blob: https://*.r2.dev https://*.r2.cloudflarestorage.com https://img.clerk.com",
+  // Fonts: self-hosted via next/font (Plus Jakarta Sans)
+  "font-src 'self'",
+  // API connections: Clerk auth, Sentry error reporting, Upstash Redis, R2 presigned uploads
+  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io https://*.r2.cloudflarestorage.com",
+  // No iframes needed
+  "frame-src 'self' https://*.clerk.accounts.dev",
+  // Prevent embedding this site in iframes (matches X-Frame-Options: DENY)
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  // Clerk loads workers for auth session management
+  "worker-src 'self' blob:",
+].join("; ");
+
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Content-Security-Policy", value: cspDirectives },
 ];
 
 const nextConfig: NextConfig = {

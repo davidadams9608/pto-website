@@ -101,7 +101,7 @@ export function EventCard({ event }: { event: SerializedEvent }) {
         <span className="hidden text-[0.65rem] font-semibold uppercase tracking-[0.06em] text-[#71717A] md:block">
           {weekdayFull}
         </span>
-        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.05em] text-[#71717A] md:hidden">
+        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.05em] text-[#52525B] md:hidden">
           {weekdayAbbr}
         </span>
       </div>
@@ -175,7 +175,7 @@ export function EventsAccordion({ groups }: { groups: MonthGroup[] }) {
             >
               <span>
                 {group.label}{' '}
-                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[0.6rem] font-semibold normal-case tracking-normal ${isExpanded ? 'bg-[#E4E4E7] text-[#71717A]' : 'bg-[#71717A] text-white'}`}>
+                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[0.6rem] font-semibold normal-case tracking-normal ${isExpanded ? 'bg-[#E4E4E7] text-[#52525B]' : 'bg-[#52525B] text-white'}`}>
                   {count} {count === 1 ? 'event' : 'events'}
                 </span>
               </span>

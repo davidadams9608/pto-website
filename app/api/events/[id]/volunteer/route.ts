@@ -7,6 +7,7 @@ import { getSetting } from '@/lib/db/queries/settings';
 import { getEmailProvider } from '@/lib/email';
 import { volunteerConfirmationTemplate } from '@/lib/email/templates/volunteer-confirmation';
 import { volunteerSignupRateLimit } from '@/lib/rate-limit';
+import { isValidUUID } from '@/lib/validators/uuid';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 import { volunteerSignupSchema } from '@/lib/validators/volunteer-signup';
 
@@ -53,6 +54,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     const { id: eventId } = await params;
+    if (!isValidUUID(eventId)) {
+      return Response.json({ error: 'Invalid event ID' }, { status: 400 });
+    }
     const { name, email, phone, role } = result.data;
 
     // 4. Event existence + published check

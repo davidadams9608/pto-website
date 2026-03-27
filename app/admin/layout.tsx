@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton } from "@clerk/nextjs";
+import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -22,6 +22,7 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
+    <ClerkProvider>
     <div className="flex min-h-screen bg-zinc-50">
       {/* Sidebar */}
       <aside className="flex w-56 flex-col border-r bg-white">
@@ -97,5 +98,6 @@ export default function AdminLayout({
         </main>
       </div>
     </div>
+    </ClerkProvider>
   );
 }
