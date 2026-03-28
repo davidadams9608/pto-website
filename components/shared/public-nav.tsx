@@ -81,6 +81,16 @@ export function PublicNav() {
               Westmont PTO
             </span>
           </Link>
+          {process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' && (
+            <span className="rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2 py-[0.1rem] text-[0.55rem] font-bold uppercase tracking-[0.06em] text-[#1B6DC2]">
+              Preview
+            </span>
+          )}
+          {!process.env.NEXT_PUBLIC_VERCEL_ENV && (
+            <span className="rounded-full border border-[#FDE68A] bg-[#FFFBEB] px-2 py-[0.1rem] text-[0.55rem] font-bold uppercase tracking-[0.06em] text-[#D97706]">
+              Dev
+            </span>
+          )}
         </div>
 
         {/* Center: desktop links */}

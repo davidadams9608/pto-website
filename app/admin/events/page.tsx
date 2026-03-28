@@ -57,7 +57,7 @@ function SignupsIcon() {
   return (
     <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
       strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-      <circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/>
+      <circle cx="7" cy="7" r="3"/><path d="M1 7s2.5-4.5 6-4.5S13 7 13 7s-2.5 4.5-6 4.5S1 7 1 7z"/>
     </svg>
   );
 }

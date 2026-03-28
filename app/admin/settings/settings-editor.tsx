@@ -216,124 +216,127 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
             </div>
           </section>
 
-          {/* Connect Card */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-6">
-            <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Connect</h2>
-            <p className="mb-4 text-xs text-zinc-400">These are used to populate links in various places across the site. Any fields left blank will not be shown on the website.</p>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label htmlFor="social-facebook" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Facebook URL</label>
-                <input
-                  id="social-facebook"
-                  type="text"
-                  value={socialFacebook}
-                  onChange={(e) => { setSocialFacebook(e.target.value); clearError('socialFacebook'); }}
-                  placeholder="https://facebook.com/..."
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialFacebook ? 'border-red-400' : 'border-zinc-200'}`}
-                />
-                {errors.socialFacebook && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialFacebook}</p>}
+          {/* Connect + Contact side by side */}
+          <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
+            {/* Connect Card */}
+            <section className="flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-6">
+              <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Connect</h2>
+              <p className="mb-4 text-xs text-zinc-400">Social links and website URLs. Any fields left blank will not be shown on the website.</p>
+              <div className="flex-1 space-y-4">
+                <div>
+                  <label htmlFor="social-facebook" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Facebook URL</label>
+                  <input
+                    id="social-facebook"
+                    type="text"
+                    value={socialFacebook}
+                    onChange={(e) => { setSocialFacebook(e.target.value); clearError('socialFacebook'); }}
+                    placeholder="https://facebook.com/..."
+                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialFacebook ? 'border-red-400' : 'border-zinc-200'}`}
+                  />
+                  {errors.socialFacebook && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialFacebook}</p>}
+                </div>
+                <div>
+                  <label htmlFor="social-instagram" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Instagram URL</label>
+                  <input
+                    id="social-instagram"
+                    type="text"
+                    value={socialInstagram}
+                    onChange={(e) => { setSocialInstagram(e.target.value); clearError('socialInstagram'); }}
+                    placeholder="https://instagram.com/..."
+                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialInstagram ? 'border-red-400' : 'border-zinc-200'}`}
+                  />
+                  {errors.socialInstagram && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialInstagram}</p>}
+                </div>
+                <div>
+                  <label htmlFor="social-school-website" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">School Website</label>
+                  <input
+                    id="social-school-website"
+                    type="text"
+                    value={socialSchoolWebsite}
+                    onChange={(e) => { setSocialSchoolWebsite(e.target.value); clearError('socialSchoolWebsite'); }}
+                    placeholder="https://school.example.org"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialSchoolWebsite ? 'border-red-400' : 'border-zinc-200'}`}
+                  />
+                  {errors.socialSchoolWebsite && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialSchoolWebsite}</p>}
+                </div>
               </div>
-              <div>
-                <label htmlFor="social-instagram" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Instagram URL</label>
-                <input
-                  id="social-instagram"
-                  type="text"
-                  value={socialInstagram}
-                  onChange={(e) => { setSocialInstagram(e.target.value); clearError('socialInstagram'); }}
-                  placeholder="https://instagram.com/..."
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialInstagram ? 'border-red-400' : 'border-zinc-200'}`}
-                />
-                {errors.socialInstagram && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialInstagram}</p>}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleSaveConnect}
+                  disabled={savingCard === 'connect' || !isConnectDirty}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {savingCard === 'connect' ? 'Saving...' : 'Save'}
+                </button>
               </div>
-              <div>
-                <label htmlFor="social-school-website" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">School Website</label>
-                <input
-                  id="social-school-website"
-                  type="text"
-                  value={socialSchoolWebsite}
-                  onChange={(e) => { setSocialSchoolWebsite(e.target.value); clearError('socialSchoolWebsite'); }}
-                  placeholder="https://school.example.org"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialSchoolWebsite ? 'border-red-400' : 'border-zinc-200'}`}
-                />
-                {errors.socialSchoolWebsite && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialSchoolWebsite}</p>}
-              </div>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleSaveConnect}
-                disabled={savingCard === 'connect' || !isConnectDirty}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                {savingCard === 'connect' ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </section>
+            </section>
 
-          {/* Contact Info Card */}
-          <section className="rounded-xl border border-zinc-200 bg-white p-6">
-            <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Contact Info</h2>
-            <p className="mb-4 text-xs text-zinc-400">These are used to populate links in various places across the site. Any fields left blank will not be shown on the website.</p>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label htmlFor="contact-email" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-                  PTO Email
-                </label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  value={contactEmail}
-                  onChange={(e) => { setContactEmail(e.target.value); clearError('contactEmail'); }}
-                  placeholder="pto@westmontpto.org"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactEmail ? 'border-red-400' : 'border-zinc-200'}`}
-                />
-                {errors.contactEmail && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactEmail}</p>}
+            {/* Contact Info Card */}
+            <section className="flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-6">
+              <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Contact Info</h2>
+              <p className="mb-4 text-xs text-zinc-400">Contact details for the PTO. Any fields left blank will not be shown on the website.</p>
+              <div className="flex-1 space-y-4">
+                <div>
+                  <label htmlFor="contact-email" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    PTO Email
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => { setContactEmail(e.target.value); clearError('contactEmail'); }}
+                    placeholder="pto@westmontpto.org"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactEmail ? 'border-red-400' : 'border-zinc-200'}`}
+                  />
+                  {errors.contactEmail && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactEmail}</p>}
+                </div>
+                <div>
+                  <label htmlFor="contact-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    Phone
+                  </label>
+                  <input
+                    id="contact-phone"
+                    type="text"
+                    value={contactPhone}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      let formatted = digits;
+                      if (digits.length > 6) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+                      else if (digits.length > 3) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+                      else if (digits.length > 0) formatted = `(${digits}`;
+                      setContactPhone(formatted);
+                      clearError('contactPhone');
+                    }}
+                    placeholder="(555) 123-4567"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactPhone ? 'border-red-400' : 'border-zinc-200'}`}
+                  />
+                  {errors.contactPhone && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactPhone}</p>}
+                </div>
+                <div>
+                  <label htmlFor="mailing-address" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    Mailing Address
+                  </label>
+                  <textarea
+                    id="mailing-address"
+                    value={mailingAddress}
+                    onChange={(e) => { setMailingAddress(e.target.value); clearError('mailingAddress'); }}
+                    rows={3}
+                    placeholder="123 Oak Street&#10;City, State ZIP"
+                    className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
+                  />
+                </div>
               </div>
-              <div>
-                <label htmlFor="contact-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-                  Phone
-                </label>
-                <input
-                  id="contact-phone"
-                  type="text"
-                  value={contactPhone}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    let formatted = digits;
-                    if (digits.length > 6) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-                    else if (digits.length > 3) formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-                    else if (digits.length > 0) formatted = `(${digits}`;
-                    setContactPhone(formatted);
-                    clearError('contactPhone');
-                  }}
-                  placeholder="(555) 123-4567"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactPhone ? 'border-red-400' : 'border-zinc-200'}`}
-                />
-                {errors.contactPhone && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactPhone}</p>}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleSaveContact}
+                  disabled={savingCard === 'contact' || !isContactDirty}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {savingCard === 'contact' ? 'Saving...' : 'Save'}
+                </button>
               </div>
-              <div>
-                <label htmlFor="mailing-address" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">
-                  Mailing Address
-                </label>
-                <textarea
-                  id="mailing-address"
-                  value={mailingAddress}
-                  onChange={(e) => { setMailingAddress(e.target.value); clearError('mailingAddress'); }}
-                  rows={3}
-                  placeholder="123 Oak Street&#10;City, State ZIP"
-                  className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
-                />
-              </div>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleSaveContact}
-                disabled={savingCard === 'contact' || !isContactDirty}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                {savingCard === 'contact' ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </section>
+            </section>
+          </div>
       </div>
 
     </div>
