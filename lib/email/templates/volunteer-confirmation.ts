@@ -1,14 +1,37 @@
+interface RoleInfo {
+  role: string;
+  quantity: number;
+  type: 'shift' | 'supply';
+}
+
 interface VolunteerConfirmationData {
   volunteerName: string;
   eventTitle: string;
   eventDate: string;
   eventTime: string;
   eventLocation: string;
-  role: string;
+  roles: RoleInfo[];
+  notes?: string;
+  googleCalendarUrl: string;
+}
+
+function renderRoleItem(r: RoleInfo): string {
+  const label = escapeHtml(r.role);
+  if (r.type === 'supply' && r.quantity > 1) {
+    return `<li style="margin:0 0 4px;">${label} (&times;${r.quantity})</li>`;
+  }
+  return `<li style="margin:0 0 4px;">${label}</li>`;
 }
 
 export function volunteerConfirmationTemplate(data: VolunteerConfirmationData): string {
-  const { volunteerName, eventTitle, eventDate, eventTime, eventLocation, role } = data;
+  const { volunteerName, eventTitle, eventDate, eventTime, eventLocation, roles, notes, googleCalendarUrl } = data;
+
+  const rolesList = roles.map(renderRoleItem).join('');
+  const notesBlock = notes
+    ? `<p style="font-size:14px;color:#71717a;margin:12px 0 0;">
+        <strong>Your notes:</strong> ${escapeHtml(notes)}
+      </p>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -32,9 +55,19 @@ export function volunteerConfirmationTemplate(data: VolunteerConfirmationData): 
         <p style="font-size:14px;color:#71717a;margin:0 0 4px;">
           <strong>Location:</strong> ${escapeHtml(eventLocation)}
         </p>
-        <p style="font-size:14px;color:#71717a;margin:0;">
-          <strong>Role preference:</strong> ${escapeHtml(role)}
+        <p style="font-size:14px;color:#71717a;margin:0 0 8px;">
+          <strong>Signed up for:</strong>
         </p>
+        <ul style="font-size:14px;color:#71717a;margin:0;padding-left:20px;">
+          ${rolesList}
+        </ul>${notesBlock}
+      </div>
+
+      <div style="text-align:center;margin-bottom:24px;">
+        <a href="${escapeHtml(googleCalendarUrl)}" target="_blank" rel="noopener noreferrer"
+           style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:14px;font-weight:600;">
+          Add to Google Calendar
+        </a>
       </div>
 
       <p style="font-size:14px;color:#71717a;line-height:1.6;margin:0 0 8px;">

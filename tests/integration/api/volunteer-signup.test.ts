@@ -40,7 +40,7 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
     ADMIN_PUT = adminDetailRoute.PUT;
     ADMIN_DELETE = adminDetailRoute.DELETE;
 
-    // Create a published event with volunteer slots
+    // Create a published event with mixed shift + supply slots
     const publishedRes = await ADMIN_POST(new Request('http://localhost', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,7 +49,10 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
         date: '2026-12-01',
         startTime: '18:00',
         location: 'Test Location',
-        volunteerSlots: [{ role: 'Setup', count: 5 }],
+        volunteerSlots: [
+          { role: 'Setup', count: 5, type: 'shift' },
+          { role: 'Cookies', count: 3, type: 'supply' },
+        ],
         isPublished: true,
       }),
     }));
@@ -127,10 +130,10 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
     name: 'Jane Smith',
     email: 'jane-vol-test@example.com',
     phone: '(555) 123-4567',
-    role: 'Setup',
+    roles: [{ role: 'Setup', quantity: 1 }],
   };
 
-  it('returns 201 for valid signup', async () => {
+  it('returns 201 for valid single-role signup', async () => {
     const [req, ctx] = makeRequest(publishedEventId, validPayload);
     const res = await POST(req, ctx);
     expect(res.status).toBe(201);
@@ -138,6 +141,20 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
     const body = await res.json();
     expect(body.data.success).toBe(true);
     expect(body.data.message).toBe('Signup confirmed');
+  });
+
+  it('returns 201 for multi-role signup', async () => {
+    const [req, ctx] = makeRequest(publishedEventId, {
+      ...validPayload,
+      email: 'multi-role@example.com',
+      roles: [
+        { role: 'Setup', quantity: 1 },
+        { role: 'Cookies', quantity: 2 },
+      ],
+      notes: 'Happy to help!',
+    });
+    const res = await POST(req, ctx);
+    expect(res.status).toBe(201);
   });
 
   it('returns 409 for duplicate email on same event', async () => {
@@ -149,10 +166,20 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
     expect(body.error).toContain('already signed up');
   });
 
+  it('returns 409 for same email even with different roles', async () => {
+    const [req, ctx] = makeRequest(publishedEventId, {
+      ...validPayload,
+      roles: [{ role: 'Cookies', quantity: 1 }],
+    });
+    const res = await POST(req, ctx);
+    expect(res.status).toBe(409);
+  });
+
   it('returns 404 for unpublished event', async () => {
     const [req, ctx] = makeRequest(unpublishedEventId, {
       ...validPayload,
       email: 'other@example.com',
+      roles: [{ role: 'Cleanup', quantity: 1 }],
     });
     const res = await POST(req, ctx);
     expect(res.status).toBe(404);
@@ -174,6 +201,19 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer', () => {
 
     const body = await res.json();
     expect(body.error).toContain('not enabled');
+  });
+
+  it('returns 400 for invalid role name', async () => {
+    const [req, ctx] = makeRequest(publishedEventId, {
+      ...validPayload,
+      email: 'invalidrole@example.com',
+      roles: [{ role: 'NonExistentRole', quantity: 1 }],
+    });
+    const res = await POST(req, ctx);
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.error).toContain('Invalid role');
   });
 
   it('returns 400 for invalid fields', async () => {
@@ -233,7 +273,7 @@ describe.skipIf(!hasDb)('POST /api/events/[id]/volunteer (rate limited)', () => 
           name: 'Test',
           email: 'test@example.com',
           phone: '(555) 123-4567',
-          role: 'Setup',
+          roles: [{ role: 'Setup', quantity: 1 }],
         }),
       }),
       { params: Promise.resolve({ id: 'any-id' }) },

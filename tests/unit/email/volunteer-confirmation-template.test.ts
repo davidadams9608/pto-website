@@ -8,7 +8,10 @@ const templateData = {
   eventDate: 'Saturday, April 12, 2026',
   eventTime: '1:00 PM',
   eventLocation: 'Westmont Elementary School Field',
-  role: 'Setup',
+  roles: [
+    { role: 'Setup', quantity: 1, type: 'shift' as const },
+  ],
+  googleCalendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Spring+Family+Picnic',
 };
 
 describe('volunteerConfirmationTemplate', () => {
@@ -43,10 +46,64 @@ describe('volunteerConfirmationTemplate', () => {
     expect(html).toContain('Westmont Elementary School Field');
   });
 
-  it('includes the role preference', () => {
+  it('renders roles as a list', () => {
     const html = volunteerConfirmationTemplate(templateData);
     expect(html).toContain('Setup');
-    expect(html).toContain('Role preference');
+    expect(html).toContain('Signed up for');
+  });
+
+  it('renders multiple roles', () => {
+    const html = volunteerConfirmationTemplate({
+      ...templateData,
+      roles: [
+        { role: 'Setup', quantity: 1, type: 'shift' },
+        { role: 'Cleanup', quantity: 1, type: 'shift' },
+      ],
+    });
+    expect(html).toContain('Setup');
+    expect(html).toContain('Cleanup');
+  });
+
+  it('renders supply quantity', () => {
+    const html = volunteerConfirmationTemplate({
+      ...templateData,
+      roles: [
+        { role: 'Cookies', quantity: 3, type: 'supply' },
+      ],
+    });
+    expect(html).toContain('Cookies');
+    expect(html).toContain('&times;3');
+  });
+
+  it('does not show quantity for single supply item', () => {
+    const html = volunteerConfirmationTemplate({
+      ...templateData,
+      roles: [
+        { role: 'Cookies', quantity: 1, type: 'supply' },
+      ],
+    });
+    expect(html).toContain('Cookies');
+    expect(html).not.toContain('&times;');
+  });
+
+  it('includes Google Calendar link', () => {
+    const html = volunteerConfirmationTemplate(templateData);
+    expect(html).toContain('Add to Google Calendar');
+    expect(html).toContain('calendar.google.com');
+  });
+
+  it('includes notes when provided', () => {
+    const html = volunteerConfirmationTemplate({
+      ...templateData,
+      notes: 'I can arrive 15 minutes early',
+    });
+    expect(html).toContain('Your notes');
+    expect(html).toContain('I can arrive 15 minutes early');
+  });
+
+  it('omits notes block when not provided', () => {
+    const html = volunteerConfirmationTemplate(templateData);
+    expect(html).not.toContain('Your notes');
   });
 
   it('includes the PTO footer', () => {

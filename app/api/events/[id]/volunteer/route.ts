@@ -1,12 +1,14 @@
 import {
-  createVolunteerSignup,
+  createVolunteerSignups,
   getEventById,
-  getVolunteerSignupByEmail,
+  getSignupCountsByRole,
+  getSignupsByEmail,
 } from '@/lib/db/queries/events';
 import { getSetting } from '@/lib/db/queries/settings';
 import { getEmailProvider } from '@/lib/email';
 import { volunteerConfirmationTemplate } from '@/lib/email/templates/volunteer-confirmation';
 import { volunteerSignupRateLimit } from '@/lib/rate-limit';
+import { buildGoogleCalendarUrl } from '@/lib/utils/calendar';
 import { isValidUUID } from '@/lib/validators/uuid';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 import { volunteerSignupSchema } from '@/lib/validators/volunteer-signup';
@@ -15,7 +17,7 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-type VolunteerSlot = { role: string; count: number };
+type VolunteerSlot = { role: string; count: number; type?: 'shift' | 'supply' };
 
 function hasVolunteerSlots(slots: unknown): boolean {
   return Array.isArray(slots) && (slots as VolunteerSlot[]).length > 0;
@@ -57,7 +59,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (!isValidUUID(eventId)) {
       return Response.json({ error: 'Invalid event ID' }, { status: 400 });
     }
-    const { name, email, phone, role } = result.data;
+    const { name, email, phone, roles, notes } = result.data;
 
     // 4. Event existence + published check
     const event = await getEventById(eventId);
@@ -66,30 +68,64 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     // 5. Volunteer signup enabled check
-    if (!hasVolunteerSlots(event.volunteerSlots)) {
+    const slots = event.volunteerSlots as VolunteerSlot[];
+    if (!hasVolunteerSlots(slots)) {
       return Response.json(
         { error: 'Volunteer signup is not enabled for this event' },
         { status: 400 },
       );
     }
 
-    // 6. Duplicate check
-    const existing = await getVolunteerSignupByEmail(eventId, email);
-    if (existing) {
+    // 6. Duplicate check — one signup per email per event
+    const existingSignups = await getSignupsByEmail(eventId, email);
+    if (existingSignups.length > 0) {
       return Response.json(
         { error: "You've already signed up for this event" },
         { status: 409 },
       );
     }
 
-    // 7. Insert record
-    await createVolunteerSignup({ eventId, name, email, phone, role });
+    // 7. Per-role capacity check
+    const roleCounts = await getSignupCountsByRole(eventId);
+    const countMap = new Map(roleCounts.map((r) => [r.role, r.count]));
+    for (const { role, quantity } of roles) {
+      const slot = slots.find((s) => s.role === role);
+      if (!slot) {
+        return Response.json(
+          { error: `Invalid role: ${role}` },
+          { status: 400 },
+        );
+      }
+      const filled = countMap.get(role) ?? 0;
+      const remaining = slot.count - filled;
+      if (quantity > remaining) {
+        return Response.json(
+          { error: `"${role}" is full or does not have enough spots remaining` },
+          { status: 409 },
+        );
+      }
+    }
 
-    // 8. Send confirmation email — best-effort, don't fail signup if email fails
+    // 8. Insert all roles in one transaction
+    await createVolunteerSignups({ eventId, name, email, phone, notes, roles });
+
+    // 9. Send confirmation email — best-effort, don't fail signup if email fails
     try {
       const eventDate = new Date(event.date);
+      const eventEnd = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000); // default 2h duration
       const contactEmail = await getSetting('contact_email');
       const emailProvider = getEmailProvider();
+      const roleDescription = roles.map((r) => r.role).join(', ');
+      const googleCalendarUrl = buildGoogleCalendarUrl({
+        title: event.title,
+        start: eventDate,
+        end: eventEnd,
+        location: event.location,
+        description: `Volunteering for: ${roleDescription}`,
+      });
+      const slotTypes = new Map(
+        slots.map((s) => [s.role, s.type ?? 'shift'] as const),
+      );
       const emailResult = await emailProvider.sendEmail({
         to: email,
         subject: `Volunteer Confirmation: ${event.title}`,
@@ -104,7 +140,13 @@ export async function POST(request: Request, { params }: RouteContext) {
             hour: 'numeric', minute: '2-digit', hour12: true, timeZone: SITE_TIMEZONE,
           }),
           eventLocation: event.location,
-          role,
+          roles: roles.map((r) => ({
+            role: r.role,
+            quantity: r.quantity,
+            type: slotTypes.get(r.role) ?? 'shift',
+          })),
+          notes: notes || undefined,
+          googleCalendarUrl,
         }),
       });
       if (!emailResult.success) {
@@ -115,7 +157,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       console.error('[Volunteer Signup] Email error:', err); // eslint-disable-line no-console
     }
 
-    // 9. Return success
+    // 10. Return success
     return Response.json(
       { data: { success: true, message: 'Signup confirmed' } },
       { status: 201 },

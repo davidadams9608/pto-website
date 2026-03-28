@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 
-import { createEvent, getAllEventsWithSignupCount } from '@/lib/db/queries/events';
+import { createEvent, getAllEventsWithSignupCount, getSignupQuantitiesByEventAndRole } from '@/lib/db/queries/events';
 import { computeRetentionStatus } from '@/lib/utils/retention';
 import { createEventSchema, validateForPublish } from '@/lib/validators/events';
 import { SITE_TIMEZONE } from '@/lib/site-config';
@@ -15,11 +15,38 @@ export async function GET() {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const rows = await getAllEventsWithSignupCount();
+    const [rows, roleQuantities] = await Promise.all([
+      getAllEventsWithSignupCount(),
+      getSignupQuantitiesByEventAndRole(),
+    ]);
+
+    // Build lookup: eventId → Map<role, filledQty>
+    const roleMap = new Map<string, Map<string, number>>();
+    for (const rq of roleQuantities) {
+      if (!roleMap.has(rq.eventId)) roleMap.set(rq.eventId, new Map());
+      roleMap.get(rq.eventId)!.set(rq.role, rq.total);
+    }
+
+    type Slot = { role: string; count: number; type?: 'shift' | 'supply' };
     const now = new Date();
     const data = rows.map((row) => {
       const { retentionExpired, daysSinceEvent } = computeRetentionStatus(row.date, row.signupCount, now);
-      return { ...row, retentionExpired, daysSinceEvent };
+      const slots = (Array.isArray(row.volunteerSlots) ? row.volunteerSlots : []) as Slot[];
+      const filledByRole = roleMap.get(row.id) ?? new Map<string, number>();
+
+      let shiftFilled = 0, shiftTotal = 0, supplyFilled = 0, supplyTotal = 0;
+      for (const s of slots) {
+        const filled = filledByRole.get(s.role) ?? 0;
+        if (s.type === 'supply') {
+          supplyFilled += filled;
+          supplyTotal += s.count;
+        } else {
+          shiftFilled += filled;
+          shiftTotal += s.count;
+        }
+      }
+
+      return { ...row, retentionExpired, daysSinceEvent, shiftFilled, shiftTotal, supplyFilled, supplyTotal };
     });
     return Response.json({ data });
   } catch (err) {

@@ -11,7 +11,7 @@ describe('generateSignupsCsv', () => {
   it('includes correct header row', () => {
     const csv = generateSignupsCsv(sampleSignups);
     const header = csv.split('\r\n')[0];
-    expect(header).toBe('Name,Email,Phone,Role,Signup Date');
+    expect(header).toBe('Name,Email,Phone,Role,Quantity,Notes,Signup Date');
   });
 
   it('generates correct number of rows', () => {
@@ -34,7 +34,7 @@ describe('generateSignupsCsv', () => {
     const lines = csv.split('\r\n');
     // Mike's row: name,email,,role,date (empty phone field)
     expect(lines[2]).toContain('Mike Chen');
-    expect(lines[2]).toMatch(/mike@example\.com,,Food Service/);
+    expect(lines[2]).toMatch(/mike@example\.com,,Food Service,1,/);
   });
 
   it('escapes commas in field values', () => {
@@ -64,6 +64,6 @@ describe('generateSignupsCsv', () => {
 
   it('returns header only for empty signups', () => {
     const csv = generateSignupsCsv([]);
-    expect(csv).toBe('Name,Email,Phone,Role,Signup Date');
+    expect(csv).toBe('Name,Email,Phone,Role,Quantity,Notes,Signup Date');
   });
 });
