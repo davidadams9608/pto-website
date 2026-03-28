@@ -19,19 +19,23 @@ test.describe('Admin: manage sponsors', () => {
     await page.goto('/admin/sponsors');
     await expect(page.getByText('Sponsors')).toBeVisible();
 
+    // "Add Sponsor" navigates to the new sponsor page
     await page.getByRole('button', { name: /add sponsor/i }).click();
+    await expect(page).toHaveURL('**/admin/sponsors/new');
 
     const testName = `E2E Sponsor ${Date.now()}`;
-    await page.getByLabel('Name').fill(testName);
-    await page.getByLabel('Website').fill('https://example.com');
+    await page.getByLabel('Sponsor Name').fill(testName);
+    await page.getByLabel(/website url/i).fill('https://example.com');
 
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(path.resolve(__dirname, '../fixtures/test-logo.png'));
 
     await expect(page.getByText(/uploaded/i)).toBeVisible({ timeout: 15_000 });
 
-    await page.getByRole('button', { name: /^add$/i }).click();
+    await page.getByRole('button', { name: /add sponsor/i }).click();
 
+    // Redirects back to sponsors list with success banner
+    await page.waitForURL('**/admin/sponsors', { timeout: 10_000 });
     await expect(page.getByText(testName)).toBeVisible({ timeout: 10_000 });
   });
 });

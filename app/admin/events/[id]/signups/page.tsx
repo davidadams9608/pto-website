@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+import { BannerStack } from '@/components/admin/banner';
+import { useBanners } from '@/components/admin/use-banners';
 import { ContactVolunteersModal } from '@/components/shared/contact-volunteers-modal';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 import { downloadSignupsCsv } from '@/lib/utils/csv';
@@ -119,30 +121,6 @@ function BroomIcon() {
   );
 }
 
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ── Purge data dialog ────────────────────────────────────────────────────
 
 function PurgeDataDialog({ eventTitle, onConfirm, onCancel }: { eventTitle: string; onConfirm: () => void; onCancel: () => void }) {
@@ -221,7 +199,7 @@ export default function EventSignupsPage() {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<SignupsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const [showPurgeDialog, setShowPurgeDialog] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
 
@@ -232,7 +210,7 @@ export default function EventSignupsPage() {
       const body = await res.json();
       setData(body.data);
     } catch {
-      setToast({ message: 'Failed to load signups', type: 'error' });
+      addBanner('Failed to load signups', 'error');
     } finally {
       setLoading(false);
     }
@@ -247,13 +225,13 @@ export default function EventSignupsPage() {
     try {
       const res = await fetch(`/api/admin/events/${id}/signups`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) {
-        setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+        addBanner('Failed to delete volunteer data', 'error');
         return;
       }
       setData((prev) => prev ? { ...prev, signups: [], retentionExpired: false } : prev);
-      setToast({ message: `Volunteer data deleted for ${data.event.title}`, type: 'success' });
+      addBanner(`Volunteer data deleted for ${data.event.title}`, 'success');
     } catch {
-      setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+      addBanner('Failed to delete volunteer data', 'error');
     } finally {
       setShowPurgeDialog(false);
     }
@@ -267,7 +245,7 @@ export default function EventSignupsPage() {
     return (
       <div className="py-16 text-center text-sm text-zinc-500">
         Event not found.{' '}
-        <Link href="/admin/events" className="font-semibold text-blue-600 hover:text-blue-700">
+        <Link href="/admin/events" className="font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
           Back to Events
         </Link>
       </div>
@@ -281,10 +259,12 @@ export default function EventSignupsPage() {
 
   return (
     <div>
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
+
       {/* Back link */}
       <Link
         href="/admin/events"
-        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-[#1B6DC2] hover:text-[#1B6DC2]"
       >
         <BackIcon />
         Back to Events
@@ -336,7 +316,7 @@ export default function EventSignupsPage() {
 
       {/* No volunteer slots configured */}
       {!hasVolunteerSlots && (
-        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="flex items-center gap-2 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 text-sm text-[#1B6DC2]">
           <InfoIcon />
           Volunteer signup is not enabled for this event.
         </div>
@@ -426,7 +406,7 @@ export default function EventSignupsPage() {
           onClose={() => setShowContactModal(false)}
           onSuccess={(count) => {
             setShowContactModal(false);
-            setToast({ message: `Message sent to ${count} volunteer${count !== 1 ? 's' : ''}`, type: 'success' });
+            addBanner(`Message sent to ${count} volunteer${count !== 1 ? 's' : ''}`, 'success');
           }}
         />
       )}
@@ -440,8 +420,6 @@ export default function EventSignupsPage() {
         />
       )}
 
-      {/* Toast */}
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
+import { BannerStack } from '@/components/admin/banner';
+import { useBanners } from '@/components/admin/use-banners';
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface OfficerRow {
@@ -48,30 +51,6 @@ function ArrowDownIcon() {
       strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M7 3v8"/><path d="M3.5 7.5L7 11l3.5-3.5"/>
     </svg>
-  );
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
   );
 }
 
@@ -159,7 +138,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
   const [aboutText, setAboutText] = useState(initialAboutText);
   const [savingText, setSavingText] = useState(false);
   const [officers, setOfficers] = useState(initialOfficers);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const [deleteTarget, setDeleteTarget] = useState<OfficerRow | null>(null);
   const [editTarget, setEditTarget] = useState<OfficerRow | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -195,10 +174,10 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
         body: JSON.stringify({ value: aboutText }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      setToast({ message: 'About text updated', type: 'success' });
+      addBanner('About text updated', 'success');
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to update about text', type: 'error' });
+      addBanner('Failed to update about text', 'error');
     } finally {
       setSavingText(false);
     }
@@ -251,11 +230,11 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
       if (!res.ok) throw new Error('Failed to add officer');
       const { data } = await res.json();
       setOfficers((prev) => [...prev, { id: data.id, name: data.name, role: data.role, displayOrder: data.displayOrder }]);
-      setToast({ message: 'Officer added', type: 'success' });
+      addBanner('Officer added', 'success');
       resetForm();
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to add officer', type: 'error' });
+      addBanner('Failed to add officer', 'error');
     } finally {
       setFormSubmitting(false);
     }
@@ -273,11 +252,11 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
       if (!res.ok) throw new Error('Failed to update');
       const { data } = await res.json();
       setOfficers((prev) => prev.map((o) => o.id === editTarget.id ? { ...o, name: data.name, role: data.role } : o));
-      setToast({ message: 'Officer updated', type: 'success' });
+      addBanner('Officer updated', 'success');
       resetForm();
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to update officer', type: 'error' });
+      addBanner('Failed to update officer', 'error');
     } finally {
       setFormSubmitting(false);
     }
@@ -289,10 +268,10 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
       const res = await fetch(`/api/admin/officers/${deleteTarget.id}`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) throw new Error('Failed to delete');
       setOfficers((prev) => prev.filter((o) => o.id !== deleteTarget.id));
-      setToast({ message: 'Officer deleted', type: 'success' });
+      addBanner('Officer deleted', 'success');
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to delete officer', type: 'error' });
+      addBanner('Failed to delete officer', 'error');
     } finally {
       setDeleteTarget(null);
     }
@@ -317,7 +296,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
       if (!res.ok) throw new Error('Failed to reorder');
     } catch {
       setOfficers(officers); // revert
-      setToast({ message: 'Failed to reorder officers', type: 'error' });
+      addBanner('Failed to reorder officers', 'error');
     }
   }, [officers]);
 
@@ -333,6 +312,8 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
         <p className="mt-1 text-sm text-zinc-500">Manage your organization description and officers.</p>
       </div>
 
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
+
       {/* About Text Section */}
       <div className="mb-8 rounded-xl border border-zinc-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-extrabold text-zinc-900">Organization Description</h2>
@@ -341,7 +322,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
             value={aboutText}
             onChange={(e) => setAboutText(e.target.value)}
             rows={8}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
             placeholder="Describe the PTO organization..."
           />
           <div className="mt-1 flex items-center justify-between">
@@ -368,8 +349,9 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
           {!showForm && (
             <button
               onClick={openAddForm}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M7 2v10"/><path d="M2 7h10"/></svg>
               Add Officer
             </button>
           )}
@@ -390,7 +372,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
                   value={formName}
                   onChange={(e) => { setFormName(e.target.value); setFormErrors((prev) => ({ ...prev, name: undefined })); }}
                   placeholder="e.g., Jane Smith"
-                  className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.name ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${formErrors.name ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {formErrors.name && <p className="mt-1 text-xs font-medium text-red-600">{formErrors.name}</p>}
               </div>
@@ -402,7 +384,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
                   value={formRole}
                   onChange={(e) => { setFormRole(e.target.value); setFormErrors((prev) => ({ ...prev, role: undefined })); }}
                   placeholder="e.g., President"
-                  className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.role ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${formErrors.role ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {formErrors.role && <p className="mt-1 text-xs font-medium text-red-600">{formErrors.role}</p>}
               </div>
@@ -438,7 +420,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
               </thead>
               <tbody>
                 {officers.map((officer, i) => (
-                  <tr key={officer.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-blue-50/40">
+                  <tr key={officer.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-[#EFF6FF]/40">
                     <td className="px-4 py-3 text-sm text-zinc-400">{i + 1}</td>
                     <td className="px-4 py-3 text-sm font-semibold text-zinc-900">{officer.name}</td>
                     <td className="px-4 py-3 text-sm text-zinc-600">{officer.role}</td>
@@ -448,7 +430,7 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
                           onClick={() => handleMove(i, 'up')}
                           disabled={i === 0}
                           title="Move up"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600 disabled:opacity-30"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2] disabled:opacity-30"
                         >
                           <ArrowUpIcon />
                         </button>
@@ -456,14 +438,14 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
                           onClick={() => handleMove(i, 'down')}
                           disabled={i === officers.length - 1}
                           title="Move down"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600 disabled:opacity-30"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2] disabled:opacity-30"
                         >
                           <ArrowDownIcon />
                         </button>
                         <button
                           onClick={() => openEditForm(officer)}
                           title="Edit"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                         >
                           <EditIcon />
                         </button>
@@ -488,8 +470,6 @@ export function AboutManager({ initialAboutText, initialOfficers }: AboutManager
       {deleteTarget && <DeleteDialog name={deleteTarget.name} onConfirm={handleDeleteOfficer} onCancel={() => setDeleteTarget(null)} />}
       {showDiscardDialog && <DiscardDialog onDiscard={() => { setShowDiscardDialog(false); resetForm(); }} onKeepEditing={() => setShowDiscardDialog(false)} />}
 
-      {/* Toast */}
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

@@ -17,8 +17,8 @@ const cspDirectives = [
   "font-src 'self'",
   // API connections: Clerk auth, Sentry error reporting, Upstash Redis, R2 presigned uploads
   "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io https://*.r2.cloudflarestorage.com",
-  // No iframes needed
-  "frame-src 'self' https://*.clerk.accounts.dev",
+  // Iframes: Clerk auth + R2 PDFs (public file viewer)
+  "frame-src 'self' https://*.clerk.accounts.dev https://*.r2.dev https://*.r2.cloudflarestorage.com",
   // Prevent embedding this site in iframes (matches X-Frame-Options: DENY)
   "frame-ancestors 'none'",
   "base-uri 'self'",

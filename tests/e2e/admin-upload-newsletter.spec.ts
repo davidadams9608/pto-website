@@ -19,7 +19,9 @@ test.describe('Admin: upload newsletter', () => {
     await page.goto('/admin/archive');
     await expect(page.getByText('Archive')).toBeVisible();
 
-    await page.getByRole('button', { name: /upload newsletter/i }).click();
+    // Newsletters tab is active by default — click the top-level Upload button
+    await page.getByRole('button', { name: /^upload$/i }).click();
+    await expect(page.getByText('Upload Newsletter')).toBeVisible();
 
     const testTitle = `E2E Newsletter ${Date.now()}`;
     await page.getByLabel('Title').fill(testTitle);

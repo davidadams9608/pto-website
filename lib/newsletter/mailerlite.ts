@@ -53,4 +53,24 @@ export class MailerLiteAdapter implements NewsletterProvider {
       return { success: false, error: message };
     }
   }
+
+  async getSubscriberCount(): Promise<number> {
+    if (!this.apiKey || !this.groupId) return 0;
+
+    try {
+      const res = await fetch(
+        `https://connect.mailerlite.com/api/groups/${this.groupId}/subscribers?limit=0`,
+        {
+          headers: { Authorization: `Bearer ${this.apiKey}` },
+          next: { revalidate: 3600 }, // cache for 1 hour
+        },
+      );
+
+      if (!res.ok) return 0;
+      const body = await res.json();
+      return body.total ?? 0;
+    } catch {
+      return 0;
+    }
+  }
 }

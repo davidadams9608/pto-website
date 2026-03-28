@@ -45,6 +45,7 @@ type Tab = "newsletters" | "minutes";
 interface ArchiveTabsProps {
   newsletters: Newsletter[];
   minutes: MeetingMinutes[];
+  subscriberMessage?: string;
 }
 
 // ── Accordion (shared between tabs) ────────────────────────────────────────
@@ -65,7 +66,7 @@ function ChevronIcon() {
 
 // ── Newsletters tab ────────────────────────────────────────────────────────
 
-function NewslettersTab({ newsletters }: { newsletters: Newsletter[] }) {
+function NewslettersTab({ newsletters, subscriberMessage }: { newsletters: Newsletter[]; subscriberMessage?: string }) {
   const groups = new Map<string, Newsletter[]>();
   for (const nl of newsletters) {
     const key = schoolYearKey(new Date(nl.publishedAt));
@@ -150,7 +151,7 @@ function NewslettersTab({ newsletters }: { newsletters: Newsletter[] }) {
 
       {/* Signup sidebar — desktop only */}
       <aside aria-label="Newsletter signup" className="hidden md:block md:sticky md:top-[80px]">
-        <NewsletterSignup />
+        <NewsletterSignup subscriberMessage={subscriberMessage} />
       </aside>
     </div>
   );
@@ -242,7 +243,7 @@ function MinutesTab({ minutes }: { minutes: MeetingMinutes[] }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export function ArchiveTabs({ newsletters, minutes }: ArchiveTabsProps) {
+export function ArchiveTabs({ newsletters, minutes, subscriberMessage }: ArchiveTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>("newsletters");
 
   return (
@@ -290,7 +291,7 @@ export function ArchiveTabs({ newsletters, minutes }: ArchiveTabsProps) {
             aria-labelledby="tab-newsletters"
             hidden={activeTab !== "newsletters"}
           >
-            {activeTab === "newsletters" && <NewslettersTab newsletters={newsletters} />}
+            {activeTab === "newsletters" && <NewslettersTab newsletters={newsletters} subscriberMessage={subscriberMessage} />}
           </div>
           <div
             role="tabpanel"

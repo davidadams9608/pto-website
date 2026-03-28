@@ -224,7 +224,7 @@ export default async function DashboardPage() {
               <div className="flex flex-col gap-4">
                 {recentNewsletters.slice(0, 2).map((nl) => (
                   <div key={nl.id} className="flex items-start gap-3">
-                    <span className="shrink-0 rounded-full" style={{ background: '#60A5FA', width: 10, height: 10, marginTop: 6 }} />
+                    <span className="shrink-0 rounded-full" style={{ background: '#1B6DC2', width: 10, height: 10, marginTop: 6 }} />
                     <div>
                       <p className="text-sm text-zinc-700">
                         Newsletter <strong className="font-semibold">{nl.title}</strong> uploaded
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
               <CalendarIcon />
               <h2 className="text-[0.925rem] font-bold text-zinc-900">Upcoming Events</h2>
             </div>
-            <Link href="/admin/events" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <Link href="/admin/events" className="text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
               Manage Events &rarr;
             </Link>
           </div>
@@ -268,7 +268,7 @@ export default async function DashboardPage() {
             {upcomingEvents.length === 0 ? (
               <div className="text-center">
                 <p className="text-sm text-zinc-400">No upcoming events</p>
-                <Link href="/admin/events/new" className="mt-1 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
+                <Link href="/admin/events/new" className="mt-1 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
                   Create your first event &rarr;
                 </Link>
               </div>
@@ -282,7 +282,7 @@ export default async function DashboardPage() {
                       href={`/admin/events/${evt.id}/edit`}
                       className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-zinc-50"
                     >
-                      <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-blue-50 text-blue-700" style={{ width: 46, height: 46 }}>
+                      <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-[#EFF6FF] text-[#1B6DC2]" style={{ width: 46, height: 46 }}>
                         <span className="text-[0.65rem] font-bold uppercase leading-none">
                           {new Date(evt.date).toLocaleDateString("en-US", { month: "short", timeZone: SITE_TIMEZONE })}
                         </span>
@@ -362,7 +362,7 @@ export default async function DashboardPage() {
             {recentNewsletters.length === 0 && (
               <div className="mt-4 text-center">
                 <p className="text-sm text-zinc-400">No newsletters uploaded yet.</p>
-                <Link href="/admin/archive" className="mt-1 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
+                <Link href="/admin/archive" className="mt-1 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
                   Upload your first newsletter &rarr;
                 </Link>
               </div>

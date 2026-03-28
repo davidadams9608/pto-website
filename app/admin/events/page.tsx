@@ -427,7 +427,7 @@ export default function EventsListPage() {
           {activeTab === 'current' && (
             <Link
               href="/admin/events/new"
-              className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700"
+              className="mt-2 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]"
             >
               Create your first event &rarr;
             </Link>
@@ -449,7 +449,7 @@ export default function EventsListPage() {
               {filteredEvents.map((event) => {
                 const slots = totalSlots(event.volunteerSlots);
                 return (
-                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-blue-50/40">
+                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-[#EFF6FF]/40">
                     <td className="px-5 py-3.5">
                       <div className="text-sm font-semibold text-zinc-900">{event.title}</div>
                       <div className="mt-0.5 text-xs text-zinc-400">
@@ -464,7 +464,7 @@ export default function EventsListPage() {
                         {slots > 0 ? (
                           <Link
                             href={`/admin/events/${event.id}/signups`}
-                            className="font-medium text-blue-600 hover:text-blue-700"
+                            className="font-medium text-[#1B6DC2] hover:text-[#1B6DC2]"
                           >
                             {event.signupCount} / {slots}
                           </Link>
@@ -498,7 +498,7 @@ export default function EventsListPage() {
                         <Link
                           href={`/admin/events/${event.id}/edit`}
                           title="Edit"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                         >
                           <EditIcon />
                         </Link>
@@ -513,7 +513,7 @@ export default function EventsListPage() {
                           <button
                             onClick={() => handleContactVolunteers(event)}
                             title="Contact Volunteers"
-                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                           >
                             <MailIcon />
                           </button>
@@ -521,7 +521,7 @@ export default function EventsListPage() {
                         <button
                           onClick={() => handleDuplicate(event)}
                           title="Duplicate"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                         >
                           <DuplicateIcon />
                         </button>

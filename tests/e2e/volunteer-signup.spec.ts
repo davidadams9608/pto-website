@@ -1,10 +1,21 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Public: volunteer signup', () => {
-  const eventWithSlots = '/events/d9fff8f8-3755-429e-b2d9-75d5191650cb';
+  // Find an event with volunteer slots dynamically from the API
+  let eventWithSlots = '';
   const uniqueEmail = `e2e-vol-${Date.now()}@example.com`;
 
+  test.beforeAll(async ({ request }) => {
+    const res = await request.get('/api/events');
+    const { data } = await res.json();
+    const event = data.find((e: { volunteerSlots: unknown[] | null }) =>
+      Array.isArray(e.volunteerSlots) && e.volunteerSlots.length > 0,
+    );
+    if (event) eventWithSlots = `/events/${event.id}`;
+  });
+
   test('shows signup form with name, email, phone, role fields', async ({ page }) => {
+    test.skip(!eventWithSlots, 'No event with volunteer slots found in seed data');
     await page.goto(eventWithSlots);
 
     const signupHeading = page.getByText('Volunteer Signup', { exact: true });
@@ -18,11 +29,13 @@ test.describe('Public: volunteer signup', () => {
   });
 
   test('shows spots left badge', async ({ page }) => {
+    test.skip(!eventWithSlots, 'No event with volunteer slots found in seed data');
     await page.goto(eventWithSlots);
     await expect(page.getByText(/\d+ spots? left/)).toBeVisible();
   });
 
   test('submits successfully with valid data', async ({ page }) => {
+    test.skip(!eventWithSlots, 'No event with volunteer slots found in seed data');
     await page.goto(eventWithSlots);
 
     await page.locator('#vol-name').fill('E2E Test Volunteer');
@@ -35,6 +48,7 @@ test.describe('Public: volunteer signup', () => {
   });
 
   test('shows error for duplicate email', async ({ page }) => {
+    test.skip(!eventWithSlots, 'No event with volunteer slots found in seed data');
     await page.goto(eventWithSlots);
 
     await page.locator('#vol-name').fill('E2E Duplicate');
@@ -47,6 +61,7 @@ test.describe('Public: volunteer signup', () => {
   });
 
   test('shows validation errors for empty fields', async ({ page }) => {
+    test.skip(!eventWithSlots, 'No event with volunteer slots found in seed data');
     await page.goto(eventWithSlots);
 
     await page.getByRole('button', { name: /sign up to volunteer/i }).click();

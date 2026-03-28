@@ -19,9 +19,10 @@ test.describe('Admin: upload meeting minutes', () => {
     await page.goto('/admin/archive');
     await expect(page.getByText('Archive')).toBeVisible();
 
+    // Switch to Meeting Minutes tab first, then click Upload
     await page.getByRole('tab', { name: /meeting minutes/i }).click();
-
-    await page.getByRole('button', { name: /upload minutes/i }).click();
+    await page.getByRole('button', { name: /^upload$/i }).click();
+    await expect(page.getByText('Upload Minutes')).toBeVisible();
 
     const testTitle = `E2E Minutes ${Date.now()}`;
     await page.getByLabel('Title').fill(testTitle);

@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { BannerStack } from '@/components/admin/banner';
 import { FileUpload } from '@/components/admin/file-upload';
+import { useBanners } from '@/components/admin/use-banners';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -11,30 +13,6 @@ interface DonateSettings {
   venmoUrl: string;
   venmoQrUrl: string;
   venmoQrKey: string;
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -50,7 +28,7 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const router = useRouter();
 
   const isDirty =
@@ -88,10 +66,10 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
         }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      setToast({ message: 'Donation settings updated', type: 'success' });
+      addBanner('Donation settings updated', 'success');
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to save settings', type: 'error' });
+      addBanner('Failed to save settings', 'error');
     } finally {
       setSaving(false);
     }
@@ -103,6 +81,8 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
         <h1 className="text-xl font-bold tracking-tight text-zinc-900">Donate</h1>
         <p className="mt-1 text-sm text-zinc-500">Manage your Venmo payment details for the public donate page.</p>
       </div>
+
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
 
       <section className="rounded-xl border border-zinc-200 bg-white p-6">
         <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">Venmo</h2>
@@ -117,7 +97,7 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
               value={venmoUrl}
               onChange={(e) => { setVenmoUrl(e.target.value); clearError('venmoUrl'); }}
               placeholder="https://venmo.com/YourPTO"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.venmoUrl ? 'border-red-400' : 'border-zinc-200'}`}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.venmoUrl ? 'border-red-400' : 'border-zinc-200'}`}
             />
             {errors.venmoUrl && <p className="mt-1 text-xs font-medium text-red-600">{errors.venmoUrl}</p>}
           </div>
@@ -145,7 +125,7 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
                           { key: 'venmo_qr_key', value: '' },
                         ] }),
                       });
-                      setToast({ message: 'QR code removed', type: 'success' });
+                      addBanner('QR code removed', 'success');
                       router.refresh();
                     }}
                     className="cursor-pointer text-xs font-semibold text-zinc-400 underline hover:text-zinc-700"
@@ -175,7 +155,6 @@ export function DonateEditor({ initialSettings }: DonateEditorProps) {
         </div>
       </section>
 
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

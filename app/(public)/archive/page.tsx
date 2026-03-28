@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { getNewsletters } from "@/lib/db/queries/newsletters";
 import { getMinutes } from "@/lib/db/queries/minutes";
+import { formatSubscriberMessage, getNewsletterProvider } from "@/lib/newsletter";
 import { ArchiveTabs } from "@/components/archive/archive-tabs";
 
 export const dynamic = 'force-dynamic';
@@ -12,10 +13,13 @@ export const metadata: Metadata = {
 };
 
 export default async function ArchivePage() {
-  const [{ items: newsletters }, { items: minutes }] = await Promise.all([
+  const [{ items: newsletters }, { items: minutes }, subscriberCount] = await Promise.all([
     getNewsletters(1, 200),
     getMinutes(1, 200),
+    getNewsletterProvider().getSubscriberCount(),
   ]);
+
+  const subscriberMessage = formatSubscriberMessage(subscriberCount);
 
   return (
     <>
@@ -71,7 +75,7 @@ export default async function ArchivePage() {
       </div>
 
       {/* ── Tabs + content ── */}
-      <ArchiveTabs newsletters={newsletters} minutes={minutes} />
+      <ArchiveTabs newsletters={newsletters} minutes={minutes} subscriberMessage={subscriberMessage} />
     </>
   );
 }

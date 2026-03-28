@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+import { BannerStack } from '@/components/admin/banner';
+import { useBanners } from '@/components/admin/use-banners';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -14,30 +17,6 @@ interface SettingsData {
   contactEmail: string;
   contactPhone: string;
   mailingAddress: string;
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -63,7 +42,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [savingCard, setSavingCard] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const router = useRouter();
 
   // Dirty detection
@@ -100,10 +79,10 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
         body: JSON.stringify({ settings }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      setToast({ message: successMessage, type: 'success' });
+      addBanner(successMessage, 'success');
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to save settings', type: 'error' });
+      addBanner('Failed to save settings', 'error');
     } finally {
       setSavingCard(null);
     }
@@ -190,6 +169,8 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
         <p className="mt-1 text-sm text-zinc-500">Manage your school information and PTO details.</p>
       </div>
 
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
+
       <div className="flex flex-col gap-8">
           {/* Org Info Card */}
           <section className="rounded-xl border border-zinc-200 bg-white p-6">
@@ -205,7 +186,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={schoolName}
                   onChange={(e) => { setSchoolName(e.target.value); clearError('schoolName'); }}
                   placeholder="e.g., Westmont Elementary School"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.schoolName ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.schoolName ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.schoolName && <p className="mt-1 text-xs font-medium text-red-600">{errors.schoolName}</p>}
               </div>
@@ -219,7 +200,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={orgName}
                   onChange={(e) => { setOrgName(e.target.value); clearError('orgName'); }}
                   placeholder="e.g., Westmont Elementary PTO"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.orgName ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.orgName ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.orgName && <p className="mt-1 text-xs font-medium text-red-600">{errors.orgName}</p>}
               </div>
@@ -248,7 +229,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={socialFacebook}
                   onChange={(e) => { setSocialFacebook(e.target.value); clearError('socialFacebook'); }}
                   placeholder="https://facebook.com/..."
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialFacebook ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialFacebook ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.socialFacebook && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialFacebook}</p>}
               </div>
@@ -260,7 +241,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={socialInstagram}
                   onChange={(e) => { setSocialInstagram(e.target.value); clearError('socialInstagram'); }}
                   placeholder="https://instagram.com/..."
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialInstagram ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialInstagram ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.socialInstagram && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialInstagram}</p>}
               </div>
@@ -272,7 +253,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={socialSchoolWebsite}
                   onChange={(e) => { setSocialSchoolWebsite(e.target.value); clearError('socialSchoolWebsite'); }}
                   placeholder="https://school.example.org"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialSchoolWebsite ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.socialSchoolWebsite ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.socialSchoolWebsite && <p className="mt-1 text-xs font-medium text-red-600">{errors.socialSchoolWebsite}</p>}
               </div>
@@ -303,7 +284,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   value={contactEmail}
                   onChange={(e) => { setContactEmail(e.target.value); clearError('contactEmail'); }}
                   placeholder="pto@westmontpto.org"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactEmail ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactEmail ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.contactEmail && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactEmail}</p>}
               </div>
@@ -325,7 +306,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                     clearError('contactPhone');
                   }}
                   placeholder="(555) 123-4567"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contactPhone ? 'border-red-400' : 'border-zinc-200'}`}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.contactPhone ? 'border-red-400' : 'border-zinc-200'}`}
                 />
                 {errors.contactPhone && <p className="mt-1 text-xs font-medium text-red-600">{errors.contactPhone}</p>}
               </div>
@@ -339,7 +320,7 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
                   onChange={(e) => { setMailingAddress(e.target.value); clearError('mailingAddress'); }}
                   rows={3}
                   placeholder="123 Oak Street&#10;City, State ZIP"
-                  className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
                 />
               </div>
             </div>
@@ -355,7 +336,6 @@ export function SettingsEditor({ initialSettings }: SettingsEditorProps) {
           </section>
       </div>
 
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

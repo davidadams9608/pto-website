@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from "react";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
@@ -202,7 +203,7 @@ export default function AdminLayout({
 
       {/* Main content area — scrollable */}
       <main style={{ flex: 1, overflowY: 'auto', background: '#FAFAFA', padding: '2rem 2.5rem' }}>
-        {children}
+        <Suspense>{children}</Suspense>
       </main>
 
     </div>

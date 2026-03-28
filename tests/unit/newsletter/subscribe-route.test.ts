@@ -35,6 +35,7 @@ describe('POST /api/newsletter/subscribe', () => {
   it('returns 200 on successful subscription', async () => {
     mockGetProvider.mockReturnValue({
       subscribe: vi.fn().mockResolvedValue({ success: true }),
+      getSubscriberCount: vi.fn().mockResolvedValue(0),
     });
 
     const res = await POST(makeRequest({ email: 'test@example.com' }));
@@ -46,7 +47,7 @@ describe('POST /api/newsletter/subscribe', () => {
 
   it('calls provider with the submitted email', async () => {
     const subscribeMock = vi.fn().mockResolvedValue({ success: true });
-    mockGetProvider.mockReturnValue({ subscribe: subscribeMock });
+    mockGetProvider.mockReturnValue({ subscribe: subscribeMock, getSubscriberCount: vi.fn().mockResolvedValue(0) });
 
     await POST(makeRequest({ email: 'hello@world.com' }));
 
@@ -74,6 +75,7 @@ describe('POST /api/newsletter/subscribe', () => {
   it('returns 500 when provider returns error', async () => {
     mockGetProvider.mockReturnValue({
       subscribe: vi.fn().mockResolvedValue({ success: false, error: 'Provider failed' }),
+      getSubscriberCount: vi.fn().mockResolvedValue(0),
     });
 
     const res = await POST(makeRequest({ email: 'test@example.com' }));

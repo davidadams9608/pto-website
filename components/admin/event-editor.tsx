@@ -431,7 +431,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
               hint="When enabled, a signup form will appear on the public event page."
             />
             {volunteerEnabled && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+              <div className="rounded-lg border border-[#BFDBFE] bg-[#EFF6FF]/50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs font-semibold text-zinc-600">
                     Volunteer Roles &middot; {totalSpots} total spots
@@ -483,7 +483,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
               <Toggle
                 checked={isPublished}
                 onChange={(v) => { setIsPublished(v); markDirty(); }}
-                label={isEdit ? 'Published' : 'Publish immediately'}
+                label={isEdit ? 'Publish' : 'Publish immediately'}
                 hint={isEdit
                   ? 'Toggle to publish or unpublish this event on the public site.'
                   : 'Published events are visible on the public site. Unpublished events are saved as drafts.'}
