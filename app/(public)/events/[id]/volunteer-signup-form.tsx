@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { volunteerSignupSchema } from '@/lib/validators/volunteer-signup';
 
@@ -32,6 +32,13 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
   const [state, setState] = useState<FormState>('idle');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState('');
+
+  // Scroll confirmation card into view after success render
+  useEffect(() => {
+    if (state === 'success' && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +91,6 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
       }
 
       setState('success');
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
     } catch {
       setServerError('Something went wrong. Please try again.');
       setState('error');
