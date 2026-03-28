@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 
 import { deleteSignupsForEvent, getEventWithSignups } from '@/lib/db/queries/events';
+import { isValidUUID } from '@/lib/validators/uuid';
 import { computeRetentionStatus } from '@/lib/utils/retention';
 
 interface RouteContext {
@@ -12,6 +13,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return Response.json({ error: 'Invalid ID format' }, { status: 400 });
 
   try {
     const result = await getEventWithSignups(id);
@@ -41,6 +43,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return Response.json({ error: 'Invalid ID format' }, { status: 400 });
 
   try {
     const result = await getEventWithSignups(id);

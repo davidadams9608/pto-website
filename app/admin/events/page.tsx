@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 
+import { BannerStack } from '@/components/admin/banner';
+import { useBanners } from '@/components/admin/use-banners';
 import { ContactVolunteersModal } from '@/components/shared/contact-volunteers-modal';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
@@ -106,30 +108,6 @@ function TrashIcon() {
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success'
-        ? 'bg-emerald-600 text-white'
-        : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
-}
 
 // ── Delete dialog ───────────────────────────────────────────────────────────
 
@@ -278,7 +256,8 @@ export default function EventsListPage() {
   const [deleteTarget, setDeleteTarget] = useState<EventRow | null>(null);
   const [purgeTarget, setPurgeTarget] = useState<EventRow | null>(null);
   const [contactTarget, setContactTarget] = useState<{ event: EventRow; recipients: { id: string; name: string; email: string }[] } | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
+  const [activeTab, setActiveTab] = useState<'current' | 'past'>('current');
 
   const handleContactVolunteers = async (event: EventRow) => {
     try {
@@ -292,7 +271,7 @@ export default function EventsListPage() {
       }));
       setContactTarget({ event, recipients });
     } catch {
-      setToast({ message: 'Failed to load volunteer data', type: 'error' });
+      addBanner( 'Failed to load volunteer data', 'error');
     }
   };
 
@@ -324,10 +303,10 @@ export default function EventsListPage() {
       });
 
       if (!dupRes.ok) throw new Error('Failed to duplicate');
-      setToast({ message: 'Event duplicated as draft', type: 'success' });
+      addBanner( 'Event duplicated as draft', 'success');
       fetchEvents();
     } catch {
-      setToast({ message: 'Failed to duplicate event', type: 'error' });
+      addBanner( 'Failed to duplicate event', 'error');
     }
   };
 
@@ -338,7 +317,7 @@ export default function EventsListPage() {
       const body = await res.json();
       setEvents(body.data);
     } catch {
-      setToast({ message: 'Failed to load events', type: 'error' });
+      addBanner( 'Failed to load events', 'error');
     } finally {
       setLoading(false);
     }
@@ -353,13 +332,13 @@ export default function EventsListPage() {
     try {
       const res = await fetch(`/api/admin/events/${deleteTarget.id}`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) {
-        setToast({ message: 'Failed to delete event', type: 'error' });
+        addBanner( 'Failed to delete event', 'error');
         return;
       }
       setEvents((prev) => prev.filter((e) => e.id !== deleteTarget.id));
-      setToast({ message: 'Event deleted', type: 'success' });
+      addBanner(`Event '${deleteTarget.title}' deleted`, 'success');
     } catch {
-      setToast({ message: 'Failed to delete event', type: 'error' });
+      addBanner( 'Failed to delete event', 'error');
     } finally {
       setDeleteTarget(null);
     }
@@ -370,7 +349,7 @@ export default function EventsListPage() {
     try {
       const res = await fetch(`/api/admin/events/${purgeTarget.id}/signups`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) {
-        setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+        addBanner( 'Failed to delete volunteer data', 'error');
         return;
       }
       setEvents((prev) =>
@@ -380,9 +359,9 @@ export default function EventsListPage() {
             : e,
         ),
       );
-      setToast({ message: `Volunteer data deleted for ${purgeTarget.title}`, type: 'success' });
+      addBanner( `Volunteer data deleted for ${purgeTarget.title}`, 'success');
     } catch {
-      setToast({ message: 'Failed to delete volunteer data', type: 'error' });
+      addBanner( 'Failed to delete volunteer data', 'error');
     } finally {
       setPurgeTarget(null);
     }
@@ -392,27 +371,67 @@ export default function EventsListPage() {
     <div>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Events</h1>
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900">Events</h1>
+          <p className="mt-1 text-sm text-zinc-500">Manage events and volunteer signups.</p>
+        </div>
         <Link
           href="/admin/events/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
+          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M7 2v10"/><path d="M2 7h10"/></svg>
           Create Event
         </Link>
       </div>
 
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
+
+      {/* Tabs */}
+      <div className="mb-4 flex gap-1 rounded-lg bg-zinc-100 p-1" role="tablist">
+        <button
+          role="tab"
+          aria-selected={activeTab === 'current'}
+          onClick={() => setActiveTab('current')}
+          className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+            activeTab === 'current' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          Current
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'past'}
+          onClick={() => setActiveTab('past')}
+          className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+            activeTab === 'past' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          Past
+        </button>
+      </div>
+
       {/* Table */}
-      {loading ? (
+      {(() => {
+        const now = new Date();
+        const filteredEvents = events.filter((e) => {
+          const eventDate = new Date(e.date);
+          return activeTab === 'current' ? eventDate >= now : eventDate < now;
+        });
+        return loading ? (
         <div className="py-16 text-center text-sm text-zinc-400">Loading events...</div>
-      ) : events.length === 0 ? (
+      ) : filteredEvents.length === 0 ? (
         <div className="rounded-lg border border-zinc-200 bg-white py-16 text-center">
-          <p className="text-sm text-zinc-500">No events yet</p>
-          <Link
-            href="/admin/events/new"
-            className="mt-2 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700"
-          >
-            Create your first event &rarr;
-          </Link>
+          <p className="text-sm text-zinc-500">
+            {activeTab === 'current' ? 'No upcoming events' : 'No past events'}
+          </p>
+          {activeTab === 'current' && (
+            <Link
+              href="/admin/events/new"
+              className="mt-2 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]"
+            >
+              Create your first event &rarr;
+            </Link>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
@@ -427,10 +446,10 @@ export default function EventsListPage() {
               </tr>
             </thead>
             <tbody>
-              {events.map((event) => {
+              {filteredEvents.map((event) => {
                 const slots = totalSlots(event.volunteerSlots);
                 return (
-                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-blue-50/40">
+                  <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-[#EFF6FF]/40">
                     <td className="px-5 py-3.5">
                       <div className="text-sm font-semibold text-zinc-900">{event.title}</div>
                       <div className="mt-0.5 text-xs text-zinc-400">
@@ -445,7 +464,7 @@ export default function EventsListPage() {
                         {slots > 0 ? (
                           <Link
                             href={`/admin/events/${event.id}/signups`}
-                            className="font-medium text-blue-600 hover:text-blue-700"
+                            className="font-medium text-[#1B6DC2] hover:text-[#1B6DC2]"
                           >
                             {event.signupCount} / {slots}
                           </Link>
@@ -479,7 +498,7 @@ export default function EventsListPage() {
                         <Link
                           href={`/admin/events/${event.id}/edit`}
                           title="Edit"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                         >
                           <EditIcon />
                         </Link>
@@ -494,7 +513,7 @@ export default function EventsListPage() {
                           <button
                             onClick={() => handleContactVolunteers(event)}
                             title="Contact Volunteers"
-                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                            className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                           >
                             <MailIcon />
                           </button>
@@ -502,7 +521,7 @@ export default function EventsListPage() {
                         <button
                           onClick={() => handleDuplicate(event)}
                           title="Duplicate"
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                         >
                           <DuplicateIcon />
                         </button>
@@ -530,7 +549,8 @@ export default function EventsListPage() {
             </tbody>
           </table>
         </div>
-      )}
+      );
+      })()}
 
       {/* Contact Volunteers modal */}
       {contactTarget && (
@@ -541,7 +561,7 @@ export default function EventsListPage() {
           onClose={() => setContactTarget(null)}
           onSuccess={(count) => {
             setContactTarget(null);
-            setToast({ message: `Message sent to ${count} volunteer${count !== 1 ? 's' : ''}`, type: 'success' });
+            addBanner( `Message sent to ${count} volunteer${count !== 1 ? 's' : ''}`, 'success');
           }}
         />
       )}
@@ -553,7 +573,6 @@ export default function EventsListPage() {
       {purgeTarget && <PurgeDataDialog event={purgeTarget} onConfirm={handlePurgeSignups} onCancel={() => setPurgeTarget(null)} />}
 
       {/* Toast */}
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

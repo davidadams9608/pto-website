@@ -16,7 +16,14 @@ function Spinner() {
   );
 }
 
-export function NewsletterSignup() {
+interface NewsletterSignupProps {
+  subscriberMessage?: string;
+}
+
+export function NewsletterSignup({ subscriberMessage }: NewsletterSignupProps) {
+  const tagline = subscriberMessage
+    ? `${subscriberMessage}. One email per month — no spam, unsubscribe anytime.`
+    : 'Stay up to date with Westmont PTO. One email per month — no spam, unsubscribe anytime.';
   const [email, setEmail] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [error, setError] = useState('');
@@ -93,7 +100,7 @@ export function NewsletterSignup() {
           Get the newsletter
         </h3>
         <p className="mb-6 text-[0.875rem] leading-[1.7] text-[#A1A1AA]">
-          Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.
+          {tagline}
         </p>
         <div className="flex items-center gap-2 rounded-[8px] border border-[#3F3F46] bg-[#18181B] px-4 py-3">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -130,7 +137,7 @@ export function NewsletterSignup() {
         Get the newsletter
       </h3>
       <p className="mb-4 text-[0.875rem] leading-[1.7] text-[#A1A1AA]">
-        Join 380+ Westmont families. One email per month — no spam, unsubscribe anytime.
+        {tagline}
       </p>
       <form onSubmit={handleSubmit} noValidate>
         <label htmlFor="newsletter-email" className="sr-only">Email address</label>
@@ -142,7 +149,7 @@ export function NewsletterSignup() {
           placeholder="Enter your email"
           autoComplete="email"
           disabled={state === 'submitting'}
-          className={`mb-3 w-full rounded-[8px] border bg-[#18181B] px-4 py-[0.7rem] text-[0.875rem] text-white placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
+          className={`mb-3 w-full rounded-[8px] border bg-[#18181B] px-4 py-[0.7rem] text-[16px] md:text-[0.875rem] text-white placeholder:text-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${
             error ? 'border-red-600' : 'border-[#3F3F46]'
           }`}
         />

@@ -18,12 +18,17 @@ export default async function PublicLayout({
   }
 
   const settings = await getSettings([
+    'org_name',
+    'mission_text',
     'social_facebook',
     'social_instagram',
     'social_school_website',
     'contact_email',
     'contact_phone',
   ]);
+
+  const orgName = settings.org_name || 'Westmont Elementary PTO';
+  const missionText = settings.mission_text || '';
 
   const facebookUrl = settings.social_facebook || '';
   const instagramUrl = settings.social_instagram || '';
@@ -37,19 +42,20 @@ export default async function PublicLayout({
       <main className="flex-1">{children}</main>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#71717A]">
+      <footer className="bg-[#09090B] px-8 pb-6 pt-12 text-[#A1A1AA]">
         <div className="mx-auto max-w-[1100px]">
           {/* 4-column grid */}
           <div className="grid grid-cols-1 gap-6 border-b border-[#27272A] pb-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
             {/* About */}
             <div>
               <p className="mb-2 text-[0.9rem] font-extrabold tracking-tight text-white">
-                Westmont Elementary PTO
+                {orgName}
               </p>
-              <p className="text-[0.8rem] leading-7">
-                A volunteer-run Parent Teacher Organization (PTO) supporting every
-                student, teacher, and family at Westmont Elementary School.
-              </p>
+              {missionText && (
+                <p className="text-[0.8rem] leading-7">
+                  {missionText}
+                </p>
+              )}
             </div>
 
             {/* Quick Links */}
@@ -125,7 +131,7 @@ export default async function PublicLayout({
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-[0.775rem]">
             {/* Left: copyright + admin link (admin desktop-only) */}
             <span>
-              &copy; 2026 Westmont Elementary PTO &middot; This website was
+              &copy; 2026 {orgName} &middot; This website was
               developed with AI-assisted tools
               <span className="hidden md:inline">
                 {' '}&middot;{' '}
@@ -139,7 +145,7 @@ export default async function PublicLayout({
             </span>
 
             {/* Right: Go Wildcats */}
-            <span className="flex items-center gap-1.5 font-bold text-[#52525B]">
+            <span className="flex items-center gap-1.5 font-bold text-[#A1A1AA]">
               Go Wildcats!
               <svg
                 width="16" height="16" viewBox="0 0 24 24" fill="currentColor"

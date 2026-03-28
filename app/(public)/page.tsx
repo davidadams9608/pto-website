@@ -1,15 +1,20 @@
 import type { Metadata } from 'next';
+import nextDynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { getFlag } from '@/lib/flags';
+import { formatSubscriberMessage, getNewsletterProvider } from '@/lib/newsletter';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 import { getUpcomingEventsWithinDays, getNextEvent } from '@/lib/db/queries/events';
 import { getNewsletters } from '@/lib/db/queries/newsletters';
 import { getActiveSponsors } from '@/lib/db/queries/sponsors';
-import { getSetting } from '@/lib/db/queries/settings';
+import { getSettings } from '@/lib/db/queries/settings';
 import { EventCard } from '@/components/shared/events-accordion';
-import { NewsletterSignup } from '@/components/shared/newsletter-signup';
+
+const NewsletterSignup = nextDynamic(() =>
+  import('@/components/shared/newsletter-signup').then((m) => m.NewsletterSignup),
+);
 
 export const dynamic = 'force-dynamic';
 
@@ -51,16 +56,22 @@ export default async function HomePage() {
     );
   }
 
-  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors, missionText, heroImageUrl, heroImagePosition, contactEmail] = await Promise.all([
+  const [upcomingEvents, nextEvent, { items: newsletters }, sponsors, settings, subscriberCount] = await Promise.all([
     getUpcomingEventsWithinDays(60),
     getNextEvent(),
     getNewsletters(1, 3),
     getActiveSponsors(),
-    getSetting('mission_text'),
-    getSetting('hero_image_url'),
-    getSetting('hero_image_position'),
-    getSetting('contact_email'),
+    getSettings(['mission_text', 'hero_image_url', 'hero_image_position', 'contact_email', 'social_facebook']),
+    getNewsletterProvider().getSubscriberCount(),
   ]);
+
+  const subscriberMessage = formatSubscriberMessage(subscriberCount);
+
+  const missionText = settings.mission_text;
+  const heroImageUrl = settings.hero_image_url;
+  const heroImagePosition = settings.hero_image_position;
+  const contactEmail = settings.contact_email;
+  const facebookUrl = settings.social_facebook;
 
   return (
     <>
@@ -83,17 +94,21 @@ export default async function HomePage() {
               {missionText || "We're parents and teachers who believe in showing up. For our kids, for our school, for our community. Get involved — it makes a real difference."}
             </p>
             <div className="flex flex-wrap items-center gap-3">
+              {facebookUrl && (
+                <a
+                  href={facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-[7px] bg-[#1B6DC2] px-6 py-[0.7rem] text-[0.875rem] font-bold text-white transition-opacity hover:opacity-90"
+                >
+                  Follow us on Facebook →
+                </a>
+              )}
               <Link
                 href="/events"
-                className="rounded-[7px] bg-[#1B6DC2] px-6 py-[0.7rem] text-[0.875rem] font-bold text-white transition-opacity hover:opacity-90"
-              >
-                Upcoming Events →
-              </Link>
-              <Link
-                href="/archive"
                 className="text-[0.875rem] font-semibold text-[#71717A] transition-colors hover:text-[#09090B]"
               >
-                Newsletter archive <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
+                Upcoming Events <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-0.5 inline" aria-hidden="true"><path d="M3.5 8.5L8.5 3.5"/><path d="M4.5 3.5h4v4"/></svg>
               </Link>
             </div>
           </div>
@@ -127,13 +142,14 @@ export default async function HomePage() {
                   <p className="mt-1 text-[0.8rem] font-medium text-[#71717A]">None upcoming</p>
                 )}
               </div>
-              <div className="rounded-[12px] border border-[#E4E4E7] bg-white p-4">
+              <Link href="/archive" className="group rounded-[12px] border border-[#E4E4E7] bg-white p-4 transition-colors hover:border-[#BFDBFE] hover:bg-[#EFF6FF]/40">
                 <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-[#71717A]">
                   Newsletter
                 </p>
-                <p className="text-[1.5rem] font-extrabold tracking-[-0.03em] text-[#1B6DC2]">380+</p>
-                <p className="mt-0.5 text-[0.7rem] font-medium text-[#71717A]">Subscribers</p>
-              </div>
+                <p className="text-[0.95rem] font-extrabold tracking-[-0.01em] text-[#1B6DC2] transition-colors group-hover:text-[#0F4F8A]">
+                  Read the Newsletter →
+                </p>
+              </Link>
             </div>
           </div>
         </div>
@@ -197,7 +213,7 @@ export default async function HomePage() {
                 Newsletter
               </p>
               <h2 className="mb-1 text-[clamp(1.5rem,2.5vw,2rem)] font-extrabold tracking-[-0.025em]">
-                The Westmont Weekly
+                Westmont PTO Newsletter
               </h2>
               <p className="mb-8 max-w-[460px] text-[0.9rem] leading-[1.7] text-[#71717A]">
                 Stay connected to everything happening at school. Event previews, meeting recaps,
@@ -232,7 +248,7 @@ export default async function HomePage() {
 
             {/* Right: signup card */}
             <div id="newsletter" style={{ scrollMarginTop: '76px' }}>
-              <NewsletterSignup />
+              <NewsletterSignup subscriberMessage={subscriberMessage} />
             </div>
           </div>
         </div>
@@ -326,7 +342,7 @@ export default async function HomePage() {
         <h2 className="mb-2 text-[1.75rem] font-extrabold tracking-[-0.025em] text-white">
           Ready to get involved?
         </h2>
-        <p className="mb-6 text-[0.9rem] text-[#BFDBFE]">
+        <p className="mb-6 text-[0.9rem] text-white/90">
           Every volunteer hour makes a real difference for Westmont students.
         </p>
         <Link

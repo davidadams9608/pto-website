@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
+import { BannerStack } from '@/components/admin/banner';
 import { FileUpload } from '@/components/admin/file-upload';
+import { useBanners } from '@/components/admin/use-banners';
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -130,30 +132,6 @@ function UploadBtnIcon() {
   );
 }
 
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ── Delete dialog ──────────────────────────────────────────────────────────
 
 function DeleteDialog({ title, onConfirm, onCancel }: { title: string; onConfirm: () => void; onCancel: () => void }) {
@@ -227,82 +205,17 @@ function DiscardDialog({ onDiscard, onKeepEditing }: { onDiscard: () => void; on
   );
 }
 
-// ── Shared file tab ────────────────────────────────────────────────────────
+// ── Shared file tab (list + delete only) ──────────────────────────────────
 
 interface ArchiveFileTabProps {
   config: ArchiveFileConfig;
   files: FileRow[];
-  onCreated: (file: FileRow) => void;
   onDeleted: (id: string) => void;
   onError: (msg: string) => void;
 }
 
-function ArchiveFileTab({ config, files, onCreated, onDeleted, onError }: ArchiveFileTabProps) {
-  const [showUploadForm, setShowUploadForm] = useState(false);
-  const [title, setTitle] = useState('');
-  const [schoolYear, setSchoolYear] = useState(getSchoolYearOptions(1)[0]);
-  const [uploadResult, setUploadResult] = useState<{ fileKey: string; fileUrl: string } | null>(null);
-  const [errors, setErrors] = useState<{ title?: string; file?: string }>({});
-  const [submitting, setSubmitting] = useState(false);
+function ArchiveFileTab({ config, files, onDeleted, onError }: ArchiveFileTabProps) {
   const [deleteTarget, setDeleteTarget] = useState<FileRow | null>(null);
-  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
-
-  const schoolYearOptions = getSchoolYearOptions(6);
-  const idPrefix = config.type === 'newsletters' ? 'nl' : 'min';
-
-  const isFormDirty = title.trim() !== '' || uploadResult !== null;
-
-  const handleCancel = () => {
-    if (isFormDirty) {
-      setShowDiscardDialog(true);
-    } else {
-      resetForm();
-    }
-  };
-
-  const resetForm = () => {
-    setTitle('');
-    setSchoolYear(schoolYearOptions[0]);
-    setUploadResult(null);
-    setErrors({});
-    setShowUploadForm(false);
-  };
-
-  const handleSubmit = async () => {
-    const newErrors: typeof errors = {};
-    if (!title.trim()) newErrors.title = 'Title is required';
-    if (!uploadResult) newErrors.file = 'PDF file is required';
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
-
-    setSubmitting(true);
-    try {
-      const dateField = config.type === 'newsletters' ? 'publishedAt' : 'meetingDate';
-      const res = await fetch(config.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          [dateField]: todayDateString(),
-          fileKey: uploadResult!.fileKey,
-          fileUrl: uploadResult!.fileUrl,
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || `Failed to create ${config.labelSingular.toLowerCase()}`);
-      }
-      const { data } = await res.json();
-      const fileUrl = config.type === 'newsletters' ? data.pdfUrl : data.fileUrl;
-      const fileDate = config.type === 'newsletters' ? data.publishedAt : data.meetingDate;
-      onCreated({ id: data.id, title: data.title, url: fileUrl, date: fileDate });
-      resetForm();
-    } catch (err) {
-      onError(err instanceof Error ? err.message : `Failed to upload ${config.labelSingular.toLowerCase()}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -330,74 +243,6 @@ function ArchiveFileTab({ config, files, onCreated, onDeleted, onError }: Archiv
 
   return (
     <div>
-      {/* Header row */}
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-zinc-500">{config.description}</p>
-        <button
-          onClick={() => setShowUploadForm(!showUploadForm)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          <UploadBtnIcon />
-          {config.uploadTitle}
-        </button>
-      </div>
-
-      {/* Upload form */}
-      {showUploadForm && (
-        <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-6">
-          <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">{config.uploadTitle}</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor={`${idPrefix}-title`} className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Title</label>
-              <input
-                id={`${idPrefix}-title`}
-                type="text"
-                value={title}
-                onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: undefined })); }}
-                placeholder={config.uploadPlaceholder}
-                className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-400' : 'border-zinc-200'}`}
-              />
-              {errors.title && <p className="mt-1 text-xs font-medium text-red-600">{errors.title}</p>}
-            </div>
-            <div>
-              <label htmlFor={`${idPrefix}-school-year`} className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">School Year</label>
-              <select
-                id={`${idPrefix}-school-year`}
-                value={schoolYear}
-                onChange={(e) => setSchoolYear(e.target.value)}
-                className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {schoolYearOptions.map((sy) => (
-                  <option key={sy} value={sy}>{sy}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">PDF File</span>
-              <FileUpload
-                type={config.type}
-                accept=".pdf,application/pdf"
-                maxSizeMB={10}
-                onUploadComplete={(result) => { setUploadResult(result); setErrors((prev) => ({ ...prev, file: undefined })); }}
-                onUploadError={(msg) => setErrors((prev) => ({ ...prev, file: msg }))}
-              />
-              {errors.file && <p className="mt-1 text-xs font-medium text-red-600">{errors.file}</p>}
-            </div>
-          </div>
-          <div className="mt-5 flex justify-end gap-3">
-            <button onClick={handleCancel} className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Cancel</button>
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              <UploadBtnIcon />
-              {submitting ? 'Uploading...' : 'Upload'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* File list */}
       {files.length === 0 ? (
         <div className="rounded-lg border border-zinc-200 bg-white py-16 text-center">
@@ -414,7 +259,7 @@ function ArchiveFileTab({ config, files, onCreated, onDeleted, onError }: Archiv
                 </span>
               </div>
               {items.map((f) => (
-                <div key={f.id} className="flex items-center gap-3 border-b border-zinc-50 px-5 py-3 last:border-b-0 hover:bg-blue-50/40">
+                <div key={f.id} className="flex items-center gap-3 border-b border-zinc-50 px-5 py-3 last:border-b-0 hover:bg-[#EFF6FF]/40">
                   <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-500">
                     <FileIcon />
                   </div>
@@ -428,7 +273,7 @@ function ArchiveFileTab({ config, files, onCreated, onDeleted, onError }: Archiv
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Preview"
-                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-blue-200 hover:text-blue-600"
+                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
                     >
                       <EyeIcon />
                     </a>
@@ -448,7 +293,6 @@ function ArchiveFileTab({ config, files, onCreated, onDeleted, onError }: Archiv
       )}
 
       {deleteTarget && <DeleteDialog title={deleteTarget.title} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />}
-      {showDiscardDialog && <DiscardDialog onDiscard={() => { setShowDiscardDialog(false); resetForm(); }} onKeepEditing={() => setShowDiscardDialog(false)} />}
     </div>
   );
 }
@@ -464,44 +308,188 @@ export function ArchiveManager({ newsletters: initialNewsletters, minutes: initi
   const [activeTab, setActiveTab] = useState<Tab>('newsletters');
   const [newsletters, setNewsletters] = useState(initialNewsletters);
   const [minutes, setMinutes] = useState(initialMinutes);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const router = useRouter();
 
-  const handleCreated = useCallback((tab: Tab, file: FileRow) => {
-    if (tab === 'newsletters') {
-      setNewsletters((prev) => [file, ...prev]);
-      setToast({ message: 'Newsletter uploaded', type: 'success' });
+  // Upload form state (shared across tabs)
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [schoolYear, setSchoolYear] = useState(getSchoolYearOptions(1)[0]);
+  const [uploadResult, setUploadResult] = useState<{ fileKey: string; fileUrl: string } | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<{ title?: string; file?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+
+  const schoolYearOptions = getSchoolYearOptions(6);
+  const activeConfig = activeTab === 'newsletters' ? NEWSLETTER_CONFIG : MINUTES_CONFIG;
+
+  const isFormDirty = uploadTitle.trim() !== '' || uploadResult !== null;
+
+  const resetForm = () => {
+    setUploadTitle('');
+    setSchoolYear(schoolYearOptions[0]);
+    setUploadResult(null);
+    setUploadErrors({});
+    setShowUploadForm(false);
+  };
+
+  const handleUploadCancel = () => {
+    if (isFormDirty) {
+      setShowDiscardDialog(true);
     } else {
-      setMinutes((prev) => [file, ...prev]);
-      setToast({ message: 'Meeting minutes uploaded', type: 'success' });
+      resetForm();
     }
-  }, []);
+  };
+
+  const handleUploadSubmit = async () => {
+    const newErrors: typeof uploadErrors = {};
+    if (!uploadTitle.trim()) newErrors.title = 'Title is required';
+    if (!uploadResult) newErrors.file = 'PDF file is required';
+    setUploadErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    setSubmitting(true);
+    try {
+      const dateField = activeConfig.type === 'newsletters' ? 'publishedAt' : 'meetingDate';
+      const res = await fetch(activeConfig.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: uploadTitle.trim(),
+          [dateField]: todayDateString(),
+          fileKey: uploadResult!.fileKey,
+          fileUrl: uploadResult!.fileUrl,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || `Failed to create ${activeConfig.labelSingular.toLowerCase()}`);
+      }
+      const { data } = await res.json();
+      const fileUrl = activeConfig.type === 'newsletters' ? data.pdfUrl : data.fileUrl;
+      const fileDate = activeConfig.type === 'newsletters' ? data.publishedAt : data.meetingDate;
+      const file: FileRow = { id: data.id, title: data.title, url: fileUrl, date: fileDate };
+
+      if (activeTab === 'newsletters') {
+        setNewsletters((prev) => [file, ...prev]);
+        addBanner('Newsletter uploaded', 'success');
+      } else {
+        setMinutes((prev) => [file, ...prev]);
+        addBanner('Meeting minutes uploaded', 'success');
+      }
+      resetForm();
+    } catch (err) {
+      addBanner(err instanceof Error ? err.message : `Failed to upload ${activeConfig.labelSingular.toLowerCase()}`, 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleDeleted = useCallback((tab: Tab, id: string) => {
     if (tab === 'newsletters') {
       setNewsletters((prev) => prev.filter((f) => f.id !== id));
-      setToast({ message: 'Newsletter deleted', type: 'success' });
+      addBanner('Newsletter deleted', 'success');
     } else {
       setMinutes((prev) => prev.filter((f) => f.id !== id));
-      setToast({ message: 'Meeting minutes deleted', type: 'success' });
+      addBanner('Meeting minutes deleted', 'success');
     }
     router.refresh();
-  }, [router]);
+  }, [router, addBanner]);
+
+  // Close upload form when switching tabs (if not dirty)
+  const handleTabChange = (tab: Tab) => {
+    if (tab === activeTab) return;
+    if (showUploadForm && isFormDirty) {
+      setShowDiscardDialog(true);
+      return;
+    }
+    resetForm();
+    setActiveTab(tab);
+  };
 
   return (
     <div>
       {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Archive</h1>
-        <p className="mt-1 text-sm text-zinc-500">Manage newsletters and meeting minutes.</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900">Archive</h1>
+          <p className="mt-1 text-sm text-zinc-500">Manage newsletters and meeting minutes.</p>
+        </div>
+        {!showUploadForm && (
+          <button
+            onClick={() => setShowUploadForm(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            <UploadBtnIcon />
+            Upload
+          </button>
+        )}
       </div>
+
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
+
+      {/* Upload form */}
+      {showUploadForm && (
+        <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-6">
+          <h2 className="mb-4 border-b border-zinc-100 pb-3 text-sm font-extrabold text-zinc-900">{activeConfig.uploadTitle}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="upload-title" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">Title</label>
+              <input
+                id="upload-title"
+                type="text"
+                value={uploadTitle}
+                onChange={(e) => { setUploadTitle(e.target.value); setUploadErrors((prev) => ({ ...prev, title: undefined })); }}
+                placeholder={activeConfig.uploadPlaceholder}
+                className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${uploadErrors.title ? 'border-red-400' : 'border-zinc-200'}`}
+              />
+              {uploadErrors.title && <p className="mt-1 text-xs font-medium text-red-600">{uploadErrors.title}</p>}
+            </div>
+            <div>
+              <label htmlFor="upload-school-year" className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">School Year</label>
+              <select
+                id="upload-school-year"
+                value={schoolYear}
+                onChange={(e) => setSchoolYear(e.target.value)}
+                className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
+              >
+                {schoolYearOptions.map((sy) => (
+                  <option key={sy} value={sy}>{sy}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-zinc-500">PDF File</span>
+              <FileUpload
+                type={activeConfig.type}
+                accept=".pdf,application/pdf"
+                maxSizeMB={10}
+                onUploadComplete={(result) => { setUploadResult(result); setUploadErrors((prev) => ({ ...prev, file: undefined })); }}
+                onUploadError={(msg) => setUploadErrors((prev) => ({ ...prev, file: msg }))}
+              />
+              {uploadErrors.file && <p className="mt-1 text-xs font-medium text-red-600">{uploadErrors.file}</p>}
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end gap-3">
+            <button onClick={handleUploadCancel} className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Cancel</button>
+            <button
+              onClick={handleUploadSubmit}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              <UploadBtnIcon />
+              {submitting ? 'Uploading...' : 'Upload'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-lg bg-zinc-100 p-1" role="tablist">
         <button
           role="tab"
           aria-selected={activeTab === 'newsletters'}
-          onClick={() => setActiveTab('newsletters')}
+          onClick={() => handleTabChange('newsletters')}
           className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
             activeTab === 'newsletters'
               ? 'bg-zinc-900 text-white'
@@ -513,7 +501,7 @@ export function ArchiveManager({ newsletters: initialNewsletters, minutes: initi
         <button
           role="tab"
           aria-selected={activeTab === 'minutes'}
-          onClick={() => setActiveTab('minutes')}
+          onClick={() => handleTabChange('minutes')}
           className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
             activeTab === 'minutes'
               ? 'bg-zinc-900 text-white'
@@ -529,21 +517,19 @@ export function ArchiveManager({ newsletters: initialNewsletters, minutes: initi
         <ArchiveFileTab
           config={NEWSLETTER_CONFIG}
           files={newsletters}
-          onCreated={(f) => handleCreated('newsletters', f)}
           onDeleted={(id) => handleDeleted('newsletters', id)}
-          onError={(msg) => setToast({ message: msg, type: 'error' })}
+          onError={(msg) => addBanner(msg, 'error')}
         />
       ) : (
         <ArchiveFileTab
           config={MINUTES_CONFIG}
           files={minutes}
-          onCreated={(f) => handleCreated('minutes', f)}
           onDeleted={(id) => handleDeleted('minutes', id)}
-          onError={(msg) => setToast({ message: msg, type: 'error' })}
+          onError={(msg) => addBanner(msg, 'error')}
         />
       )}
 
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+      {showDiscardDialog && <DiscardDialog onDiscard={() => { setShowDiscardDialog(false); resetForm(); }} onKeepEditing={() => setShowDiscardDialog(false)} />}
     </div>
   );
 }

@@ -133,72 +133,78 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Dashboard</h1>
+        <p className="mt-1 text-sm text-zinc-500">Manage events, upload newsletters, track volunteer signups, and keep your site up to date.</p>
+      </div>
+
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="rounded-lg border border-zinc-200 bg-white px-5 py-4">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+      <div className="grid grid-cols-4 gap-5">
+        <div className="rounded-xl border border-zinc-200 bg-white px-6 py-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
             <CalendarIcon />
             Upcoming Events
           </div>
-          <div className="text-2xl font-bold text-zinc-900">{upcomingEventCount}</div>
-          <div className="mt-0.5 text-xs text-zinc-400">Published &amp; upcoming</div>
+          <div className="text-3xl font-bold text-zinc-900">{upcomingEventCount}</div>
+          <div className="mt-1 text-sm text-zinc-400">Published &amp; upcoming</div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white px-5 py-4">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+        <div className="rounded-xl border border-zinc-200 bg-white px-6 py-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
             <UsersIcon />
             Total Volunteers
           </div>
-          <div className="text-2xl font-bold text-zinc-900">{volunteerCount}</div>
-          <div className="mt-0.5 text-xs text-zinc-400">For upcoming events</div>
+          <div className="text-3xl font-bold text-zinc-900">{volunteerCount}</div>
+          <div className="mt-1 text-sm text-zinc-400">For upcoming events</div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white px-5 py-4">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+        <div className="rounded-xl border border-zinc-200 bg-white px-6 py-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
             <FileIcon />
             Newsletters
           </div>
-          <div className="text-2xl font-bold text-zinc-900">{newsletterCount}</div>
-          <div className="mt-0.5 text-xs text-zinc-400">Total uploaded</div>
+          <div className="text-3xl font-bold text-zinc-900">{newsletterCount}</div>
+          <div className="mt-1 text-sm text-zinc-400">Total uploaded</div>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white px-5 py-4">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+        <div className="rounded-xl border border-zinc-200 bg-white px-6 py-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-500">
             <StarIcon />
             Active Sponsors
           </div>
-          <div className="text-2xl font-bold text-zinc-900">{sponsorCount}</div>
-          <div className="mt-0.5 text-xs text-zinc-400">Currently displayed</div>
+          <div className="text-3xl font-bold text-zinc-900">{sponsorCount}</div>
+          <div className="mt-1 text-sm text-zinc-400">Currently displayed</div>
         </div>
       </div>
 
       {/* ── Tile grid (2×2) ── */}
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="mt-8 grid grid-cols-2 gap-5">
 
         {/* Quick Actions */}
-        <div className="rounded-lg border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-100 px-5 py-3">
-            <h2 className="text-sm font-bold text-zinc-900">Quick Actions</h2>
+        <div className="rounded-xl border border-zinc-200 bg-white">
+          <div className="flex items-center gap-2 border-b border-zinc-100 px-6 py-4">
+            <PlusIcon />
+            <h2 className="text-[0.925rem] font-bold text-zinc-900">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3 p-5">
+          <div className="grid grid-cols-2 gap-3 p-6">
             <Link
               href="/admin/events/new"
-              className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 rounded-lg border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <PlusIcon /> Create New Event
             </Link>
             <Link
               href="/admin/archive"
-              className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 rounded-lg border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <UploadIcon /> Upload Newsletter
             </Link>
             <Link
               href="/admin/archive"
-              className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 rounded-lg border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <UploadIcon /> Upload Minutes
             </Link>
             <Link
               href="/admin/sponsors"
-              className="flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-2.5 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 rounded-lg border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <StarIcon /> Manage Sponsors
             </Link>
@@ -206,36 +212,37 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="rounded-lg border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-100 px-5 py-3">
-            <h2 className="text-sm font-bold text-zinc-900">Recent Activity</h2>
+        <div className="rounded-xl border border-zinc-200 bg-white">
+          <div className="flex items-center gap-2 border-b border-zinc-100 px-6 py-4">
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2.5 1.5"/></svg>
+            <h2 className="text-[0.925rem] font-bold text-zinc-900">Recent Activity</h2>
           </div>
-          <div className="p-5">
+          <div className="p-6">
             {upcomingEvents.length === 0 && recentNewsletters.length === 0 ? (
-              <p className="text-xs text-zinc-400">No recent activity yet.</p>
+              <p className="text-sm text-zinc-400">No recent activity yet.</p>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {recentNewsletters.slice(0, 2).map((nl) => (
-                  <div key={nl.id} className="flex items-start gap-2.5">
-                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-400" />
+                  <div key={nl.id} className="flex items-start gap-3">
+                    <span className="shrink-0 rounded-full" style={{ background: '#1B6DC2', width: 10, height: 10, marginTop: 6 }} />
                     <div>
-                      <p className="text-xs text-zinc-700">
+                      <p className="text-sm text-zinc-700">
                         Newsletter <strong className="font-semibold">{nl.title}</strong> uploaded
                       </p>
-                      <p className="text-[0.65rem] text-zinc-400">
+                      <p className="text-xs text-zinc-400">
                         {formatFullDate(nl.publishedAt)}
                       </p>
                     </div>
                   </div>
                 ))}
                 {upcomingEvents.slice(0, 3).map((evt) => (
-                  <div key={evt.id} className="flex items-start gap-2.5">
-                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+                  <div key={evt.id} className="flex items-start gap-3">
+                    <span className="shrink-0 rounded-full" style={{ background: '#34D399', width: 10, height: 10, marginTop: 6 }} />
                     <div>
-                      <p className="text-xs text-zinc-700">
+                      <p className="text-sm text-zinc-700">
                         Event <strong className="font-semibold">{evt.title}</strong> published
                       </p>
-                      <p className="text-[0.65rem] text-zinc-400">
+                      <p className="text-xs text-zinc-400">
                         Scheduled for {formatFullDate(evt.date)}
                       </p>
                     </div>
@@ -247,18 +254,21 @@ export default async function DashboardPage() {
         </div>
 
         {/* Upcoming Events */}
-        <div className="rounded-lg border border-zinc-200 bg-white">
-          <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-3">
-            <h2 className="text-sm font-bold text-zinc-900">Upcoming Events</h2>
-            <Link href="/admin/events" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+        <div className="rounded-xl border border-zinc-200 bg-white">
+          <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <CalendarIcon />
+              <h2 className="text-[0.925rem] font-bold text-zinc-900">Upcoming Events</h2>
+            </div>
+            <Link href="/admin/events" className="text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
               Manage Events &rarr;
             </Link>
           </div>
-          <div className="p-5">
+          <div className="p-6">
             {upcomingEvents.length === 0 ? (
               <div className="text-center">
-                <p className="text-xs text-zinc-400">No upcoming events</p>
-                <Link href="/admin/events/new" className="mt-1 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700">
+                <p className="text-sm text-zinc-400">No upcoming events</p>
+                <Link href="/admin/events/new" className="mt-1 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
                   Create your first event &rarr;
                 </Link>
               </div>
@@ -270,28 +280,28 @@ export default async function DashboardPage() {
                     <Link
                       key={evt.id}
                       href={`/admin/events/${evt.id}/edit`}
-                      className="flex items-center gap-3 rounded-md transition-colors hover:bg-zinc-50 -mx-2 px-2 py-1.5"
+                      className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-zinc-50"
                     >
-                      <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-md bg-blue-50 text-blue-700">
-                        <span className="text-[0.6rem] font-bold uppercase leading-none">
+                      <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-[#EFF6FF] text-[#1B6DC2]" style={{ width: 46, height: 46 }}>
+                        <span className="text-[0.65rem] font-bold uppercase leading-none">
                           {new Date(evt.date).toLocaleDateString("en-US", { month: "short", timeZone: SITE_TIMEZONE })}
                         </span>
-                        <span className="text-sm font-extrabold leading-none">
+                        <span className="text-lg font-extrabold leading-tight">
                           {new Date(evt.date).toLocaleDateString("en-US", { day: "numeric", timeZone: SITE_TIMEZONE })}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-zinc-900">{evt.title}</p>
-                        <p className="text-[0.65rem] text-zinc-400">
+                        <p className="truncate text-sm font-semibold text-zinc-900">{evt.title}</p>
+                        <p className="text-xs text-zinc-400">
                           {formatTime(evt.date)} &middot; {evt.location}
                         </p>
                       </div>
                       {slots > 0 ? (
-                        <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.6rem] font-bold text-emerald-700">
+                        <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                           {slots} spots
                         </span>
                       ) : (
-                        <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[0.6rem] font-semibold text-zinc-400">
+                        <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-400">
                           No signup
                         </span>
                       )}
@@ -304,52 +314,55 @@ export default async function DashboardPage() {
         </div>
 
         {/* Newsletter Snapshot */}
-        <div className="rounded-lg border border-zinc-200 bg-white">
-          <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-3">
-            <h2 className="text-sm font-bold text-zinc-900">Newsletter Snapshot</h2>
+        <div className="rounded-xl border border-zinc-200 bg-white">
+          <div className="flex items-center gap-2 border-b border-zinc-100 px-6 py-4">
+            <FileIcon />
+            <h2 className="text-[0.925rem] font-bold text-zinc-900">Archive Snapshot</h2>
           </div>
-          <div className="p-5">
-            <div className="flex flex-col gap-3">
+          <div className="p-6">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-500">Newsletters uploaded</span>
-                <span className="text-sm font-bold text-zinc-900">{newsletterCount}</span>
+                <span className="text-sm text-zinc-500">Newsletters uploaded</span>
+                <span className="text-base font-bold text-zinc-900">{newsletterCount}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-500">Meeting minutes uploaded</span>
-                <span className="text-sm font-bold text-zinc-900">{minutesCount}</span>
+                <span className="text-sm text-zinc-500">Meeting minutes uploaded</span>
+                <span className="text-base font-bold text-zinc-900">{minutesCount}</span>
               </div>
               {recentNewsletters.length > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-500">Latest upload</span>
-                  <span className="text-sm font-bold text-zinc-900">
+                  <span className="text-sm text-zinc-500">Latest upload</span>
+                  <span className="text-base font-bold text-zinc-900">
                     {formatShortDate(recentNewsletters[0].publishedAt)}
                   </span>
                 </div>
               )}
             </div>
             {recentNewsletters.length > 0 && (
-              <div className="mt-4 border-t border-zinc-100 pt-4">
-                <p className="mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-zinc-400">Recent</p>
-                <div className="flex flex-col gap-2">
+              <div className="mt-5 border-t border-zinc-100 pt-5">
+                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-zinc-400">Recent</p>
+                <div className="flex flex-col gap-2.5">
                   {recentNewsletters.map((nl) => (
-                    <Link
+                    <a
                       key={nl.id}
-                      href={`/archive/newsletters/${nl.id}`}
-                      className="flex items-center justify-between rounded-md transition-colors hover:bg-zinc-50 -mx-1 px-1 py-1"
+                      href={nl.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="-mx-1 flex items-center justify-between rounded-md px-1 py-1 transition-colors hover:bg-zinc-50"
                     >
-                      <span className="truncate text-xs font-medium text-zinc-700">{nl.title}</span>
-                      <span className="shrink-0 text-[0.65rem] text-zinc-400">
+                      <span className="truncate text-sm font-medium text-zinc-700">{nl.title}</span>
+                      <span className="shrink-0 text-xs text-zinc-400">
                         {formatShortDate(nl.publishedAt)}
                       </span>
-                    </Link>
+                    </a>
                   ))}
                 </div>
               </div>
             )}
             {recentNewsletters.length === 0 && (
-              <div className="mt-3 text-center">
-                <p className="text-xs text-zinc-400">No newsletters uploaded yet.</p>
-                <Link href="/admin/archive" className="mt-1 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700">
+              <div className="mt-4 text-center">
+                <p className="text-sm text-zinc-400">No newsletters uploaded yet.</p>
+                <Link href="/admin/archive" className="mt-1 inline-block text-sm font-semibold text-[#1B6DC2] hover:text-[#1B6DC2]">
                   Upload your first newsletter &rarr;
                 </Link>
               </div>

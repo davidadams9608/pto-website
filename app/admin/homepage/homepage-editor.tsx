@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { BannerStack } from '@/components/admin/banner';
 import { FileUpload } from '@/components/admin/file-upload';
+import { useBanners } from '@/components/admin/use-banners';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -12,30 +14,6 @@ interface HomepageSettings {
   heroImageUrl: string;
   heroImageKey: string;
   heroImagePosition: string;
-}
-
-// ── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onDismiss }: { message: string; type: 'success' | 'error'; onDismiss: () => void }) {
-  useEffect(() => {
-    if (type === 'success') {
-      const timer = setTimeout(onDismiss, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [type, onDismiss]);
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-      type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-    }`}>
-      {message}
-      {type === 'error' && (
-        <button onClick={onDismiss} className="ml-2 rounded px-2 py-0.5 text-xs font-bold text-white/80 hover:text-white">
-          Dismiss
-        </button>
-      )}
-    </div>
-  );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -51,7 +29,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
   const [heroImagePosition, setHeroImagePosition] = useState(initialSettings.heroImagePosition || 'center');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { banners, addBanner, dismissBanner } = useBanners();
   const router = useRouter();
 
   const isHeroDirty =
@@ -84,10 +62,10 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
         }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      setToast({ message: 'Homepage updated', type: 'success' });
+      addBanner('Homepage updated', 'success');
       router.refresh();
     } catch {
-      setToast({ message: 'Failed to update homepage', type: 'error' });
+      addBanner('Failed to update homepage', 'error');
     } finally {
       setSaving(false);
     }
@@ -96,9 +74,11 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Homepage Editor</h1>
+        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Homepage</h1>
         <p className="mt-1 text-sm text-zinc-500">Edit the hero section for the public homepage.</p>
       </div>
+
+      <BannerStack banners={banners} onDismiss={dismissBanner} />
 
       {/* Hero Section */}
       <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-6">
@@ -114,7 +94,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
               onChange={(e) => { setMissionText(e.target.value); setErrors((prev) => ({ ...prev, missionText: '' })); }}
               rows={4}
               placeholder="This text appears in the hero section below the PTO name"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.missionText ? 'border-red-400' : 'border-zinc-200'}`}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2] ${errors.missionText ? 'border-red-400' : 'border-zinc-200'}`}
             />
             <div className="mt-1 flex items-center justify-between">
               {errors.missionText && <p className="text-xs font-medium text-red-600">{errors.missionText}</p>}
@@ -143,7 +123,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
                     id="hero-position"
                     value={heroImagePosition}
                     onChange={(e) => setHeroImagePosition(e.target.value)}
-                    className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#1B6DC2]"
                   >
                     <option value="top">Top</option>
                     <option value="center">Center</option>
@@ -165,7 +145,7 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
                             { key: 'hero_image_position', value: 'center' },
                           ] }),
                         });
-                        setToast({ message: 'Hero image removed', type: 'success' });
+                        addBanner('Hero image removed', 'success');
                         router.refresh();
                       }}
                       className="cursor-pointer text-xs font-semibold text-zinc-400 underline hover:text-zinc-700"
@@ -196,7 +176,6 @@ export function HomepageEditor({ initialSettings }: HomepageEditorProps) {
         </div>
       </div>
 
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

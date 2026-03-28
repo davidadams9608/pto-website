@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { getSettings } from "@/lib/db/queries/settings";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Support Our PTO — Westmont Elementary PTO",
   description:

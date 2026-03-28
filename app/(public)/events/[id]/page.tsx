@@ -1,10 +1,18 @@
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
+import nextDynamic from 'next/dynamic';
 
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
 import { getEventById, getSignupCountForEvent } from '@/lib/db/queries/events';
-import { VolunteerSignupForm } from './volunteer-signup-form';
+
+const VolunteerSignupForm = nextDynamic(() =>
+  import('./volunteer-signup-form').then((m) => m.VolunteerSignupForm),
+);
+
+// Memoize getEventById so generateMetadata and the page share one DB call
+const getCachedEvent = cache((id: string) => getEventById(id));
 import { SITE_TIMEZONE } from '@/lib/site-config';
 
 export const dynamic = 'force-dynamic';
@@ -88,7 +96,7 @@ function CalendarIcon() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const event = await getEventById(id);
+  const event = await getCachedEvent(id);
   return {
     title: event ? `${event.title} — Westmont PTO` : 'Event — Westmont PTO',
   };
@@ -98,14 +106,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
-  const event = await getEventById(id);
+
+  // Fetch event and signup count in parallel
+  const [event, signupCount] = await Promise.all([
+    getCachedEvent(id),
+    getSignupCountForEvent(id),
+  ]);
 
   if (!event) notFound();
 
   const date = new Date(event.date);
   const slots = totalSlots(event.volunteerSlots);
   const hasSignup = slots > 0;
-  const signupCount = hasSignup ? await getSignupCountForEvent(id) : 0;
   const spotsLeft = Math.max(0, slots - signupCount);
 
   // Split description on double-newlines into paragraphs
