@@ -8,7 +8,7 @@ const cspDirectives = [
   "default-src 'self'",
   // Next.js requires unsafe-inline and unsafe-eval for hydration + React
   // Clerk loads clerk.browser.js from its accounts domain
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://vercel.live",
   // Inline styles used by shadcn/ui and Tailwind
   "style-src 'self' 'unsafe-inline'",
   // Images: self, data URIs, R2 bucket, Clerk avatars
@@ -16,7 +16,7 @@ const cspDirectives = [
   // Fonts: self-hosted via next/font (Plus Jakarta Sans)
   "font-src 'self'",
   // API connections: Clerk auth, Sentry error reporting, Upstash Redis, R2 presigned uploads
-  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io https://*.r2.cloudflarestorage.com",
+  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk-telemetry.com https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io https://*.r2.cloudflarestorage.com https://vercel.live",
   // Iframes: Clerk auth + R2 PDFs (public file viewer)
   "frame-src 'self' https://*.clerk.accounts.dev https://*.r2.dev https://*.r2.cloudflarestorage.com",
   // Prevent embedding this site in iframes (matches X-Frame-Options: DENY)
