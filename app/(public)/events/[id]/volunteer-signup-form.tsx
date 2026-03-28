@@ -33,10 +33,10 @@ export function VolunteerSignupForm({ eventId, spotsLeft, roles }: VolunteerSign
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState('');
 
-  // Scroll confirmation card into view after success render
+  // Scroll to page top after success render so confirmation card is fully visible
   useEffect(() => {
-    if (state === 'success' && cardRef.current) {
-      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (state === 'success') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [state]);
 
