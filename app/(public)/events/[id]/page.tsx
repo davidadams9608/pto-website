@@ -5,7 +5,7 @@ import nextDynamic from 'next/dynamic';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-import { getEventById, getSignupCountForEvent } from '@/lib/db/queries/events';
+import { getEventById, getSignupCountsByRole } from '@/lib/db/queries/events';
 
 const VolunteerSignupForm = nextDynamic(() =>
   import('./volunteer-signup-form').then((m) => m.VolunteerSignupForm),
@@ -23,13 +23,19 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-type VolunteerSlot = { role: string; count: number };
+type VolunteerSlot = { role: string; count: number; type?: 'shift' | 'supply' };
+
+export interface VolunteerRole {
+  role: string;
+  type: 'shift' | 'supply';
+  total: number;
+  filled: number;
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function totalSlots(slots: unknown): number {
-  if (!Array.isArray(slots)) return 0;
-  return (slots as VolunteerSlot[]).reduce((sum, s) => sum + (s.count ?? 0), 0);
+function hasVolunteerSlots(slots: unknown): boolean {
+  return Array.isArray(slots) && (slots as VolunteerSlot[]).length > 0;
 }
 
 function formatTime(date: Date): string {
@@ -107,18 +113,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
 
-  // Fetch event and signup count in parallel
-  const [event, signupCount] = await Promise.all([
+  // Fetch event and per-role signup counts in parallel
+  const [event, roleCounts] = await Promise.all([
     getCachedEvent(id),
-    getSignupCountForEvent(id),
+    getSignupCountsByRole(id),
   ]);
 
   if (!event) notFound();
 
   const date = new Date(event.date);
-  const slots = totalSlots(event.volunteerSlots);
-  const hasSignup = slots > 0;
-  const spotsLeft = Math.max(0, slots - signupCount);
+  const slots = event.volunteerSlots as VolunteerSlot[] | null;
+  const hasSignup = hasVolunteerSlots(slots);
+
+  // Merge slot definitions with per-role counts
+  const countMap = new Map(roleCounts.map((r) => [r.role, r.count]));
+  const volunteerRoles: VolunteerRole[] = (slots ?? []).map((s) => ({
+    role: s.role,
+    type: s.type ?? 'shift',
+    total: s.count,
+    filled: countMap.get(s.role) ?? 0,
+  }));
+  const totalSpotsLeft = volunteerRoles.reduce((sum, r) => sum + Math.max(0, r.total - r.filled), 0);
 
   // Split description on double-newlines into paragraphs
   const paragraphs = event.description
@@ -200,8 +215,8 @@ export default async function EventDetailPage({ params }: Props) {
               <aside>
                 <VolunteerSignupForm
                   eventId={id}
-                  spotsLeft={spotsLeft}
-                  roles={(event.volunteerSlots as VolunteerSlot[] ?? []).map((s) => s.role)}
+                  spotsLeft={totalSpotsLeft}
+                  roles={volunteerRoles}
                 />
               </aside>
             ) : (

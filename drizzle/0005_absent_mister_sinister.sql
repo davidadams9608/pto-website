@@ -1,0 +1,2 @@
+ALTER TABLE "volunteer_signups" ADD COLUMN "quantity" integer DEFAULT 1 NOT NULL;--> statement-breakpoint
+ALTER TABLE "volunteer_signups" ADD COLUMN "signup_group_id" uuid DEFAULT gen_random_uuid() NOT NULL;

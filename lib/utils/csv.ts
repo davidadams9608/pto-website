@@ -16,15 +16,17 @@ interface SignupForCsv {
   email: string;
   phone: string | null;
   role: string;
+  quantity?: number;
+  notes?: string | null;
   createdAt: string;
 }
 
 /**
  * Generate a CSV string from volunteer signup data.
- * Columns: Name, Email, Phone, Role, Signup Date
+ * Columns: Name, Email, Phone, Role, Quantity, Notes, Signup Date
  */
 export function generateSignupsCsv(signups: SignupForCsv[]): string {
-  const header = 'Name,Email,Phone,Role,Signup Date';
+  const header = 'Name,Email,Phone,Role,Quantity,Notes,Signup Date';
   const rows = signups.map((s) => {
     const date = new Date(s.createdAt).toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
@@ -34,6 +36,8 @@ export function generateSignupsCsv(signups: SignupForCsv[]): string {
       escapeField(s.email),
       escapeField(s.phone ?? ''),
       escapeField(s.role),
+      escapeField(String(s.quantity ?? 1)),
+      escapeField(s.notes ?? ''),
       escapeField(date),
     ].join(',');
   });

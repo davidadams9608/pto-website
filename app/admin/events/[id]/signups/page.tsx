@@ -18,7 +18,7 @@ interface EventData {
   title: string;
   date: string;
   location: string;
-  volunteerSlots: { role: string; count: number }[] | null;
+  volunteerSlots: { role: string; count: number; type?: 'shift' | 'supply' }[] | null;
 }
 
 interface SignupRow {
@@ -27,6 +27,9 @@ interface SignupRow {
   email: string;
   phone: string | null;
   role: string;
+  quantity: number;
+  signupGroupId: string;
+  notes: string | null;
   createdAt: string;
 }
 
@@ -35,6 +38,16 @@ interface SignupsData {
   signups: SignupRow[];
   retentionExpired: boolean;
   daysSinceEvent: number | null;
+}
+
+interface SignupGroup {
+  key: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  notes: string | null;
+  createdAt: string;
+  roles: Array<{ role: string; quantity: number }>;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -193,6 +206,207 @@ function PurgeDataDialog({ eventTitle, onConfirm, onCancel }: { eventTitle: stri
   );
 }
 
+// ── Delete single signup dialog ────────────────────────────────────────────
+
+function DeleteSignupDialog({ volunteerName, onConfirm, onCancel }: { volunteerName: string; onConfirm: () => void; onCancel: () => void }) {
+  const [portalEl, setPortalEl] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    setPortalEl(el); // eslint-disable-line react-hooks/set-state-in-effect -- intentional: need re-render after portal DOM element is created
+    return () => { document.body.removeChild(el); };
+  }, []);
+
+  if (!portalEl) return null;
+
+  return createPortal(
+    <>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.3)' }} onClick={onCancel} />
+      <div role="alertdialog" aria-modal="true" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 100000, width: '100%', maxWidth: '26rem' }}>
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+          <h2 className="text-base font-semibold text-zinc-900">Delete Signup</h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            This will permanently delete the signup for <strong className="text-zinc-700">{volunteerName}</strong> and all their volunteer roles for this event.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+            <button onClick={onCancel} className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50" autoFocus>Cancel</button>
+            <button onClick={onConfirm} style={{ backgroundColor: '#dc2626', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Delete</button>
+          </div>
+        </div>
+      </div>
+    </>,
+    portalEl,
+  );
+}
+
+// ── Edit signup modal ─────────────────────────────────────────────────────
+
+interface EditSignupModalProps {
+  eventId: string;
+  signupGroup: SignupGroup;
+  availableSlots: Array<{ role: string; count: number; type?: 'shift' | 'supply' }>;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+function EditSignupModal({ eventId, signupGroup, availableSlots, onClose, onSaved }: EditSignupModalProps) {
+  const [portalEl, setPortalEl] = useState<HTMLDivElement | null>(null);
+  const [name, setName] = useState(signupGroup.name);
+  const [email, setEmail] = useState(signupGroup.email);
+  const [phone, setPhone] = useState(signupGroup.phone ?? '');
+  const [notes, setNotes] = useState(signupGroup.notes ?? '');
+  const [selectedRoles, setSelectedRoles] = useState<Map<string, number>>(() => {
+    const map = new Map<string, number>();
+    for (const r of signupGroup.roles) map.set(r.role, r.quantity);
+    return map;
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    setPortalEl(el); // eslint-disable-line react-hooks/set-state-in-effect -- intentional
+    return () => { document.body.removeChild(el); };
+  }, []);
+
+  const toggleRole = (role: string) => {
+    setSelectedRoles((prev) => {
+      const next = new Map(prev);
+      if (next.has(role)) next.delete(role);
+      else next.set(role, 1);
+      return next;
+    });
+  };
+
+  const setQuantity = (role: string, qty: number) => {
+    setSelectedRoles((prev) => {
+      const next = new Map(prev);
+      next.set(role, qty);
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    setError('');
+    const roles = Array.from(selectedRoles.entries()).map(([role, quantity]) => ({ role, quantity }));
+    if (!name.trim()) { setError('Name is required'); return; }
+    if (!email.trim()) { setError('Email is required'); return; }
+    if (roles.length === 0) { setError('Select at least one role'); return; }
+
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/events/${eventId}/signups/${signupGroup.key}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, notes, roles }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError(body?.error ?? 'Failed to save');
+        return;
+      }
+      onSaved();
+    } catch {
+      setError('Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!portalEl) return null;
+
+  const inputClass = 'w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#1B6DC2] focus:ring-1 focus:ring-[#1B6DC2]/30';
+
+  return createPortal(
+    <>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.3)' }} onClick={onClose} />
+      <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 100000, width: '100%', maxWidth: '32rem', maxHeight: '90vh', overflow: 'auto' }}>
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+          <h2 className="mb-4 text-base font-semibold text-zinc-900">Edit Signup</h2>
+
+          <div className="space-y-3">
+            <div>
+              <label htmlFor="edit-name" className="mb-1 block text-xs font-semibold text-zinc-500">Name</label>
+              <input id="edit-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label htmlFor="edit-email" className="mb-1 block text-xs font-semibold text-zinc-500">Email</label>
+              <input id="edit-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label htmlFor="edit-phone" className="mb-1 block text-xs font-semibold text-zinc-500">Phone</label>
+              <input id="edit-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+            </div>
+
+            {/* Roles */}
+            <fieldset>
+              <legend className="mb-1 block text-xs font-semibold text-zinc-500">Roles</legend>
+              <div className="space-y-1.5">
+                {availableSlots.map((slot) => {
+                  const isChecked = selectedRoles.has(slot.role);
+                  const qty = selectedRoles.get(slot.role) ?? 1;
+                  return (
+                    <div key={slot.role} className="flex items-center gap-3 rounded-lg border border-zinc-200 px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleRole(slot.role)}
+                        className="h-4 w-4 accent-[#1B6DC2]"
+                        id={`edit-role-${slot.role}`}
+                      />
+                      <label htmlFor={`edit-role-${slot.role}`} className="flex-1 text-sm text-zinc-700">
+                        {slot.role}
+                        <span className="ml-1.5 text-xs text-zinc-400">({slot.type === 'supply' ? 'supply' : 'shift'})</span>
+                      </label>
+                      {isChecked && slot.type === 'supply' && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-zinc-500">Qty:</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={qty}
+                            onChange={(e) => setQuantity(slot.role, Math.max(1, parseInt(e.target.value) || 1))}
+                            className="w-14 rounded border border-zinc-200 px-2 py-1 text-center text-sm font-medium text-zinc-900 outline-none focus:border-[#1B6DC2]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <div>
+              <label htmlFor="edit-notes" className="mb-1 block text-xs font-semibold text-zinc-500">Notes</label>
+              <textarea id="edit-notes" value={notes} onChange={(e) => setNotes(e.target.value.slice(0, 500))} rows={2} className={`${inputClass} resize-none`} />
+              <p className="mt-0.5 text-right text-[0.65rem] text-zinc-400">{notes.length}/500</p>
+            </div>
+          </div>
+
+          {error && <p className="mt-3 text-sm font-medium text-red-600">{error}</p>}
+
+          <div className="mt-5 flex justify-end gap-2">
+            <button onClick={onClose} className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50">Cancel</button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{ backgroundColor: '#18181b', color: '#fff', padding: '0.5rem 1rem', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>,
+    portalEl,
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function EventSignupsPage() {
@@ -202,6 +416,8 @@ export default function EventSignupsPage() {
   const { banners, addBanner, dismissBanner } = useBanners();
   const [showPurgeDialog, setShowPurgeDialog] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ key: string; name: string } | null>(null);
+  const [editTarget, setEditTarget] = useState<SignupGroup | null>(null);
 
   const fetchSignups = useCallback(async () => {
     try {
@@ -237,6 +453,29 @@ export default function EventSignupsPage() {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await fetch(`/api/admin/events/${id}/signups/${deleteTarget.key}`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 204) {
+        addBanner('Failed to delete signup', 'error');
+        return;
+      }
+      await fetchSignups();
+      addBanner(`Signup deleted for ${deleteTarget.name}`, 'success');
+    } catch {
+      addBanner('Failed to delete signup', 'error');
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleEditSaved = async () => {
+    setEditTarget(null);
+    await fetchSignups();
+    addBanner('Signup updated', 'success');
+  };
+
   if (loading) {
     return <div className="py-16 text-center text-sm text-zinc-400">Loading signups...</div>;
   }
@@ -256,6 +495,33 @@ export default function EventSignupsPage() {
   const slots = totalSlots(event.volunteerSlots);
   const hasVolunteerSlots = slots > 0;
   const spotsRemaining = Math.max(0, slots - signups.length);
+
+  // Per-role capacity breakdown
+  const roleCountMap = new Map<string, number>();
+  for (const s of signups) {
+    roleCountMap.set(s.role, (roleCountMap.get(s.role) ?? 0) + (s.quantity ?? 1));
+  }
+
+  // Group signups by signupGroupId
+  const signupGroups: SignupGroup[] = [];
+  const groupMap = new Map<string, number>(); // signupGroupId → index in signupGroups
+  for (const s of signups) {
+    const idx = groupMap.get(s.signupGroupId);
+    if (idx !== undefined) {
+      signupGroups[idx].roles.push({ role: s.role, quantity: s.quantity });
+    } else {
+      groupMap.set(s.signupGroupId, signupGroups.length);
+      signupGroups.push({
+        key: s.signupGroupId,
+        name: s.name,
+        email: s.email,
+        phone: s.phone,
+        notes: s.notes,
+        createdAt: s.createdAt,
+        roles: [{ role: s.role, quantity: s.quantity }],
+      });
+    }
+  }
 
   return (
     <div>
@@ -332,7 +598,7 @@ export default function EventSignupsPage() {
                 Total Signups
               </div>
               <div className="mt-1 text-xl font-extrabold text-zinc-900">
-                {signups.length}
+                {signupGroups.length}
               </div>
             </div>
             <div className="rounded-xl border border-zinc-200 bg-white px-5 py-4">
@@ -353,6 +619,49 @@ export default function EventSignupsPage() {
             </div>
           </div>
 
+          {/* Per-role capacity breakdown — split by type */}
+          {Array.isArray(event.volunteerSlots) && event.volunteerSlots.length > 0 && (() => {
+            const shiftSlots = event.volunteerSlots!.filter((s) => (s.type ?? 'shift') === 'shift');
+            const supplySlots = event.volunteerSlots!.filter((s) => s.type === 'supply');
+
+            const renderSlots = (slotList: typeof event.volunteerSlots & object) =>
+              slotList.map((slot) => {
+                const filled = roleCountMap.get(slot.role) ?? 0;
+                const pct = slot.count > 0 ? Math.min(100, Math.round((filled / slot.count) * 100)) : 0;
+                return (
+                  <div key={slot.role}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-zinc-700">{slot.role}</span>
+                      <span className="text-xs font-semibold text-zinc-500">{filled} / {slot.count}</span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
+                      <div
+                        className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              });
+
+            return (
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {shiftSlots.length > 0 && (
+                  <div className="rounded-lg border border-zinc-200 bg-white p-4">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-widest text-zinc-400">Volunteer Shifts</p>
+                    <div className="space-y-2">{renderSlots(shiftSlots)}</div>
+                  </div>
+                )}
+                {supplySlots.length > 0 && (
+                  <div className="rounded-lg border border-zinc-200 bg-white p-4">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-widest text-zinc-400">Supplies</p>
+                    <div className="space-y-2">{renderSlots(supplySlots)}</div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Volunteer table */}
           {signups.length === 0 ? (
             <div className="rounded-lg border border-zinc-200 bg-white py-16 text-center">
@@ -364,23 +673,56 @@ export default function EventSignupsPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                      <th className="w-[5%] px-4 py-3">#</th>
-                      <th className="w-[22%] px-4 py-3">Name</th>
-                      <th className="w-[25%] px-4 py-3">Email</th>
-                      <th className="w-[16%] px-4 py-3">Phone</th>
-                      <th className="w-[12%] px-4 py-3">Role</th>
-                      <th className="w-[20%] px-4 py-3">Signed Up</th>
+                      <th className="w-[4%] px-4 py-3">#</th>
+                      <th className="w-[15%] px-4 py-3">Name</th>
+                      <th className="w-[18%] px-4 py-3">Email</th>
+                      <th className="w-[12%] px-4 py-3">Phone</th>
+                      <th className="w-[17%] px-4 py-3">Roles</th>
+                      <th className="w-[12%] px-4 py-3">Notes</th>
+                      <th className="w-[14%] px-4 py-3">Signed Up</th>
+                      <th className="w-[8%] px-4 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {signups.map((signup, i) => (
-                      <tr key={signup.id} className="border-b border-zinc-50 last:border-b-0">
+                    {signupGroups.map((group, i) => (
+                      <tr key={group.key} className="border-b border-zinc-50 last:border-b-0">
                         <td className="px-4 py-3 text-sm text-zinc-400">{i + 1}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-900">{signup.name}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-600">{signup.email}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-600">{signup.phone || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-600">{signup.role}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-500">{formatDateTime(signup.createdAt)}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-900">{group.name}</td>
+                        <td className="px-4 py-3 text-sm text-zinc-600">{group.email}</td>
+                        <td className="px-4 py-3 text-sm text-zinc-600">{group.phone || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-zinc-600">
+                          {group.roles.map((r, j) => (
+                            <div key={j}>
+                              {r.role}{r.quantity > 1 ? ` (×${r.quantity})` : ''}
+                            </div>
+                          ))}
+                        </td>
+                        <td className="max-w-[180px] truncate px-4 py-3 text-sm text-zinc-500" title={group.notes ?? undefined}>
+                          {group.notes || '—'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-zinc-500">{formatDateTime(group.createdAt)}</td>
+                        <td className="py-3 pl-4 pr-2">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => setEditTarget(group)}
+                              title="Edit"
+                              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-[#BFDBFE] hover:text-[#1B6DC2]"
+                            >
+                              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                                <path d="M10 2l2 2-7.5 7.5H2.5v-2L10 2z"/>
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget({ key: group.key, name: group.name })}
+                              title="Delete"
+                              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-md border border-zinc-200 text-zinc-400 transition-colors hover:border-red-200 hover:text-red-500"
+                            >
+                              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                                <path d="M2.5 4h9"/><path d="M5 4V2.5h4V4"/><path d="M3.5 4v8a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -402,7 +744,7 @@ export default function EventSignupsPage() {
         <ContactVolunteersModal
           eventId={id}
           eventTitle={event.title}
-          recipients={signups.map((s) => ({ id: s.id, name: s.name, email: s.email }))}
+          recipients={signupGroups.map((g) => ({ id: g.key, name: g.name, email: g.email }))}
           onClose={() => setShowContactModal(false)}
           onSuccess={(count) => {
             setShowContactModal(false);
@@ -417,6 +759,26 @@ export default function EventSignupsPage() {
           eventTitle={event.title}
           onConfirm={handlePurge}
           onCancel={() => setShowPurgeDialog(false)}
+        />
+      )}
+
+      {/* Delete single signup dialog */}
+      {deleteTarget && (
+        <DeleteSignupDialog
+          volunteerName={deleteTarget.name}
+          onConfirm={handleDeleteGroup}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {/* Edit signup modal */}
+      {editTarget && data && (
+        <EditSignupModal
+          eventId={id}
+          signupGroup={editTarget}
+          availableSlots={(data.event.volunteerSlots ?? []) as Array<{ role: string; count: number; type?: 'shift' | 'supply' }>}
+          onClose={() => setEditTarget(null)}
+          onSaved={handleEditSaved}
         />
       )}
 

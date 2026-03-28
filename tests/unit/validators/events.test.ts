@@ -86,6 +86,51 @@ describe('createEventSchema', () => {
     }
   });
 
+  it('defaults slot type to shift', () => {
+    const result = createEventSchema.safeParse({
+      ...validPayload,
+      volunteerSlots: [{ role: 'Setup', count: 4 }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.volunteerSlots![0].type).toBe('shift');
+    }
+  });
+
+  it('accepts slot type supply', () => {
+    const result = createEventSchema.safeParse({
+      ...validPayload,
+      volunteerSlots: [{ role: 'Paper Towels', count: 8, type: 'supply' }],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.volunteerSlots![0].type).toBe('supply');
+    }
+  });
+
+  it('rejects invalid slot type', () => {
+    const result = createEventSchema.safeParse({
+      ...validPayload,
+      volunteerSlots: [{ role: 'Setup', count: 4, type: 'invalid' }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts mixed shift and supply slots', () => {
+    const result = createEventSchema.safeParse({
+      ...validPayload,
+      volunteerSlots: [
+        { role: 'Setup', count: 4, type: 'shift' },
+        { role: 'Cookies', count: 6, type: 'supply' },
+      ],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.volunteerSlots![0].type).toBe('shift');
+      expect(result.data.volunteerSlots![1].type).toBe('supply');
+    }
+  });
+
   it('defaults isPublished to false', () => {
     const result = createEventSchema.safeParse(validPayload);
     expect(result.success).toBe(true);

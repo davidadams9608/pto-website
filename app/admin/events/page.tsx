@@ -16,9 +16,13 @@ interface EventRow {
   title: string;
   date: string;
   location: string;
-  volunteerSlots: { role: string; count: number }[] | null;
+  volunteerSlots: { role: string; count: number; type?: 'shift' | 'supply' }[] | null;
   isPublished: boolean;
   signupCount: number;
+  shiftFilled: number;
+  shiftTotal: number;
+  supplyFilled: number;
+  supplyTotal: number;
   retentionExpired: boolean;
   daysSinceEvent: number | null;
 }
@@ -37,10 +41,6 @@ function formatTime(iso: string): string {
   });
 }
 
-function totalSlots(slots: { role: string; count: number }[] | null): number {
-  if (!Array.isArray(slots)) return 0;
-  return slots.reduce((sum, s) => sum + (s.count ?? 0), 0);
-}
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ function SignupsIcon() {
   return (
     <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor"
       strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-      <circle cx="7" cy="5" r="2.5"/><path d="M2 12.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/>
+      <circle cx="7" cy="7" r="3"/><path d="M1 7s2.5-4.5 6-4.5S13 7 13 7s-2.5 4.5-6 4.5S1 7 1 7z"/>
     </svg>
   );
 }
@@ -438,16 +438,16 @@ export default function EventsListPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                <th className="w-[36%] px-5 py-3">Event</th>
-                <th className="w-[14%] px-4 py-3">Date</th>
-                <th className="w-[12%] px-4 py-3">Volunteers</th>
+                <th className="w-[32%] px-5 py-3">Event</th>
+                <th className="w-[12%] px-4 py-3">Date</th>
+                <th className="w-[10%] px-4 py-3">Shifts</th>
+                <th className="w-[10%] px-4 py-3">Supplies</th>
                 <th className="w-[10%] px-4 py-3">Status</th>
-                <th className="w-[28%] px-4 py-3">Actions</th>
+                <th className="w-[26%] px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredEvents.map((event) => {
-                const slots = totalSlots(event.volunteerSlots);
                 return (
                   <tr key={event.id} className="border-b border-zinc-50 last:border-b-0 hover:bg-[#EFF6FF]/40">
                     <td className="px-5 py-3.5">
@@ -459,15 +459,10 @@ export default function EventsListPage() {
                     <td className="px-4 py-3.5 text-sm text-zinc-600">
                       {formatDate(event.date)}
                     </td>
-                    <td className="px-4 py-3.5 text-sm">
+                    <td className="px-4 py-3.5 text-sm text-zinc-600">
                       <div className="flex items-center gap-2">
-                        {slots > 0 ? (
-                          <Link
-                            href={`/admin/events/${event.id}/signups`}
-                            className="font-medium text-[#1B6DC2] hover:text-[#1B6DC2]"
-                          >
-                            {event.signupCount} / {slots}
-                          </Link>
+                        {event.shiftTotal > 0 ? (
+                          <span>{event.shiftFilled} / {event.shiftTotal}</span>
                         ) : (
                           <span className="text-zinc-400">&mdash;</span>
                         )}
@@ -481,6 +476,13 @@ export default function EventsListPage() {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td className="px-4 py-3.5 text-sm text-zinc-600">
+                      {event.supplyTotal > 0 ? (
+                        <span>{event.supplyFilled} / {event.supplyTotal}</span>
+                      ) : (
+                        <span className="text-zinc-400">&mdash;</span>
+                      )}
                     </td>
                     <td className="px-4 py-3.5">
                       <span

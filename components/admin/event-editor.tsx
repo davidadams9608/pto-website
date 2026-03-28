@@ -13,6 +13,7 @@ import { createEventSchema, validateForPublish } from '@/lib/validators/events';
 interface VolunteerSlot {
   role: string;
   count: number;
+  type: 'shift' | 'supply';
 }
 
 interface EventData {
@@ -24,7 +25,7 @@ interface EventData {
   zoomUrl: string | null;
   imageUrl: string | null;
   imageKey: string | null;
-  volunteerSlots: VolunteerSlot[] | null;
+  volunteerSlots: (VolunteerSlot & { type?: 'shift' | 'supply' })[] | null;
   isPublished: boolean;
 }
 
@@ -192,7 +193,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
         setImageKey(data.imageKey ?? '');
         if (Array.isArray(data.volunteerSlots) && data.volunteerSlots.length > 0) {
           setVolunteerEnabled(true);
-          setSlots(data.volunteerSlots);
+          setSlots(data.volunteerSlots.map((s) => ({ ...s, type: s.type ?? 'shift' })));
         }
         setIsPublished(data.isPublished);
       } catch {
@@ -204,9 +205,9 @@ export function EventEditor({ eventId }: EventEditorProps) {
   }, [eventId]);
 
   // Slot helpers
-  const addSlot = () => { setSlots((prev) => [...prev, { role: '', count: 1 }]); markDirty(); };
+  const addSlot = () => { setSlots((prev) => [...prev, { role: '', count: 1, type: 'shift' }]); markDirty(); };
   const removeSlot = (i: number) => { setSlots((prev) => prev.filter((_, idx) => idx !== i)); markDirty(); };
-  const updateSlot = (i: number, field: 'role' | 'count', value: string | number) => {
+  const updateSlot = (i: number, field: keyof VolunteerSlot, value: string | number) => {
     setSlots((prev) => prev.map((s, idx) => idx === i ? { ...s, [field]: value } : s));
     markDirty();
   };
@@ -449,15 +450,24 @@ export function EventEditor({ eventId }: EventEditorProps) {
                           type="text"
                           placeholder="Role name (e.g., Setup Crew)"
                           style={slotErrors[`${i}-role`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
-                          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#1B6DC2]"
+                          className="h-[38px] flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-[#1B6DC2]"
                           value={slot.role}
                           onChange={(e) => updateSlot(i, 'role', e.target.value)}
                         />
+                        <select
+                          value={slot.type ?? 'shift'}
+                          onChange={(e) => updateSlot(i, 'type', e.target.value)}
+                          className="h-[38px] appearance-none rounded-lg border border-zinc-200 bg-white px-3 pr-7 py-2 text-sm font-medium text-zinc-900 outline-none focus:border-[#1B6DC2] bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M3%204.5l3%203%203-3%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat"
+                          aria-label={`Type for ${slot.role || 'role'}`}
+                        >
+                          <option value="shift">Shift</option>
+                          <option value="supply">Supply</option>
+                        </select>
                         <input
                           type="number"
                           min="1"
                           style={slotErrors[`${i}-count`] ? { borderColor: '#f87171', backgroundColor: 'rgba(254,242,242,0.3)' } : undefined}
-                          className="w-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-center text-sm font-bold text-zinc-900 outline-none focus:border-[#1B6DC2]"
+                          className="h-[38px] w-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-center text-sm font-bold text-zinc-900 outline-none focus:border-[#1B6DC2]"
                           value={slot.count}
                           onChange={(e) => updateSlot(i, 'count', parseInt(e.target.value) || 0)}
                         />
@@ -476,7 +486,7 @@ export function EventEditor({ eventId }: EventEditorProps) {
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-zinc-400">Visitors will see &quot;X spots left&quot; on the public page.</p>
+                <p className="mt-2 text-xs text-zinc-400">Shifts are volunteer time slots. Supplies are items to bring (visitors can set a quantity). Visitors see per-role availability on the public page.</p>
               </div>
             )}
             <div className="border-t border-zinc-100 pt-5">

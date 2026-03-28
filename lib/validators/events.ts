@@ -3,6 +3,7 @@ import { z } from 'zod';
 const volunteerSlotSchema = z.object({
   role: z.string().min(1, 'Role is required'),
   count: z.number().int().min(1, 'Count must be at least 1'),
+  type: z.enum(['shift', 'supply']).default('shift'),
 });
 
 export const createEventSchema = z.object({

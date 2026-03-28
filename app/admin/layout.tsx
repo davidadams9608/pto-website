@@ -132,18 +132,30 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid #E4E4E7', background: '#FFFFFF', overflowY: 'auto' }}>
         {/* Brand */}
-        <div className="flex items-center gap-2.5 border-b border-[#E4E4E7] px-5 py-5">
-          <Image
-            src="/westmont-logo.svg"
-            alt=""
-            width={32}
-            height={32}
-            className="shrink-0"
-          />
-          <span className="text-[0.9rem] font-extrabold text-[#09090B]">Westmont PTO</span>
-          <span className="rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2 py-[0.15rem] text-[0.55rem] font-bold uppercase tracking-[0.08em] text-[#1B6DC2]">
-            Admin
-          </span>
+        <div className="border-b border-[#E4E4E7] px-5 py-5">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/westmont-logo.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="shrink-0"
+            />
+            <span className="text-[0.9rem] font-extrabold text-[#09090B]">Westmont PTO</span>
+          </div>
+          {process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? (
+            <span className="mt-2.5 inline-block rounded-full border border-[#BBF7D0] bg-[#DCFCE7] px-2 py-[0.1rem] text-[0.55rem] font-bold uppercase tracking-[0.06em] text-[#16A34A]">
+              Production
+            </span>
+          ) : process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' ? (
+            <span className="mt-2.5 inline-block rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2 py-[0.1rem] text-[0.55rem] font-bold uppercase tracking-[0.06em] text-[#1B6DC2]">
+              Preview
+            </span>
+          ) : (
+            <span className="mt-2.5 inline-block rounded-full border border-[#FDE68A] bg-[#FFFBEB] px-2 py-[0.1rem] text-[0.55rem] font-bold uppercase tracking-[0.06em] text-[#D97706]">
+              Development
+            </span>
+          )}
         </div>
 
         {/* Navigation */}
@@ -196,7 +208,9 @@ export default function AdminLayout({
         <div className="border-t border-[#E4E4E7] px-5 py-4">
           <div className="flex items-center gap-3">
             <UserButton />
-            <span className="text-[0.75rem] font-medium text-[#71717A]">Admin</span>
+            <span className="rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-2 py-[0.15rem] text-[0.55rem] font-bold uppercase tracking-[0.08em] text-[#1B6DC2]">
+              Admin
+            </span>
           </div>
         </div>
       </aside>
