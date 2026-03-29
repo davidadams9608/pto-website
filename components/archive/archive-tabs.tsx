@@ -35,7 +35,8 @@ const SEASON_EMOJI: Record<number, string> = {
 };
 
 function seasonalEmoji(date: Date): string {
-  return SEASON_EMOJI[date.getMonth() + 1] ?? "\u{1F4C4}";
+  const m = parseInt(date.toLocaleDateString('en-US', { month: 'numeric', timeZone: SITE_TIMEZONE }), 10);
+  return SEASON_EMOJI[m] ?? "\u{1F4C4}";
 }
 
 // ── Types ──────────────────────────────────────────────────────────────────

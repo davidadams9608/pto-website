@@ -3,11 +3,8 @@ import { createRouteMatcher } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mirror the protected route patterns from proxy.ts
-const isProtectedRoute = createRouteMatcher([
-  "/admin(.*)",
-  "/api/admin(.*)",
-]);
+// Mirror the route patterns from proxy.ts
+const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
 
 const isPublicSubRoute = createRouteMatcher([
   "/events(.*)",
@@ -20,8 +17,10 @@ function mockRequest(path: string) {
   return new NextRequest(`http://localhost${path}`);
 }
 
+// ── Route matching tests ──────────────────────────────────────────────────
+
 describe("proxy route protection", () => {
-  describe("public routes — should NOT be protected", () => {
+  describe("public routes — should NOT match admin", () => {
     it.each([
       "/",
       "/events",
@@ -31,11 +30,11 @@ describe("proxy route protection", () => {
       "/api/health",
       "/api/public/events",
     ])("%s is public", (path) => {
-      expect(isProtectedRoute(mockRequest(path))).toBe(false);
+      expect(isAdminRoute(mockRequest(path))).toBe(false);
     });
   });
 
-  describe("admin routes — should be protected", () => {
+  describe("admin routes — should match admin", () => {
     it.each([
       "/admin/dashboard",
       "/admin/events",
@@ -45,11 +44,13 @@ describe("proxy route protection", () => {
       "/admin/settings",
       "/api/admin/events",
       "/api/admin/newsletters",
-    ])("%s is protected", (path) => {
-      expect(isProtectedRoute(mockRequest(path))).toBe(true);
+    ])("%s is admin", (path) => {
+      expect(isAdminRoute(mockRequest(path))).toBe(true);
     });
   });
 });
+
+// ── Feature flag matching tests ───────────────────────────────────────────
 
 describe("proxy feature flag gating", () => {
   describe("public sub-routes matched by feature flag gate", () => {
@@ -76,62 +77,113 @@ describe("proxy feature flag gating", () => {
       expect(isPublicSubRoute(mockRequest(path))).toBe(false);
     });
   });
+});
 
-  describe("redirect logic", () => {
-    afterEach(() => {
-      vi.unstubAllEnvs();
-    });
+// ── Redirect logic (unit-level, no Clerk mock needed) ─────────────────────
 
-    it("redirects public sub-routes when flag is not set", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "");
-      const req = mockRequest("/events");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(true);
-    });
+describe("proxy redirect logic", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
-    it("redirects public sub-routes when flag is false", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-      const req = mockRequest("/events");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(true);
-    });
+  it("redirects public sub-routes when flag is not set", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "");
+    const req = mockRequest("/events");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(true);
+  });
 
-    it("does NOT redirect public sub-routes when flag is true", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
-      const req = mockRequest("/events");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(false);
-    });
+  it("redirects public sub-routes when flag is false", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    const req = mockRequest("/events");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(true);
+  });
 
-    it("does NOT redirect homepage regardless of flag", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-      const req = mockRequest("/");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(false);
-    });
+  it("does NOT redirect public sub-routes when flag is true", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
+    const req = mockRequest("/events");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(false);
+  });
 
-    it("does NOT redirect API routes regardless of flag", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-      const req = mockRequest("/api/events");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(false);
-    });
+  it("does NOT redirect homepage regardless of flag", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    const req = mockRequest("/");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(false);
+  });
 
-    it("does NOT redirect admin routes regardless of flag", () => {
-      vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-      const req = mockRequest("/admin/dashboard");
-      const shouldRedirect = isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true";
-      expect(shouldRedirect).toBe(false);
-    });
+  it("does NOT redirect API routes regardless of flag", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    const req = mockRequest("/api/events");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(false);
+  });
+
+  it("does NOT redirect admin routes regardless of flag", () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    const req = mockRequest("/admin/dashboard");
+    const shouldRedirect =
+      isPublicSubRoute(req) &&
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(shouldRedirect).toBe(false);
   });
 });
+
+// ── Feature flag case-insensitivity tests ─────────────────────────────────
+
+describe("feature flag case-insensitive parsing", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ["true", false],
+    ["True", false],
+    ["TRUE", false],
+    [" true ", false],
+    ["false", true],
+    ["False", true],
+    ["FALSE", true],
+    ["", true],
+  ])('flag value %j → should redirect: %s', (flagValue, shouldRedirect) => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", flagValue);
+    const result =
+      process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE?.toLowerCase().trim() !== "true";
+    expect(result).toBe(shouldRedirect);
+  });
+
+  it("undefined flag → should redirect", () => {
+    delete process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE;
+    const val = process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE as string | undefined;
+    const result = val?.toLowerCase().trim() !== "true";
+    expect(result).toBe(true);
+  });
+});
+
+// ── Integration tests (mocked Clerk) ──────────────────────────────────────
 
 // Cache the real createRouteMatcher before any mocks
 const { createRouteMatcher: realCreateRouteMatcher } = await import("@clerk/nextjs/server");
 
-describe("proxy function — auth.protect() and redirect integration", () => {
+/** Minimal NextFetchEvent stub for the proxy's second parameter. */
+const stubEvent = {} as import("next/server").NextFetchEvent;
+
+describe("proxy function — integration", () => {
   let protectMock: ReturnType<typeof vi.fn>;
-  let proxyHandler: (req: NextRequest) => Promise<NextResponse | undefined>;
+  let clerkMiddlewareMock: ReturnType<typeof vi.fn>;
+  let proxyHandler: (req: NextRequest, event: import("next/server").NextFetchEvent) => Promise<NextResponse | undefined>;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -139,15 +191,20 @@ describe("proxy function — auth.protect() and redirect integration", () => {
     protectMock = vi.fn().mockResolvedValue(undefined);
 
     // Mock Clerk's clerkMiddleware to capture the callback and invoke it with our mock auth
-    vi.doMock("@clerk/nextjs/server", () => ({
-      clerkMiddleware: (callback: (auth: { protect: typeof protectMock }, req: NextRequest) => Promise<NextResponse | undefined>) => {
-        return (req: NextRequest) => callback({ protect: protectMock }, req);
+    clerkMiddlewareMock = vi.fn().mockImplementation(
+      (callback: (auth: { protect: typeof protectMock }, req: NextRequest) => Promise<NextResponse | undefined>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return (req: NextRequest, _event: unknown) => callback({ protect: protectMock }, req);
       },
+    );
+
+    vi.doMock("@clerk/nextjs/server", () => ({
+      clerkMiddleware: clerkMiddlewareMock,
       createRouteMatcher: realCreateRouteMatcher,
     }));
 
     const proxyModule = await import("@/proxy");
-    proxyHandler = proxyModule.default as (req: NextRequest) => Promise<NextResponse | undefined>;
+    proxyHandler = proxyModule.default as typeof proxyHandler;
   });
 
   afterEach(() => {
@@ -155,48 +212,96 @@ describe("proxy function — auth.protect() and redirect integration", () => {
     vi.restoreAllMocks();
   });
 
+  // ── Admin routes go through Clerk ───────────────────────────────────────
+
   it("calls auth.protect() for admin page routes", async () => {
     vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
-    await proxyHandler(mockRequest("/admin/dashboard"));
+    await proxyHandler(mockRequest("/admin/dashboard"), stubEvent);
     expect(protectMock).toHaveBeenCalled();
   });
 
   it("calls auth.protect() for admin API routes", async () => {
     vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
-    await proxyHandler(mockRequest("/api/admin/events"));
+    await proxyHandler(mockRequest("/api/admin/events"), stubEvent);
     expect(protectMock).toHaveBeenCalled();
   });
 
-  it("does NOT call auth.protect() for public routes", async () => {
-    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
-    await proxyHandler(mockRequest("/events"));
-    expect(protectMock).not.toHaveBeenCalled();
+  it("calls auth.protect() for admin routes even when flag is off", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    await proxyHandler(mockRequest("/admin/events"), stubEvent);
+    expect(protectMock).toHaveBeenCalled();
   });
+
+  // ── Public routes do NOT go through Clerk ───────────────────────────────
+
+  it("does NOT invoke clerkMiddleware for public routes (flag on)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(protectMock).not.toHaveBeenCalled();
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(response?.status).toBe(200);
+  });
+
+  it("does NOT invoke clerkMiddleware for public routes (flag off, redirects)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(protectMock).not.toHaveBeenCalled();
+    expect(response?.status).toBe(307);
+    expect(new URL(response!.headers.get("location")!).pathname).toBe("/");
+  });
+
+  it("does NOT invoke clerkMiddleware for homepage", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
+    const response = await proxyHandler(mockRequest("/"), stubEvent);
+    expect(protectMock).not.toHaveBeenCalled();
+    expect(response).toBeInstanceOf(NextResponse);
+  });
+
+  // ── Feature flag redirect behavior ──────────────────────────────────────
 
   it("redirects /events to / when flag is off", async () => {
     vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-    const response = await proxyHandler(mockRequest("/events"));
-    expect(response).toBeInstanceOf(NextResponse);
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
     expect(response?.status).toBe(307);
     expect(new URL(response!.headers.get("location")!).pathname).toBe("/");
   });
 
   it("does NOT redirect /events when flag is on", async () => {
     vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "true");
-    const response = await proxyHandler(mockRequest("/events"));
-    expect(response).toBeUndefined();
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(response?.status).toBe(200);
   });
 
-  it("redirects /donate to / when flag is off, without calling auth.protect()", async () => {
+  it("redirects /donate to / when flag is off", async () => {
     vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-    const response = await proxyHandler(mockRequest("/donate"));
+    const response = await proxyHandler(mockRequest("/donate"), stubEvent);
     expect(response?.status).toBe(307);
     expect(protectMock).not.toHaveBeenCalled();
   });
 
-  it("calls auth.protect() for admin routes even when flag is off", async () => {
-    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "false");
-    await proxyHandler(mockRequest("/admin/events"));
-    expect(protectMock).toHaveBeenCalled();
+  // ── Case-insensitive flag integration ───────────────────────────────────
+
+  it("treats 'True' as enabled (case-insensitive)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "True");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(response?.status).toBe(200);
+  });
+
+  it("treats 'TRUE' as enabled (case-insensitive)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "TRUE");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(response?.status).toBe(200);
+  });
+
+  it("treats ' true ' as enabled (whitespace-trimmed)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", " true ");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(response?.status).toBe(200);
+  });
+
+  it("treats 'False' as disabled (redirects)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_FEATURE_PUBLIC_SITE", "False");
+    const response = await proxyHandler(mockRequest("/events"), stubEvent);
+    expect(response?.status).toBe(307);
   });
 });
