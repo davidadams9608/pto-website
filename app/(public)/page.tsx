@@ -115,12 +115,14 @@ export default async function HomePage() {
 
           {/* Right: visual — hidden on mobile */}
           <div className="hidden flex-col gap-4 md:flex">
-            <div className="h-[220px] overflow-hidden rounded-[16px] border border-[#BFDBFE]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroImageUrl || '/hero-default.png'}
+            <div className="relative h-[220px] overflow-hidden rounded-[16px] border border-[#BFDBFE]">
+              <Image
+                src={heroImageUrl || '/hero-default.webp'}
                 alt="Westmont Elementary"
-                className="h-full w-full object-cover"
+                fill
+                priority
+                sizes="(min-width: 768px) 50vw, 0px"
+                className="object-cover"
                 style={{ objectPosition: heroImagePosition || 'center' }}
               />
             </div>

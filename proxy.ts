@@ -1,10 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher([
-  "/admin(.*)",
-  "/api/admin(.*)",
-]);
+import { envToBool } from "@/lib/utils";
+
+const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
 
 /** Public sub-routes that should redirect to "/" when the public site feature flag is off. */
 const isPublicSubRoute = createRouteMatcher([
@@ -14,16 +14,29 @@ const isPublicSubRoute = createRouteMatcher([
   "/donate(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
-  // Gate public sub-routes behind the feature flag
-  if (isPublicSubRoute(req) && process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE !== "true") {
-    return NextResponse.redirect(new URL("/", req.url));
+/** Clerk middleware — only invoked for admin routes. */
+const handleAdminRoute = clerkMiddleware(async (auth) => {
+  await auth.protect();
+});
+
+/** Feature-flag gate for public routes (no Clerk involved). */
+function handlePublicRoute(request: NextRequest): NextResponse {
+  const isPublicSiteEnabled = envToBool(process.env.NEXT_PUBLIC_FEATURE_PUBLIC_SITE);
+
+  if (!isPublicSiteEnabled && isPublicSubRoute(request)) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+  return NextResponse.next();
+}
+
+export default function proxy(request: NextRequest, event: NextFetchEvent) {
+  if (isAdminRoute(request)) {
+    return handleAdminRoute(request, event);
   }
-});
+
+  return handlePublicRoute(request);
+}
 
 export const config = {
   matcher: [
